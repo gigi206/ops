@@ -1,0 +1,12 @@
+{
+  "name": "ops",
+  "version": "1.0.0",
+  "description": "Structured dev workflow plugin for Claude Code — plan, implement, debug, review, ship.",
+  "author": {
+    "name": "Ghislain LE MEUR"
+  },
+  "repository": "https://github.com/gigi206/ops",
+  "homepage": "https://github.com/gigi206/ops",
+  "license": "MIT",
+  "keywords": ["workflow", "planning", "research", "implementation", "review", "tdd", "code-review", "agents"]
+}

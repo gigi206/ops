@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+# SessionStart hook for ops plugin
+# Injects skill routing context so Claude knows when to suggest ops skills.
+
+set -euo pipefail
+
+escape_for_json() {
+    local s="$1"
+    s="${s//\\/\\\\}"
+    s="${s//\"/\\\"}"
+    s="${s//$'\n'/\\n}"
+    s="${s//$'\r'/\\r}"
+    s="${s//$'\t'/\\t}"
+    printf '%s' "$s"
+}
+
+read -r -d '' CONTEXT << 'CONTEXT_EOF' || true
+You have access to ops workflow skills. Before starting any non-trivial work, check if a skill applies:
+
+| Situation | Skill |
+|-----------|-------|
+| New feature, change, or task | `/ops:plan` |
+| Plan approved, ready to build | `/ops:implement` |
+| Bug, error, or unexpected behavior | `/ops:debug` |
+| Received code review feedback | `/ops:review` |
+| Work is done, ready to commit | `/ops:ship` |
+| Claiming something works | `/ops:verify` (always active) |
+| Quick fix you already understand | No skill needed |
+
+If the user describes a task that needs design or research, suggest `/ops:plan` before coding.
+If the user asks to commit or ship, suggest `/ops:ship`.
+If the user reports a bug, suggest `/ops:debug`.
+Do NOT force skills on trivial requests (rename a variable, fix a typo, answer a question).
+CONTEXT_EOF
+
+escaped=$(escape_for_json "$CONTEXT")
+
+cat <<EOF
+{
+  "hookSpecificOutput": {
+    "hookEventName": "SessionStart",
+    "additionalContext": "${escaped}"
+  }
+}
+EOF
+
+exit 0
