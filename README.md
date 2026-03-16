@@ -95,6 +95,10 @@ When done:
 /ops:ship
 ```
 
+### Tips
+
+- **Unknown library or tool?** — If ops encounters a library, tool, or external application it doesn't fully understand, it can `git clone` the source code into a temporary directory to read and analyze it directly. This is a last resort — ops will first try Context7 MCP and web search before cloning.
+
 ## Skills Reference
 
 ### `/ops:plan`
