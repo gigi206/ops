@@ -14,12 +14,12 @@ Find official documentation relevant to the current task. You are an intelligenc
 ### Step 1: Identify Targets
 
 From the task description, extract:
-- Libraries, frameworks, and their versions (check `package.json`, `go.mod`, `Cargo.toml`, `requirements.txt`, chart versions in config files)
+- Libraries, frameworks, and their versions (check `package.json`, `go.mod`, `Cargo.toml`, `requirements.txt`, or equivalent manifest files)
 - APIs and external services involved
 - Tools and CLI utilities referenced
-- CRDs, operators, or platform-specific resources
+- Platform-specific resources or configuration schemas
 
-**Be specific.** "Helm" is too broad. "Helm chart bitnami/postgresql 16.x values for persistence" is actionable.
+**Be specific.** "Express" is too broad. "Express v4.18 middleware error handling with async routes" is actionable.
 
 ### Step 2: Query Context7 (Primary Source)
 
@@ -29,9 +29,9 @@ For each target:
 
 | Bad query | Good query |
 |-----------|-----------|
-| "cilium" | "cilium hubble ui ingress configuration" |
-| "kustomize" | "kustomize commonLabels propagation to metadata" |
-| "cert-manager" | "cert-manager ClusterIssuer ACME DNS01 solver" |
+| "express" | "express v4.18 middleware error handling with async routes" |
+| "postgres" | "postgres jsonb partial index query optimization" |
+| "react" | "react server components data fetching with suspense" |
 
 3. If the first query returns generic results, **refine and retry once** with more specific terms before falling back
 

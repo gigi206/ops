@@ -48,7 +48,7 @@ When dispatching any subagent (researcher-code, researcher-doc, git-historian, s
 
 - **Provide content inline.** If you already read a file, paste the relevant content into the agent prompt. Do NOT ask the agent to re-read the same file.
 - **Scope the context.** Give the agent only what it needs for its task — not the entire plan, not every file you've read. A researcher-code analyzing conventions needs the task area files, not the brainstorm transcript.
-- **Name what you provide.** Always label pasted content with its source: `[From deploy/argocd/apps/cilium/applicationset.yaml]`. The agent needs to know where the content comes from to cite it.
+- **Name what you provide.** Always label pasted content with its source: `[From src/auth/middleware.ts:15-42]`. The agent needs to know where the content comes from to cite it.
 - **Let the agent explore beyond.** Providing context doesn't mean restricting the agent. It can and should read additional files it discovers during exploration — the goal is to avoid redundant reads, not to limit scope.
 
 ## Workflow
@@ -325,7 +325,7 @@ Before designing approaches, verify the research produced concrete evidence — 
 | **Technical context** | OK / GAP | [Cite `file:line` of similar code or list files read] |
 | **Dependencies** | OK / GAP | [List of files affected from researcher-code] |
 | **Risks** | OK / GAP | [Concrete risks found, or "none found after checking X, Y, Z"] |
-| **Documentation** | OK / GAP | [Sources with versions, e.g., "Context7: helm-chart v3.2.0"] |
+| **Documentation** | OK / GAP | [Sources with versions, e.g., "Context7: express v4.18.2"] |
 
 This table is not a mental checklist — it must appear in your output so the user can verify the research was adequate.
 

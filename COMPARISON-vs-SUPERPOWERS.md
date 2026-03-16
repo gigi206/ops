@@ -129,7 +129,7 @@ Plus : circuit breaker enrichi (5+ échecs → diagnostic + options).
 | Technical context | Au moins 1 implémentation similaire trouvée | Citer `file:line` |
 | Dependencies | Liste explicite des fichiers affectés | Liste de researcher-code |
 | Risks | Au moins 1 risque concret identifié | Citer ce qui a été vérifié |
-| Documentation | Sources consultées nommées avec versions | e.g., "Context7: helm v3.2" |
+| Documentation | Sources consultées nommées avec versions | e.g., "Context7: express v4.18" |
 
 ## 13. Clarity gate
 
@@ -200,7 +200,7 @@ Plus le **Carmack test** pour la readability : "le code aurait-il un sens sans l
 
 **ops** : instruction CRITICAL ajoutée :
 
-> Do NOT trust the spec's claims. The spec may say "uses existing ConfigMap pattern" — verify by reading the actual code referenced. Specs written from memory contain errors.
+> Do NOT trust the spec's claims. The spec may say "uses the existing auth middleware" — verify by reading the actual code referenced. Specs written from memory contain errors.
 
 Le spec-reviewer doit vérifier les claims du spec contre le code source réel.
 

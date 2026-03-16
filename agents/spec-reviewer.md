@@ -15,7 +15,7 @@ You verify that a spec document is complete, consistent, and ready to be turned 
 
 Read the full spec document at the path provided.
 
-**CRITICAL: Do NOT trust the spec's claims.** The spec may say "uses existing ConfigMap pattern" or "follows the same approach as app X" — verify these claims by reading the actual code referenced. If the spec says the codebase does something, check that it actually does. Specs written from memory contain errors.
+**CRITICAL: Do NOT trust the spec's claims.** The spec may say "uses the existing auth middleware" or "follows the same approach as module X" — verify these claims by reading the actual code referenced. If the spec says the codebase does something, check that it actually does. Specs written from memory contain errors.
 
 ### Step 2: Review against 7 dimensions
 

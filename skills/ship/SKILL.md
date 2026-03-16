@@ -129,7 +129,7 @@ After presenting the learnings, evaluate each one: **is this a recurring lesson 
 
 A learning should become a rule when it meets **both** criteria:
 - **Recurring**: it will apply again the next time someone touches this kind of file (not a one-time fix)
-- **Targetable**: it can be scoped to a glob pattern (e.g., `**/kustomize/monitoring/**`, `**/*.sh`, `deploy/argocd/apps/*/applicationset.yaml`)
+- **Targetable**: it can be scoped to a glob pattern (e.g., `**/migrations/**`, `**/*.sh`, `src/api/routes/*.ts`)
 
 If a learning is one-off or too vague to target, don't propose it — it stays in the session summary and that's fine.
 
@@ -140,17 +140,17 @@ For each learning that qualifies, present a concrete rule proposal:
 ```
 I suggest creating a rule from this learning:
 
-File: .claude/rules/kustomize-monitoring.md
-Glob: **/kustomize/monitoring/**
+File: .claude/rules/api-error-handling.md
+Glob: src/api/routes/*.ts
 
 ---
-description: Kustomize monitoring overlay conventions
-globs: ["**/kustomize/monitoring/**"]
+description: API route error handling conventions
+globs: ["src/api/routes/*.ts"]
 ---
 
-- Validate with `kustomize build | yq '.metadata.labels'` — commonLabels
-  can silently fail on inconsistent indentation
-- Label `release: prometheus-stack` is required for ServiceMonitor discovery
+- Always return structured error responses with `code` and `message` fields
+- Never expose stack traces or internal paths in non-development environments
+- Validate request body before any business logic — fail fast with 400
 
 Create this rule? [yes / modify / skip]
 ```

@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.1.1 (2026-03-16)
+
+### Remove technology-specific examples
+- Replaced all Kubernetes/infra-specific examples (Kustomize, Helm, ArgoCD, Cilium, ConfigMap, ServiceMonitor, cert-manager) with technology-agnostic equivalents across all skills and agents
+- Examples now use generic patterns (Express, PostgreSQL, React, auth middleware, API routes) that apply to any stack
+- Affected files: ship/SKILL.md, plan/SKILL.md, implement/SKILL.md, researcher-doc.md, spec-reviewer.md, COMPARISON-vs-SUPERPOWERS.md
+
 ## 1.1.0 (2026-03-16)
 
 ### New skill: `/ops:security`

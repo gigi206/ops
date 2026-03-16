@@ -332,13 +332,13 @@ After the final review passes:
 - [What went wrong and how it was fixed — e.g., "YAML indentation caused silent merge failure, fixed by validating with yq"]
 
 ### Decisions made
-- [Non-obvious choices — e.g., "Used ConfigMap instead of Secret because the data isn't sensitive"]
+- [Non-obvious choices — e.g., "Used environment variables instead of a config file because the values change per deployment"]
 
 ### Gotchas discovered
-- [Things future agents should know — e.g., "The Helm chart ignores values under .global when subchart is disabled"]
+- [Things future agents should know — e.g., "The ORM silently truncates strings longer than the column width — validate length before insert"]
 
 ### Patterns that worked
-- [Reusable approaches — e.g., "Kustomize commonLabels for ServiceMonitor discovery works reliably"]
+- [Reusable approaches — e.g., "Wrapping third-party clients in an interface made testing straightforward"]
 ```
 
 Include this section in the completion summary. If the user saves it (e.g., in a project doc or memory), it becomes searchable context for future tasks.
