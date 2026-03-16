@@ -38,11 +38,18 @@ ops enforces a staged workflow with explicit gates, parallel research, adversari
 
 ## Install
 
+### Prerequisites
+
+The plugin system requires a **marketplace** to be configured first:
+
+```
+/plugin marketplace add gigi206/ops
+```
+
 ### As a Claude Code plugin (recommended)
 
-```bash
-# From any project directory
-claude /plugin install ~/ops
+```
+/plugin install ~/ops
 ```
 
 ### Manual
