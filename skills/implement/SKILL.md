@@ -6,17 +6,15 @@ description: "Execute a validated plan task by task."
 # /ops:implement — Execute a validated plan
 
 <HARD-GATE>
-STOP. Every task in the plan MUST go through the full pipeline:
+STOP. Every task in the plan MUST go through the per-task pipeline:
 
-  implementer → validation gate → conformity check → code review → discovery check
-
-If your next action after an implementer completes is dispatching ANOTHER implementer without running validation + code review on the previous task, you have FAILED this skill.
-
-You may run INDEPENDENT tasks in parallel — but each parallel task MUST complete its own full pipeline (including code review) before the task is marked completed. Do NOT mark a task "completed" after the implementer returns — it is only completed after code review passes.
+  implementer → validation gate → conformity check → discovery check → task completion record
 
 Do NOT combine multiple plan tasks into a single implementer dispatch. One task = one implementer agent. If you catch yourself writing "Implement Tasks 4+5" in a single agent prompt, STOP — split them.
 
 Post-hoc verification: after all tasks complete, check that count(implementer agents dispatched) >= count(tasks in plan). If fewer implementers were dispatched than tasks exist, you bundled tasks — this is a FAILURE. Fix it by re-running the bundled tasks individually.
+
+Code review and security review happen ONCE at the end (Step 4), on the complete diff — NOT per task. Do NOT dispatch code-reviewer or security-reviewer during the per-task pipeline.
 </HARD-GATE>
 
 ## Instruction Priority
@@ -30,7 +28,7 @@ When instructions conflict, follow this order:
 
 ## Subagent Context Rules
 
-When dispatching any subagent (implementer, code-reviewer, security-reviewer, researcher-code, git-historian):
+When dispatching any subagent (implementer, code-reviewer, security-reviewer, researcher-code, git-historian — code-reviewer and security-reviewer are dispatched only at final review, Step 4):
 
 - **Provide content inline.** If you already read a file, paste the relevant content into the agent prompt. Do NOT ask the agent to re-read the same file.
 - **Scope the context.** Give the implementer only the current task + relevant context — not the entire plan. Give the code-reviewer only the diff + task description — not every file in the project.
@@ -45,11 +43,11 @@ A plan must exist (from `/ops:plan` or user-provided). Do NOT implement without 
 
 ```
 For each task in plan:
-  1. Implementer agent → 2. Validation gate → 3. Conformity check → 4. Code review → 5. Discovery check → 6. Task completion record
+  1. Implementer agent → 2. Validation gate → 3. Conformity check → 4. Discovery check → 5. Task completion record
   If discovery → Pause, present options to user
   If 3+ consecutive failures → Diagnose with researcher-code, present options to user
 After all tasks:
-  7. Pre-review audit → 8. Final review of entire implementation
+  6. Pre-review audit → 7. Final review (code-reviewer + security-reviewer on complete diff)
 ```
 
 ---
@@ -93,9 +91,9 @@ TaskUpdate(id: <task_id>, status: "in_progress")
 
 **Parallelization rules:**
 - Tasks with no dependency between them MAY be dispatched in parallel (multiple implementer agents at once).
-- But each parallel task MUST independently complete steps 2b–2e before being marked completed.
-- If Task B depends on files created/modified by Task A, Task B MUST wait until Task A's full pipeline (including code review) is complete.
-- Maximum 3 implementer agents running in parallel — more than this makes review unmanageable.
+- But each parallel task MUST independently complete steps 2b–2d before being marked completed.
+- If Task B depends on files created/modified by Task A, Task B MUST wait until Task A's full pipeline is complete.
+- Maximum 3 implementer agents running in parallel — more than this makes conformity checks unmanageable.
 
 Spawn the **implementer** agent with:
 - The specific task to implement (not the whole plan)
@@ -143,60 +141,18 @@ Run the appropriate validation commands depending on file types:
 - [ ] No security anti-patterns: hardcoded secrets, `--insecure`, `skip_tls_verify`, disabled TLS
 - [ ] Existing code conventions are preserved (indentation, naming, structure)
 
-If conformity fails, have the implementer correct the specific issue before proceeding to code review.
+If conformity fails, have the implementer correct the specific issue before proceeding.
 
 If you mark a task as completed without checking the diff against the plan, you have skipped this step.
 
-### 2d. Code Review (MANDATORY)
-
-**This step is NOT optional.** After conformity passes, dispatch the **code-reviewer** agent with:
-- The spec document (if available)
-- The current task description
-- The diff of changes made by the implementer
-- The project's CLAUDE.md rules (if the project has one)
-
-The code-reviewer checks: LSP diagnostics, spec compliance, code quality, security scan, and TDD adherence.
-
-**Trivial task exception:** You may skip the code review ONLY for tasks where ALL of these are true:
-- The task modifies ≤1 file
-- The change is a pure rename, comment edit, or single config value change
-- No logic, no templates, no conditionals, no new files created
-
-If in doubt, run the review. The cost of a missed bug far exceeds the cost of an extra review.
-
-**Security escalation — MANDATORY when applicable**: If the code-reviewer flags a Critical security issue, OR if the current task touches ANY of these areas, you MUST dispatch the **security-reviewer** agent:
-- Authentication, authorization, or identity federation
-- APIs, endpoints, or interfaces exposed beyond the trust boundary
-- Secrets, credentials, keys, or tokens (creation, storage, rotation, transmission)
-- Encryption, TLS, or certificate configuration
-- User input handling or data validation
-- Access control rules or permission models
-- Network exposure, firewall rules, or traffic policies
-- Infrastructure definitions (IaC) that provision or modify security-relevant resources
-- CI/CD pipeline configuration (build, deploy, release workflows)
-- Container, VM, or runtime privilege configuration
-- Dependency or supply chain changes (new packages, registries, image sources)
-- Policy enforcement, admission control, or compliance rules
-- Data storage, retention, or backup configuration handling sensitive data
-- Logging, audit, or observability configuration (risk of leaking sensitive data)
-
-This is not a suggestion — it is a gate. If the task touches security-sensitive areas and you do not dispatch the security-reviewer, you have FAILED this skill.
-
-**If Issues Found:**
-- **Critical**: have the implementer fix before proceeding to the next task
-- **Critical security** (from security-reviewer): have the implementer fix, then re-dispatch security-reviewer to verify the fix
-- **Important**: have the implementer fix before proceeding to the next task
-- **Suggestions**: note for later, proceed
-
-**If Approved**: mark the task as complete and update its status:
+**If conformity passes**, mark the task as complete:
 ```
 TaskUpdate(id: <task_id>, status: "completed")
 ```
-Proceed to the next task.
 
-### 2e. Discovery Check
+### 2d. Discovery Check
 
-After each task completes, check if the implementer or code-reviewer reported discoveries — things that were unexpected, different from what the plan assumed, or newly learned.
+After each task completes, check if the implementer reported discoveries — things that were unexpected, different from what the plan assumed, or newly learned.
 
 Categorize each discovery:
 
@@ -236,7 +192,7 @@ Wait for user decision. Depending on the choice, either amend and resume, or res
 
 **The implementer MUST NOT silently work around significant or major discoveries.** If the reality doesn't match the plan, the user must be informed and must decide.
 
-### 2f. Task Completion Record (MANDATORY)
+### 2e. Task Completion Record (MANDATORY)
 
 **You MUST output this record for every task before moving to the next one.** This is not optional — it forces explicit verification of each pipeline step and prevents silent skipping.
 
@@ -245,14 +201,10 @@ Wait for user decision. Depending on the choice, either amend and resume, or res
 - Implementer: dispatched (agent), status: DONE/DONE_WITH_CONCERNS/BLOCKED/FAILED
 - Validation: `<command>` → exit code: N
 - Conformity: diff matches plan ✅ | no drift ✅ | no security anti-patterns ✅ | conventions ✅
-- Code review: dispatched (agent) → APPROVED/ISSUES [or SKIPPED — trivial exception: <justification>]
-- Security triage: YES → dispatched security-reviewer (agent) / NO — none of the 14 triggers apply
 - Discovery: NONE / MINOR(<detail>) / SIGNIFICANT(<detail>) / MAJOR(<detail>)
 ```
 
-**Security triage rule**: For the "Security triage" line, you MUST actively evaluate the task against the 14 security escalation triggers listed in Step 2d. Writing "NO" is only valid if you have checked all 14 triggers and none apply. If in doubt, dispatch — false positives are cheap.
-
-If you skip this record for a task, you have skipped mandatory pipeline steps. If the "Security triage" line says NO for a task that clearly touches security-sensitive areas, you have FAILED the security gate.
+If you skip this record for a task, you have skipped mandatory pipeline steps.
 
 ---
 
@@ -306,47 +258,85 @@ Do NOT just stop and report. Diagnose the root cause first:
 
 ## Step 4: Final Review
 
+This is where code quality and security are validated — on the **complete diff**, not per task. Reviewing the full implementation gives better context for cross-task issues (inconsistent naming, broken references between files, security gaps across components).
+
 ### Pre-review Audit (MANDATORY)
 
-Before dispatching the final review, output this audit summary by counting from the Task Completion Records (Step 2f):
+Before dispatching the final review, output this audit summary by counting from the Task Completion Records (Step 2e):
 
 ```
 ## Implementation Audit
 - Tasks in plan: N
 - Implementer agents dispatched: N (must equal tasks in plan)
-- Code reviews completed: N (must equal non-trivial tasks)
-- Code reviews skipped (trivial exception): N (list which tasks and why)
-- Security reviews dispatched: N
-- Tasks that touched security-sensitive areas: N (list which tasks and which triggers)
+- Tasks completed: N
+- Tasks blocked/cancelled: N (list which and why)
 - Discrepancy: NONE / <describe>
 ```
 
-**If any discrepancy is found** (fewer implementers than tasks, missing code reviews, security-sensitive tasks without security review), STOP and fix before proceeding. Re-run the missing pipeline steps for the affected tasks.
+**If fewer implementers were dispatched than tasks in the plan**, you bundled tasks — STOP and re-run the bundled tasks individually before proceeding.
 
-### Final Code Review
+### Security Triage (MANDATORY)
 
-After all tasks are done and the audit passes, dispatch the **code-reviewer** agent for a **final review of the entire implementation**:
+Before dispatching reviewers, determine whether the security-reviewer is needed by evaluating the **complete diff** against these triggers:
 
-- Provide the full spec document
-- Provide the complete diff (all changes across all tasks)
-- Ask the reviewer to evaluate the implementation as a whole, not task by task
+- Authentication, authorization, or identity federation
+- APIs, endpoints, or interfaces exposed beyond the trust boundary
+- Secrets, credentials, keys, or tokens (creation, storage, rotation, transmission)
+- Encryption, TLS, or certificate configuration
+- User input handling or data validation
+- Access control rules or permission models
+- Network exposure, firewall rules, or traffic policies
+- Infrastructure definitions (IaC) that provision or modify security-relevant resources
+- CI/CD pipeline configuration (build, deploy, release workflows)
+- Container, VM, or runtime privilege configuration
+- Dependency or supply chain changes (new packages, registries, image sources)
+- Policy enforcement, admission control, or compliance rules
+- Data storage, retention, or backup configuration handling sensitive data
+- Logging, audit, or observability configuration (risk of leaking sensitive data)
 
-The final reviewer checks:
+**Output the triage result:**
+```
+## Security Triage
+- Security-sensitive areas in diff: YES / NO
+- Triggers matched: <list which triggers and which files>
+- Security-reviewer dispatch: YES / NOT NEEDED
+```
+
+If ANY trigger matches, dispatch the security-reviewer. If in doubt, dispatch — false positives are cheap; missed vulnerabilities are not.
+
+If you write "NO" when the diff clearly contains security-sensitive changes, you have FAILED this skill.
+
+### Dispatch Reviews
+
+Dispatch the **code-reviewer** agent with:
+- The full spec document
+- The complete diff (all changes across all tasks)
+- The project's CLAUDE.md rules (if the project has one)
+- Instruction to evaluate the implementation as a whole, not task by task
+
+If security triage is YES, dispatch the **security-reviewer** agent **in parallel** with:
+- The complete diff
+- The list of security triggers matched
+- The project's CLAUDE.md rules
+
+The code-reviewer checks:
 - Does the full implementation match the spec?
 - Do the pieces fit together coherently?
 - Are there cross-task issues (inconsistent naming, duplicated logic, missing integration points)?
-- Is the overall architecture sound?
+- LSP diagnostics on modified files
+- Code quality, conventions, error handling
+- TDD adherence (if applicable)
 
-### Security Review at Final Review (MANDATORY when applicable)
+The security-reviewer checks:
+- Cross-task security coherence (e.g., network policy in task 9 vs access control in task 8)
+- Trust boundaries, data flows, attack vectors across the full change
+- All 9 analysis categories from the security-reviewer protocol
 
-Check whether ANY task during implementation touched security-sensitive areas (auth, APIs, secrets, encryption, user input, access control, network exposure, IaC, CI/CD, runtime privileges, dependencies, policy enforcement, data storage, or logging/audit). If yes, dispatch the **security-reviewer** in parallel with the final code review. This is mandatory, not optional.
+### Handle Review Results
 
-The security-reviewer analyzes the complete diff for **cross-task security issues** that individual per-task reviews might miss (e.g., a network policy in task 9 that doesn't match the RBAC in task 8).
-
-**If you are unsure whether security areas were touched**: dispatch the security-reviewer anyway. False positives are cheap; missed vulnerabilities are not.
-
-**If Critical issues found**: fix before proceeding to completion.
+**If Critical issues found** (code or security): fix before proceeding to completion. Re-dispatch the security-reviewer after security fixes to verify.
 **If Important issues found**: fix or note for the user.
+**If Suggestions**: note for the user.
 **If Approved**: proceed to completion summary.
 
 ---
@@ -361,7 +351,8 @@ After the final review passes:
    - Files created/modified: list
    - Any deviations from the plan
    - Any concerns raised by the implementer (including DONE_WITH_CONCERNS)
-   - Code review findings (per-task and final)
+   - Code review findings
+   - Security review findings (if dispatched)
 3. **Capture learnings** — reflect on what happened during implementation:
 
 ```markdown

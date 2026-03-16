@@ -1,5 +1,27 @@
 # Changelog
 
+## 1.3.0 (2026-03-16)
+
+### Move code review and security review to final-only
+
+Per-task code review and security review removed. Both now happen once at the end on the complete diff.
+
+**Why**: Real-world cost analysis showed per-task reviews would cost ~$37 (15 code-reviewers + 10 security-reviewers) while adding no detection value — the final review catches the same bugs with better cross-task context. Two sessions confirmed: 5 bugs found in final review (session 659f), 0 bugs caught by per-task reviews that the final review missed (session 7ea1).
+
+#### Per-task pipeline simplified
+- Pipeline is now: `implementer → validation → conformity check → discovery check → task completion record`
+- No code-reviewer or security-reviewer dispatched per task
+- Conformity check (orchestrator-level, no agent dispatch) remains as the per-task quality gate
+- Task completion record simplified: removed code review and security triage lines
+
+#### Final review restructured
+- Security triage now happens once on the complete diff with explicit output format
+- Code-reviewer and security-reviewer dispatched in parallel on the full diff
+- Pre-review audit simplified to count implementers vs tasks (no per-task review counts)
+
+#### Cost impact
+- Estimated review cost per session: ~$3-4 (1 final code review + 1 final security review) instead of ~$37 (15+10 per-task dispatches)
+
 ## 1.2.0 (2026-03-16)
 
 ### Orchestrator compliance enforcement — anti-skip mechanisms
