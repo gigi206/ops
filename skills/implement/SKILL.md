@@ -163,14 +163,20 @@ The code-reviewer checks: LSP diagnostics, spec compliance, code quality, securi
 If in doubt, run the review. The cost of a missed bug far exceeds the cost of an extra review.
 
 **Security escalation — MANDATORY when applicable**: If the code-reviewer flags a Critical security issue, OR if the current task touches ANY of these areas, you MUST dispatch the **security-reviewer** agent:
-- Authentication or authorization logic
-- API endpoints exposed to users or external services
-- Secret/credential handling (creation, storage, rotation)
-- TLS/certificate configuration
-- User input processing (forms, query params, file uploads)
-- Network policies or RBAC permissions
-- OIDC / SSO / OAuth2 configuration
-- Kyverno/OPA policy exceptions
+- Authentication, authorization, or identity federation
+- APIs, endpoints, or interfaces exposed beyond the trust boundary
+- Secrets, credentials, keys, or tokens (creation, storage, rotation, transmission)
+- Encryption, TLS, or certificate configuration
+- User input handling or data validation
+- Access control rules or permission models
+- Network exposure, firewall rules, or traffic policies
+- Infrastructure definitions (IaC) that provision or modify security-relevant resources
+- CI/CD pipeline configuration (build, deploy, release workflows)
+- Container, VM, or runtime privilege configuration
+- Dependency or supply chain changes (new packages, registries, image sources)
+- Policy enforcement, admission control, or compliance rules
+- Data storage, retention, or backup configuration handling sensitive data
+- Logging, audit, or observability configuration (risk of leaking sensitive data)
 
 This is not a suggestion — it is a gate. If the task touches security-sensitive areas and you do not dispatch the security-reviewer, you have FAILED this skill.
 
@@ -294,7 +300,7 @@ The final reviewer checks:
 
 ### Security Review at Final Review (MANDATORY when applicable)
 
-Check whether ANY task during implementation touched security-sensitive areas (auth, APIs, secrets, TLS, user input, network policies, RBAC, OIDC, policy exceptions). If yes, dispatch the **security-reviewer** in parallel with the final code review. This is mandatory, not optional.
+Check whether ANY task during implementation touched security-sensitive areas (auth, APIs, secrets, encryption, user input, access control, network exposure, IaC, CI/CD, runtime privileges, dependencies, policy enforcement, data storage, or logging/audit). If yes, dispatch the **security-reviewer** in parallel with the final code review. This is mandatory, not optional.
 
 The security-reviewer analyzes the complete diff for **cross-task security issues** that individual per-task reviews might miss (e.g., a network policy in task 9 that doesn't match the RBAC in task 8).
 

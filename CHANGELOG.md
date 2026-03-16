@@ -1,5 +1,29 @@
 # Changelog
 
+## 1.1.0 (2026-03-16)
+
+### New skill: `/ops:security`
+- On-demand security review — invoke directly without going through `/ops:implement` or `/ops:debug`
+- Supports multiple scopes: staged changes, specific files, directories, branch diff, specific commit
+- Triages security domains before dispatching, skips review when nothing sensitive is found
+- Optional fix-and-verify loop: apply fixes, re-dispatch security-reviewer to confirm
+
+### Security reviewer rewritten — fully technology-agnostic
+- Covers the full spectrum: application code, infrastructure as code, CI/CD pipelines, container/runtime, supply chain, policy enforcement
+- 9 analysis categories (was 5): added CI/CD & Build Pipeline, Supply Chain & Dependencies, Policy Enforcement & Compliance, expanded Infrastructure & Runtime
+- Broader trust boundaries: `build → deploy`, `human → machine` in addition to classic user/service boundaries
+- Broader attacker profiles: CI/CD attacker, supply chain attacker, insider
+- No technology names anywhere — principles over vendors
+- Explicit constraint: "Technology-agnostic. Name the principle, not the vendor."
+
+### Security escalation triggers expanded (implement, debug)
+- 8 triggers → 14 triggers covering full DevSecOps spectrum
+- Added: IaC, CI/CD pipelines, runtime privileges, dependency/supply chain, policy enforcement, data storage/retention, logging/audit/observability
+- Removed technology-specific references (OIDC, OAuth2, Kyverno, OPA) — replaced with agnostic equivalents
+
+### SessionStart hook updated
+- Added `/ops:security` to skill routing table
+
 ## 1.0.1 (2026-03-16)
 
 Enforcement fixes based on real-world session analysis. Addresses orchestrator compliance gaps where steps were skipped or shortcuts taken.

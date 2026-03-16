@@ -23,6 +23,7 @@ You have access to ops workflow skills. Before starting any non-trivial work, ch
 | Plan approved, ready to build | `/ops:implement` |
 | Bug, error, or unexpected behavior | `/ops:debug` |
 | Received code review feedback | `/ops:review` |
+| Security audit on changes | `/ops:security` |
 | Work is done, ready to commit | `/ops:ship` |
 | Claiming something works | `/ops:verify` (always active) |
 | Quick fix you already understand | No skill needed |
