@@ -1,6 +1,6 @@
 {
   "name": "ops",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Structured dev workflow plugin for Claude Code — plan, implement, debug, review, ship.",
   "author": {
     "name": "Ghislain LE MEUR"

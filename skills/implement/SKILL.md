@@ -5,6 +5,18 @@ description: "Execute a validated plan task by task."
 
 # /ops:implement — Execute a validated plan
 
+<HARD-GATE>
+STOP. Every task in the plan MUST go through the full pipeline:
+
+  implementer → validation gate → conformity check → code review → discovery check
+
+If your next action after an implementer completes is dispatching ANOTHER implementer without running validation + code review on the previous task, you have FAILED this skill.
+
+You may run INDEPENDENT tasks in parallel — but each parallel task MUST complete its own full pipeline (including code review) before the task is marked completed. Do NOT mark a task "completed" after the implementer returns — it is only completed after code review passes.
+
+Do NOT combine multiple plan tasks into a single implementer dispatch. One task = one implementer agent. If you catch yourself writing "Implement Tasks 4+5" in a single agent prompt, STOP — split them.
+</HARD-GATE>
+
 ## Instruction Priority
 
 When instructions conflict, follow this order:
@@ -73,7 +85,15 @@ For each task in the plan, in order:
 TaskUpdate(id: <task_id>, status: "in_progress")
 ```
 
-### 2a. Dispatch Implementer Agent (Sonnet)
+### 2a. Dispatch Implementer Agent
+
+**One task per agent.** Each implementer agent receives exactly ONE task from the plan. Do NOT bundle multiple tasks into a single agent prompt — even if they seem related or touch similar files.
+
+**Parallelization rules:**
+- Tasks with no dependency between them MAY be dispatched in parallel (multiple implementer agents at once).
+- But each parallel task MUST independently complete steps 2b–2e before being marked completed.
+- If Task B depends on files created/modified by Task A, Task B MUST wait until Task A's full pipeline (including code review) is complete.
+- Maximum 3 implementer agents running in parallel — more than this makes review unmanageable.
 
 Spawn the **implementer** agent with:
 - The specific task to implement (not the whole plan)
@@ -112,19 +132,22 @@ Run the appropriate validation commands depending on file types:
 
 **CRITICAL**: Do NOT mark a task as complete without running validation. No "it should work" — show the output.
 
-### 2c. Conformity Check
+### 2c. Conformity Check (MANDATORY)
 
-After validation passes, verify:
-- [ ] The change matches what the plan specified
-- [ ] No unrelated changes were introduced (no drift)
+**Do NOT skip this step.** After validation passes, verify each of these explicitly — not as a mental note, but by checking the actual diff:
+
+- [ ] The change matches what the plan specified (compare plan task description against the diff)
+- [ ] No unrelated changes were introduced (no drift — files touched should match the plan's "Files" list)
 - [ ] No security anti-patterns: hardcoded secrets, `--insecure`, `skip_tls_verify`, disabled TLS
 - [ ] Existing code conventions are preserved (indentation, naming, structure)
 
-If conformity fails, have the implementer correct the specific issue.
+If conformity fails, have the implementer correct the specific issue before proceeding to code review.
 
-### 2d. Code Review
+If you mark a task as completed without checking the diff against the plan, you have skipped this step.
 
-After conformity passes, dispatch the **code-reviewer** agent (Sonnet) with:
+### 2d. Code Review (MANDATORY)
+
+**This step is NOT optional.** After conformity passes, dispatch the **code-reviewer** agent with:
 - The spec document (if available)
 - The current task description
 - The diff of changes made by the implementer
@@ -132,13 +155,24 @@ After conformity passes, dispatch the **code-reviewer** agent (Sonnet) with:
 
 The code-reviewer checks: LSP diagnostics, spec compliance, code quality, security scan, and TDD adherence.
 
-**Security escalation**: If the code-reviewer flags a Critical security issue, or if the current task touches any of these areas, dispatch the **security-reviewer** agent (Sonnet) **in parallel with the next code-reviewer cycle** (or immediately if it's the current task):
+**Trivial task exception:** You may skip the code review ONLY for tasks where ALL of these are true:
+- The task modifies ≤1 file
+- The change is a pure rename, comment edit, or single config value change
+- No logic, no templates, no conditionals, no new files created
+
+If in doubt, run the review. The cost of a missed bug far exceeds the cost of an extra review.
+
+**Security escalation — MANDATORY when applicable**: If the code-reviewer flags a Critical security issue, OR if the current task touches ANY of these areas, you MUST dispatch the **security-reviewer** agent:
 - Authentication or authorization logic
 - API endpoints exposed to users or external services
 - Secret/credential handling (creation, storage, rotation)
 - TLS/certificate configuration
 - User input processing (forms, query params, file uploads)
 - Network policies or RBAC permissions
+- OIDC / SSO / OAuth2 configuration
+- Kyverno/OPA policy exceptions
+
+This is not a suggestion — it is a gate. If the task touches security-sensitive areas and you do not dispatch the security-reviewer, you have FAILED this skill.
 
 **If Issues Found:**
 - **Critical**: have the implementer fix before proceeding to the next task
@@ -151,8 +185,6 @@ The code-reviewer checks: LSP diagnostics, spec compliance, code quality, securi
 TaskUpdate(id: <task_id>, status: "completed")
 ```
 Proceed to the next task.
-
-**Cost optimization**: For trivial tasks (renaming, config value changes, comments), skip the code review. Only invoke the reviewer for tasks that produce meaningful code changes.
 
 ### 2e. Discovery Check
 
@@ -212,7 +244,7 @@ Wait for user decision. Depending on the choice, either amend and resume, or res
 
 Do NOT just stop and report. Diagnose the root cause first:
 
-1. **Dispatch researcher-code (Opus) and git-historian (Sonnet) in parallel**:
+1. **Dispatch researcher-code and git-historian in parallel**:
 
    **researcher-code**:
    - The 3+ error outputs
@@ -248,7 +280,7 @@ Do NOT just stop and report. Diagnose the root cause first:
 
 ## Step 4: Final Review
 
-After all tasks are done, dispatch the **code-reviewer** agent (Sonnet) for a **final review of the entire implementation**:
+After all tasks are done, dispatch the **code-reviewer** agent for a **final review of the entire implementation**:
 
 - Provide the full spec document
 - Provide the complete diff (all changes across all tasks)
@@ -260,7 +292,13 @@ The final reviewer checks:
 - Are there cross-task issues (inconsistent naming, duplicated logic, missing integration points)?
 - Is the overall architecture sound?
 
-**If the implementation touched security-sensitive areas** (auth, APIs, secrets, TLS, user input, network policies), also dispatch the **security-reviewer** in parallel with the final code review. The security-reviewer analyzes the complete diff for cross-task security issues that individual per-task reviews might miss.
+### Security Review at Final Review (MANDATORY when applicable)
+
+Check whether ANY task during implementation touched security-sensitive areas (auth, APIs, secrets, TLS, user input, network policies, RBAC, OIDC, policy exceptions). If yes, dispatch the **security-reviewer** in parallel with the final code review. This is mandatory, not optional.
+
+The security-reviewer analyzes the complete diff for **cross-task security issues** that individual per-task reviews might miss (e.g., a network policy in task 9 that doesn't match the RBAC in task 8).
+
+**If you are unsure whether security areas were touched**: dispatch the security-reviewer anyway. False positives are cheap; missed vulnerabilities are not.
 
 **If Critical issues found**: fix before proceeding to completion.
 **If Important issues found**: fix or note for the user.
@@ -272,7 +310,7 @@ The final reviewer checks:
 
 After the final review passes:
 1. Run a final full validation (all validation commands from all tasks)
-2. Verify task tracking is consistent: run `TaskList` and confirm all tasks are either `completed` or `cancelled` — no tasks left `in_progress` or `pending`.
+2. **Verify task tracking is consistent**: run `TaskList` and confirm all tasks are either `completed` or `cancelled` — no tasks left `in_progress` or `pending`. This is a MANDATORY call, not a mental check. You MUST call `TaskList` and show the result.
 3. Present a summary:
    - Tasks completed: N/N (from `TaskList`)
    - Files created/modified: list

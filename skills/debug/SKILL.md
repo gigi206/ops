@@ -39,7 +39,7 @@ Do NOT guess. Investigate systematically. Understand the root cause before writi
 
 1. **Read the error**: Full error message, stack trace, logs. Not just the last line.
 2. **Reproduce**: Run the failing command. Confirm you see the same error.
-3. **Gather context** — dispatch **git-historian (Sonnet)** in Investigation Mode:
+3. **Gather context** — dispatch **git-historian** in Investigation Mode:
    - Scope: files mentioned in the error/stack trace
    - Window: 30 days
    - Focus: regressions — suspect commits, recent changes, blame analysis
@@ -122,7 +122,7 @@ Do NOT fix symptoms. Fix the root cause.
 
 ## Step 5: Code Review
 
-Dispatch the **code-reviewer** agent (Sonnet) with:
+Dispatch the **code-reviewer** agent with:
 - The root cause hypothesis that was confirmed
 - The diff of the fix
 - The project's CLAUDE.md rules (if the project has one)
@@ -134,9 +134,9 @@ The code-reviewer checks: LSP diagnostics, code quality, security scan.
 **If Suggestions**: note, proceed.
 **If Approved**: proceed to Step 6.
 
-**Security escalation**: If the fix touches auth, secrets, TLS, or user input handling, dispatch the **security-reviewer** in parallel (same rules as `/ops:implement` Step 2d).
+**Security escalation — MANDATORY when applicable**: If the fix touches auth, secrets, TLS, user input handling, network policies, RBAC, OIDC, or policy exceptions, you MUST dispatch the **security-reviewer** in parallel (same rules as `/ops:implement` Step 2d).
 
-**Cost optimization**: Skip the code review for trivial fixes (typos, config value changes, one-line corrections). Only invoke the reviewer for fixes that produce meaningful code changes.
+**Trivial fix exception:** You may skip the code review ONLY if the fix modifies ≤1 file AND is a pure typo, comment edit, or single config value change with no logic involved.
 
 ---
 
@@ -198,7 +198,7 @@ Only declare fixed after showing proof.
 
 Do NOT just stop and report. Diagnose the root cause first:
 
-1. **Dispatch researcher-code (Opus) and git-historian (Sonnet) in parallel**:
+1. **Dispatch researcher-code and git-historian in parallel**:
 
    **researcher-code**:
    - The 5+ error outputs and attempted fixes

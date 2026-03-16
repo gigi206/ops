@@ -145,10 +145,11 @@ This prevents building the wrong thing. A 10-second check saves hours of wasted 
 - Each sub-project gets its own spec → plan → implementation cycle
 
 **Asking clarifying questions:**
-- **One question at a time** — do NOT overwhelm with multiple questions
+- **One question at a time** — do NOT overwhelm with multiple questions. This means ONE question per message, not 2-3 grouped together. If you have 5 questions, send 5 separate messages. The user's answer to question 1 may change what question 2 should be.
 - **Multiple choice preferred** — easier to answer than open-ended when possible
 - Focus on understanding: purpose, constraints, success criteria
 - If a topic needs more exploration, break it into multiple questions
+- If you catch yourself writing "Question 4:", "Question 5:", "Question 6:" in the same message — STOP. Pick the most important one, send it alone, wait for the answer.
 
 **Challenging scope with YAGNI:**
 - Is every part of the request actually needed right now?
@@ -184,15 +185,21 @@ If they agree to the companion, read the detailed guide before proceeding:
 
 ## Step 2: Context Detection
 
+**Do NOT skip this step.** Steps 2a and 2b take 30 seconds and inform every agent downstream. If you jump straight to Step 3 (Research) without doing context detection, you have skipped a required step.
+
 ### 2a. Detect languages
 
 Scan the codebase to identify the primary languages and frameworks:
 - Use Glob to check for file extensions (e.g., `**/*.py`, `**/*.ts`, `**/*.go`, `**/*.rs`, `**/*.java`, `**/*.rb`, `**/*.yaml`, `**/*.sh`)
 - Read config files that indicate the stack (`package.json`, `Cargo.toml`, `go.mod`, `requirements.txt`, `Gemfile`, `Makefile`, etc.)
 
+Present the detected languages to the user (one line is enough, e.g., "Languages detected: YAML, Shell, Go templates").
+
 ### 2b. Check LSP availability
 
 LSP (Language Server Protocol) gives the agent real diagnostics (type errors, missing imports, syntax issues) instead of guessing. It makes every agent in the pipeline smarter.
+
+**You MUST at least run Level 1** (test `LSP documentSymbol` on one representative file per detected language). This takes seconds and tells you whether LSP is available. If Level 1 succeeds, you're done. If it fails, proceed to Level 2-4 OR inform the user that LSP is unavailable for that language and move on.
 
 For each language detected in Step 2a, check if LSP is usable by working through 4 levels. Stop as soon as LSP works for that language.
 
@@ -280,19 +287,19 @@ Read CLAUDE.md (if it exists), directory structure, and key config files to unde
 
 Spawn 3 agents **in parallel** using the Agent tool:
 
-### researcher-doc (Sonnet)
+### researcher-doc
 - Query Context7 MCP for relevant library/tool documentation
 - If Context7 returns insufficient results, fall back to WebSearch + WebFetch
 - Focus: official docs, API schemas, configuration references for the specific versions involved
 
-### researcher-code (Opus)
+### researcher-code
 - Explore the codebase for patterns, conventions, and existing implementations
 - Find similar existing code that can serve as a template
 - Identify dependencies, integration points, and files to create/modify
 - **Map architecture**: Trace the dependency chain for the task area (what depends on what, what breaks if this changes)
 - **Flag risks**: Note missing tests, fragile patterns, or undocumented assumptions found in the code
 
-### git-historian (Sonnet) — Research Mode
+### git-historian — Research Mode
 - Scope: files and directories relevant to the task
 - Window: 6 months
 - Focus: all (timeline, regressions, ownership, hotspots, architectural milestones)
@@ -311,16 +318,20 @@ Spawn 3 agents **in parallel** using the Agent tool:
 
 Before designing approaches, verify the research produced concrete evidence — not just "we understand".
 
-| Dimension | Sufficient when | Evidence |
-|-----------|----------------|----------|
-| **Technical context** | At least 1 similar implementation found in the codebase, OR key files in the task area read and summarized | Cite `file:line` of similar code or list files read |
-| **Dependencies** | Explicit list of files affected and what they depend on | List from researcher-code output |
-| **Risks** | At least 1 concrete risk identified, OR explicit confirmation "no risks found after checking X, Y, Z" | Cite what was checked and what was found (or not found) |
-| **Documentation** | Sources consulted are named with versions | e.g., "Context7: helm-chart v3.2.0 values reference", "README.md of app X" |
+**You MUST present this table to the user** with the evidence filled in:
 
-**If 3-4 dimensions have evidence**: Proceed to Step 5.
+| Dimension | Status | Evidence |
+|-----------|--------|----------|
+| **Technical context** | OK / GAP | [Cite `file:line` of similar code or list files read] |
+| **Dependencies** | OK / GAP | [List of files affected from researcher-code] |
+| **Risks** | OK / GAP | [Concrete risks found, or "none found after checking X, Y, Z"] |
+| **Documentation** | OK / GAP | [Sources with versions, e.g., "Context7: helm-chart v3.2.0"] |
 
-**If 1-2 dimensions lack evidence**:
+This table is not a mental checklist — it must appear in your output so the user can verify the research was adequate.
+
+**If 3-4 dimensions are OK**: Proceed to Step 5.
+
+**If 1-2 dimensions show GAP**:
 - Identify the specific gap (e.g., "no similar implementation found — we don't know the pattern to follow")
 - Spawn a targeted follow-up agent to fill the gap (researcher-doc or researcher-code, whichever is relevant)
 - Do NOT proceed with a half-understood problem
@@ -381,9 +392,9 @@ User preferences for spec location override the default path.
 
 ### 6c. Spec review loop
 
-Dispatch the **spec-reviewer** agent (Sonnet) to verify the spec is complete and ready for planning.
+Dispatch the **spec-reviewer** agent to verify the spec is complete and ready for planning.
 
-1. If **Issues Found**: fix the issues, re-dispatch the reviewer
+1. If **Issues Found**: fix the issues, then **re-dispatch the spec-reviewer** on the updated spec. This re-dispatch is MANDATORY — the reviewer must confirm the fixes are adequate. Do NOT assume your fixes are correct without re-verification.
 2. Repeat until **Approved** (max 3 iterations)
 3. If still not approved after 3 iterations, surface the remaining issues to the user for guidance
 
@@ -447,7 +458,7 @@ How to apply:
 
 ## Step 8: Critic Review
 
-Spawn the **critic** agent (Opus) to review the plan.
+Spawn the **critic** agent to review the plan.
 
 The critic:
 1. **Pre-engagement**: Predicts 3 potential problems BEFORE reading the plan details (prevents confirmation bias)
@@ -458,7 +469,9 @@ The critic:
 6. **Escalation**: If CRITICAL found or 3+ IMPORTANT → adversarial mode (expand scope, challenge every decision)
 7. **Verdict**: APPROVE or REJECT with confidence levels and perspective attribution
 
-**If REJECT**: Revise the plan addressing the critic's concerns. Re-submit to critic. Maximum 2 iterations. If still rejected after 2 rounds, present both the plan and the critic's concerns to the user for decision.
+**If REJECT**: Revise the plan addressing the critic's concerns, then **re-dispatch the critic** with the revised plan. This re-dispatch is MANDATORY — do NOT skip it. The critic must verify that the fixes actually address the concerns. Maximum 2 iterations. If still rejected after 2 rounds, present both the plan and the critic's concerns to the user for decision.
+
+If you fix the critic's concerns but do not re-dispatch the critic, you have FAILED this skill. The whole point of the critic is adversarial validation — bypassing the re-check defeats the purpose.
 
 **If APPROVE**: Proceed to Step 9.
 
@@ -466,6 +479,10 @@ The critic:
 
 ## Step 9: User Approval
 
-Present the validated plan to the user. Do NOT proceed to `/ops:implement` until the user explicitly approves.
+Present the validated plan to the user with an explicit question:
+
+> "Le plan est validé par le critic. Tu veux le lancer tel quel, modifier quelque chose, ou revoir un point ?"
+
+Do NOT proceed to `/ops:implement` until the user explicitly approves. The user invoking `/ops:implement` counts as approval, but you should still ask before they need to invoke it.
 
 The plan remains in conversation context for `/ops:implement` to consume.
