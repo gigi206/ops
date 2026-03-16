@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.4.0 (2026-03-16)
+
+- docs: add tip about git cloning external sources for deeper understanding
+- docs: add marketplace prerequisite to install instructions
+
 ## 1.3.0 (2026-03-16)
 
 ### Move code review and security review to final-only

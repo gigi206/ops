@@ -8,7 +8,7 @@
     {
       "name": "ops",
       "description": "Structured dev workflow: 7 skills, 8 specialized agents, TDD enforcement, adversarial review.",
-      "version": "1.3.0",
+      "version": "1.4.0",
       "source": "./",
       "author": {
         "name": "Ghislain LE MEUR"
