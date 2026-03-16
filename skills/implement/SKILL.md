@@ -15,6 +15,8 @@ If your next action after an implementer completes is dispatching ANOTHER implem
 You may run INDEPENDENT tasks in parallel — but each parallel task MUST complete its own full pipeline (including code review) before the task is marked completed. Do NOT mark a task "completed" after the implementer returns — it is only completed after code review passes.
 
 Do NOT combine multiple plan tasks into a single implementer dispatch. One task = one implementer agent. If you catch yourself writing "Implement Tasks 4+5" in a single agent prompt, STOP — split them.
+
+Post-hoc verification: after all tasks complete, check that count(implementer agents dispatched) >= count(tasks in plan). If fewer implementers were dispatched than tasks exist, you bundled tasks — this is a FAILURE. Fix it by re-running the bundled tasks individually.
 </HARD-GATE>
 
 ## Instruction Priority
@@ -43,11 +45,11 @@ A plan must exist (from `/ops:plan` or user-provided). Do NOT implement without 
 
 ```
 For each task in plan:
-  1. Implementer agent → 2. Validation gate → 3. Conformity check → 4. Code review → 5. Discovery check
+  1. Implementer agent → 2. Validation gate → 3. Conformity check → 4. Code review → 5. Discovery check → 6. Task completion record
   If discovery → Pause, present options to user
   If 3+ consecutive failures → Diagnose with researcher-code, present options to user
 After all tasks:
-  6. Final review of entire implementation
+  7. Pre-review audit → 8. Final review of entire implementation
 ```
 
 ---
@@ -234,6 +236,24 @@ Wait for user decision. Depending on the choice, either amend and resume, or res
 
 **The implementer MUST NOT silently work around significant or major discoveries.** If the reality doesn't match the plan, the user must be informed and must decide.
 
+### 2f. Task Completion Record (MANDATORY)
+
+**You MUST output this record for every task before moving to the next one.** This is not optional — it forces explicit verification of each pipeline step and prevents silent skipping.
+
+```
+### Task N: <name> — COMPLETED ✅ / BLOCKED ❌
+- Implementer: dispatched (agent), status: DONE/DONE_WITH_CONCERNS/BLOCKED/FAILED
+- Validation: `<command>` → exit code: N
+- Conformity: diff matches plan ✅ | no drift ✅ | no security anti-patterns ✅ | conventions ✅
+- Code review: dispatched (agent) → APPROVED/ISSUES [or SKIPPED — trivial exception: <justification>]
+- Security triage: YES → dispatched security-reviewer (agent) / NO — none of the 14 triggers apply
+- Discovery: NONE / MINOR(<detail>) / SIGNIFICANT(<detail>) / MAJOR(<detail>)
+```
+
+**Security triage rule**: For the "Security triage" line, you MUST actively evaluate the task against the 14 security escalation triggers listed in Step 2d. Writing "NO" is only valid if you have checked all 14 triggers and none apply. If in doubt, dispatch — false positives are cheap.
+
+If you skip this record for a task, you have skipped mandatory pipeline steps. If the "Security triage" line says NO for a task that clearly touches security-sensitive areas, you have FAILED the security gate.
+
 ---
 
 ## Step 3: Failure Handling
@@ -286,7 +306,26 @@ Do NOT just stop and report. Diagnose the root cause first:
 
 ## Step 4: Final Review
 
-After all tasks are done, dispatch the **code-reviewer** agent for a **final review of the entire implementation**:
+### Pre-review Audit (MANDATORY)
+
+Before dispatching the final review, output this audit summary by counting from the Task Completion Records (Step 2f):
+
+```
+## Implementation Audit
+- Tasks in plan: N
+- Implementer agents dispatched: N (must equal tasks in plan)
+- Code reviews completed: N (must equal non-trivial tasks)
+- Code reviews skipped (trivial exception): N (list which tasks and why)
+- Security reviews dispatched: N
+- Tasks that touched security-sensitive areas: N (list which tasks and which triggers)
+- Discrepancy: NONE / <describe>
+```
+
+**If any discrepancy is found** (fewer implementers than tasks, missing code reviews, security-sensitive tasks without security review), STOP and fix before proceeding. Re-run the missing pipeline steps for the affected tasks.
+
+### Final Code Review
+
+After all tasks are done and the audit passes, dispatch the **code-reviewer** agent for a **final review of the entire implementation**:
 
 - Provide the full spec document
 - Provide the complete diff (all changes across all tasks)

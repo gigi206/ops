@@ -357,9 +357,29 @@ Based on research results, propose **2-3 approaches** to the user.
 - **Use the visual companion** if active — for choices with visual implications (layouts, architectures, data flows), show side-by-side comparisons in the browser instead of describing them in text
 - **Always present at least one alternative** — even if one approach is clearly superior. The user needs to make an informed decision, not rubber-stamp yours.
 
+### External Dependency Validation (MANDATORY)
+
+Before proceeding to spec writing, identify ALL external dependencies that emerged during the design — components, libraries, tools, charts, images, or services that the project does not already use.
+
+**Distinguish between:**
+- **User-requested dependencies** — the user explicitly asked for this ("add rate limiting with Redis") → already validated
+- **Agent-chosen dependencies** — you selected this to fulfill the request ("use library X for the UI") → NOT validated, MUST ask
+
+For each agent-chosen dependency, present to the user:
+
+> "To implement [feature], I'd use **[dependency name]** ([source/maintainer]).
+> - **Why**: [what it provides]
+> - **Alternatives**: [at least 1 alternative + "build it ourselves" if feasible]
+> - **Risk**: [maintenance status, maturity, last release]
+> Which option do you prefer?"
+
+**Gate**: Do NOT include an external dependency in the spec that the user has not explicitly validated. "Implement X" does NOT mean the user validated every sub-component you chose to implement X. If you chose a dependency, the user must approve it.
+
+This is a gate, not a suggestion. If the spec contains an agent-chosen dependency that was never presented to the user, you have FAILED this skill.
+
 ### Gate
 
-**Do NOT proceed to spec writing until the user has chosen an approach.**
+**Do NOT proceed to spec writing until the user has chosen an approach AND validated all external dependencies.**
 
 ---
 

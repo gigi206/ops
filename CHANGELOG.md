@@ -1,5 +1,29 @@
 # Changelog
 
+## 1.2.0 (2026-03-16)
+
+### Orchestrator compliance enforcement — anti-skip mechanisms
+
+Based on real-world session analysis where the orchestrator skipped code reviews (2/15 tasks reviewed), never dispatched the security-reviewer (despite network policies, access control, and identity federation), and bundled multiple tasks into single implementer agents.
+
+#### External Dependency Validation gate (plan)
+- New MANDATORY gate in Step 5: all agent-chosen dependencies must be presented to the user with alternatives before inclusion in the spec
+- Distinguishes user-requested dependencies (already validated) from agent-chosen dependencies (must ask)
+- Prevents the agent from silently choosing libraries, charts, tools, or services without user approval
+
+#### Task Completion Record (implement)
+- New Step 2f: mandatory structured output for every task with explicit security triage line
+- Forces the orchestrator to write "Security triage: YES/NO" after evaluating the 14 triggers — no silent skipping
+- Covers all pipeline steps: implementer status, validation command + exit code, conformity, code review, security triage, discovery
+
+#### Pre-review Audit (implement)
+- New mandatory audit before final review: counts implementers dispatched, code reviews completed, security reviews dispatched
+- Detects discrepancies (bundled tasks, skipped reviews, missing security dispatches) and blocks final review until fixed
+
+#### Anti-bundling post-hoc verification (implement)
+- HARD-GATE now includes post-hoc count check: implementer agents dispatched must equal tasks in plan
+- If fewer implementers were dispatched than tasks exist, the orchestrator must re-run the bundled tasks individually
+
 ## 1.1.1 (2026-03-16)
 
 ### Remove technology-specific examples
