@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.4.2 (2026-03-17)
+
+- docs: fix install instructions — separate marketplace and local clone methods, remove incorrect commands
+
 ## 1.4.1 (2026-03-17)
 
 ### Fixes from session d6e7934d analysis
