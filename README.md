@@ -38,33 +38,26 @@ ops enforces a staged workflow with explicit gates, parallel research, adversari
 
 ## Install
 
-### Prerequisites
+### From marketplace (recommended)
 
-The plugin system requires a **marketplace** to be configured first:
+Add the marketplace, then install the plugin:
 
 ```
 /plugin marketplace add gigi206/ops
+/plugin install ops
 ```
 
-### As a Claude Code plugin (recommended)
+### From a local clone
+
+If you have a local clone of the repository:
 
 ```
-/plugin install ~/ops
+/plugin install /path/to/ops
 ```
-
-### Manual
-
-Symlink or copy the `ops/` directory into your Claude Code plugins path:
-
-```bash
-ln -s ~/ops ~/.claude/plugins/ops
-```
-
-Restart Claude Code after installing.
 
 ### Verify
 
-After install, type `/ops:plan` in Claude Code. If the skill loads, you're set.
+After install, restart Claude Code and type `/ops:plan`. If the skill loads, you're set.
 
 ## Requirements
 
