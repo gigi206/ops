@@ -375,6 +375,8 @@ For each agent-chosen dependency, present to the user:
 
 **Gate**: Do NOT include an external dependency in the spec that the user has not explicitly validated. "Implement X" does NOT mean the user validated every sub-component you chose to implement X. If you chose a dependency, the user must approve it.
 
+If a dependency was already validated conversationally during brainstorming, you do not need to re-ask — but you MUST still present its **risk profile** (maintenance status, last release, community size) before proceeding to spec if it was not covered during the conversation.
+
 This is a gate, not a suggestion. If the spec contains an agent-chosen dependency that was never presented to the user, you have FAILED this skill.
 
 ### Gate
