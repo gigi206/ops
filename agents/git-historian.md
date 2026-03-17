@@ -58,13 +58,13 @@ Look for instability signals:
 
 ```bash
 # Reverts
-git log --oneline --all --grep="[Rr]evert" --since="<window>" -- <paths>
+git log --oneline --grep="[Rr]evert" --since="<window>" -- <paths>
 
 # Hotfixes
-git log --oneline --all --grep="hotfix\|fix\|patch" --since="<window>" -- <paths>
+git log --oneline --grep="hotfix\|fix\|patch" --since="<window>" -- <paths>
 
 # Rollbacks (in commit messages)
-git log --oneline --all --grep="rollback\|roll back\|back out" --since="<window>" -- <paths>
+git log --oneline --grep="rollback\|roll back\|back out" --since="<window>" -- <paths>
 ```
 
 For each regression found:
@@ -107,7 +107,7 @@ Search for structural decisions:
 
 ```bash
 # Architecture-related commits
-git log --oneline --all --grep="architect\|design\|ADR\|breaking\|migration\|refactor" --since="<window>" -- <paths>
+git log --oneline --grep="architect\|design\|ADR\|breaking\|migration\|refactor" --since="<window>" -- <paths>
 
 # Large changes (potential restructuring)
 git log --stat --since="<window>" -- <paths> | grep -B2 "files changed.*insertions.*deletions" | grep -v "^$"
