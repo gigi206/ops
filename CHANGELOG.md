@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.4.1 (2026-03-17)
+
+### Fixes from session d6e7934d analysis
+- fix: require risk profile (maintenance status, last release, community size) for dependencies validated conversationally during brainstorming, not just at the formal Step 5 gate
+- fix: remove `--all` flag from git-historian search commands — prevents finding commits from unmerged branches, stashes, or orphaned refs that are not on the current branch lineage
+
 ## 1.4.0 (2026-03-16)
 
 - docs: add tip about git cloning external sources for deeper understanding
