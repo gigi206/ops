@@ -5,15 +5,24 @@ description: "Brainstorm, research, and plan before writing code."
 
 # /ops:plan — Brainstorm, research, and plan
 
-<HARD-GATE>
-STOP. Before doing ANYTHING else — before researching, before spawning agents, before writing a plan — you MUST talk to the user first.
+<HARD-GATE-0>
+STOP. Your VERY FIRST action must be Step 0: Environment Setup. Do NOT ask design questions yet. Do NOT explore the project beyond language detection.
 
-Your FIRST message must be a clarity check or a clarifying question. NOT a research result. NOT a plan. NOT an agent dispatch.
+Your first tool calls must be exactly:
+1. `Glob` to detect file extensions (e.g., `**/*.py`, `**/*.ts`, `**/*.go`)
+2. `ToolSearch` to fetch the LSP tool
+3. `LSP documentSymbol` on one representative file per detected language
 
-If your first action is spawning a research agent, you have FAILED this skill. Go back and ask the user a question first.
+If your first tool call is anything other than Glob for language detection, you have FAILED this skill.
+</HARD-GATE-0>
 
-The steps are: 1. Brainstorm WITH the user → 2. Context → 3. Research → ... You cannot skip step 1.
-</HARD-GATE>
+<HARD-GATE-1>
+After Step 0 is complete, your NEXT message must be a clarity check or clarifying question to the user. NOT a research result. NOT a plan. NOT an agent dispatch.
+
+If your first action after Step 0 is spawning a research agent, you have FAILED this skill. Go back and ask the user a question first.
+
+The steps are: 0. Environment Setup → 1. Brainstorm WITH the user → 2. Context → 3. Research → ... You cannot skip steps 0 or 1.
+</HARD-GATE-1>
 
 ## When to use which skill
 
@@ -54,8 +63,158 @@ When dispatching any subagent (researcher-code, researcher-doc, git-historian, s
 ## Workflow
 
 ```
-1. Brainstorm → 2. Context Detection → 3. Parallel Research → 4. Research Adequacy Check → 5. Design Approaches → 6. Write & Review Spec → 7. Write Plan → 8. Critic Review → 9. User Approval
+0. Environment Setup → 1. Brainstorm → 2. Context Detection → 3. Parallel Research → 4. Research Adequacy Check → 5. Design Approaches → 6. Write & Review Spec → 7. Write Plan → 8. Critic Review → 9. User Approval
 ```
+
+---
+
+## Step 0: Environment Setup (MANDATORY — runs FIRST)
+
+This step runs BEFORE any brainstorming. If LSP needs fixing, the user may need to restart Claude Code — better to catch this before investing time in design.
+
+### 0a. Detect languages
+
+Scan the codebase to identify the primary languages and frameworks:
+- Use Glob to check for file extensions (e.g., `**/*.py`, `**/*.ts`, `**/*.go`, `**/*.rs`, `**/*.java`, `**/*.rb`, `**/*.yaml`, `**/*.sh`)
+- Read config files that indicate the stack (`package.json`, `Cargo.toml`, `go.mod`, `requirements.txt`, `Gemfile`, `Makefile`, etc.)
+
+Present the detected languages to the user (one line is enough, e.g., "Languages detected: Python, TypeScript, YAML").
+
+### 0b. Check LSP availability
+
+LSP (Language Server Protocol) gives the agent real diagnostics (type errors, missing imports, syntax issues) instead of guessing. It makes every agent in the pipeline smarter.
+
+For each language detected in Step 0a, work through 4 levels. Stop as soon as LSP works for that language.
+
+#### Level 1: Test LSP per language
+
+For each detected language, pick a representative file and call `LSP documentSymbol` on it.
+- **If it returns symbols** → LSP is active for this language. Move on.
+- **If it returns an error** (e.g., "no server available") → this language has no working LSP. **Continue to Level 2.**
+
+Example: project has `.py`, `.sh`, `.yaml` files → test each:
+```
+LSP documentSymbol on src/main.py:1:1
+LSP documentSymbol on scripts/deploy.sh:1:1
+LSP documentSymbol on config/app.yaml:1:1
+```
+
+#### Level 2: Check marketplaces
+
+The LSP plugins come from two marketplaces. Read `~/.claude/settings.json` → `extraKnownMarketplaces` to verify the user has the required one configured.
+
+| Marketplace | Repo | Languages covered | Add command |
+|-------------|------|-------------------|-------------|
+| `claude-plugins-official` | `anthropics/claude-plugins-official` | TypeScript, Python, Go, Rust, C/C++, Java, C#, PHP, Swift, Kotlin, Lua | `/plugin marketplace add anthropics/claude-plugins-official` |
+| `claude-code-lsps` | `boostvolt/claude-code-lsps` | Bash/Shell, YAML | `/plugin marketplace add boostvolt/claude-code-lsps` |
+
+If the required marketplace is missing, tell the user and continue to Level 3.
+
+#### Level 3: Check plugins
+
+Read `~/.claude/settings.json` → `enabledPlugins` to see if the LSP plugin is installed and enabled.
+
+| Language | Plugin | Marketplace | Install command |
+|----------|--------|-------------|-----------------|
+| TypeScript/JavaScript | typescript-lsp | `claude-plugins-official` | `/plugin install typescript-lsp@claude-plugins-official` |
+| Python | pyright-lsp | `claude-plugins-official` | `/plugin install pyright-lsp@claude-plugins-official` |
+| Go | gopls-lsp | `claude-plugins-official` | `/plugin install gopls-lsp@claude-plugins-official` |
+| Rust | rust-analyzer-lsp | `claude-plugins-official` | `/plugin install rust-analyzer-lsp@claude-plugins-official` |
+| C/C++ | clangd-lsp | `claude-plugins-official` | `/plugin install clangd-lsp@claude-plugins-official` |
+| Java | jdtls-lsp | `claude-plugins-official` | `/plugin install jdtls-lsp@claude-plugins-official` |
+| C# | csharp-lsp | `claude-plugins-official` | `/plugin install csharp-lsp@claude-plugins-official` |
+| PHP | php-lsp | `claude-plugins-official` | `/plugin install php-lsp@claude-plugins-official` |
+| Swift | swift-lsp | `claude-plugins-official` | `/plugin install swift-lsp@claude-plugins-official` |
+| Kotlin | kotlin-lsp | `claude-plugins-official` | `/plugin install kotlin-lsp@claude-plugins-official` |
+| Lua | lua-lsp | `claude-plugins-official` | `/plugin install lua-lsp@claude-plugins-official` |
+| Bash/Shell | bash-language-server | `claude-code-lsps` | `/plugin install bash-language-server@claude-code-lsps` |
+| YAML | yaml-language-server | `claude-code-lsps` | `/plugin install yaml-language-server@claude-code-lsps` |
+
+- If the plugin is **not installed** → note it in the diagnostic table. Do NOT install it yet.
+- If the plugin is **installed but disabled** (`false` in `enabledPlugins`) → note it in the diagnostic table. Do NOT enable it yet.
+
+**Do NOT fix anything at this stage.** Levels 1-4 are diagnostic only. Fixes happen after the user chooses option C in the "After the diagnostic table" section.
+
+#### Level 4: Check LSP binary
+
+**Always run this level** for any language where Level 1 failed, regardless of the plugin state. The binary is required for LSP to work — if the plugin is fixable (Level 3) but the binary is missing, enabling the plugin alone won't help.
+
+| Plugin | Binary | Check command |
+|--------|--------|---------------|
+| typescript-lsp | `typescript-language-server` | `which typescript-language-server` |
+| pyright-lsp | `pyright` | `which pyright` |
+| gopls-lsp | `gopls` | `which gopls` |
+| rust-analyzer-lsp | `rust-analyzer` | `which rust-analyzer` |
+| clangd-lsp | `clangd` | `which clangd` |
+| jdtls-lsp | `jdtls` | `which jdtls` |
+| csharp-lsp | `OmniSharp` | `which OmniSharp` |
+| php-lsp | `phpactor` | `which phpactor` |
+| swift-lsp | `sourcekit-lsp` | `which sourcekit-lsp` |
+| kotlin-lsp | `kotlin-language-server` | `which kotlin-language-server` |
+| lua-lsp | `lua-language-server` | `which lua-language-server` |
+| bash-language-server | `bash-language-server` | `which bash-language-server` |
+| yaml-language-server | `yaml-language-server` | `which yaml-language-server` |
+
+If the binary is missing, tell the user how to install it (e.g., `npm i -g typescript-language-server`, `pip install pyright`, `go install golang.org/x/tools/gopls@latest`). A restart of Claude Code is required after installing the binary.
+
+#### Rules
+
+- Only check languages actually found in the project. Do NOT list the entire table.
+- Levels 1-4 are **diagnostic only**. Do NOT install, enable, or fix anything during the diagnostic. The user decides what to do in the next step.
+
+#### Mandatory output
+
+You MUST present this table for each language where Level 1 failed:
+
+| Language | Level 1 | Level 2 (marketplace) | Level 3 (plugin) | Level 4 (binary) | Fix |
+|----------|---------|----------------------|-------------------|-------------------|-----|
+| Python | No server | ? | ? | ? | ? |
+
+Fill in every column. If you say "LSP unavailable" without showing this table with all levels checked, you have FAILED this skill.
+
+#### After the diagnostic table
+
+If nothing needed fixing (all LSP working) → proceed to Step 1 directly.
+
+If fixes are needed, present the fix commands and options **in the user's language** (match the language they used in their message).
+
+First, list ALL the commands grouped by category:
+- **Plugin commands**: `claude plugin enable/install ...`
+- **Binary commands** (if missing): `pip install pyright`, `npm i -g typescript-language-server typescript`, etc.
+
+Then present the options. Only show the options that are relevant to the diagnostic:
+- Always show **A** and **B**.
+- Show **C** only if there are plugin fixes (enable/install).
+- Show **D** only if there are BOTH plugin fixes AND missing binaries.
+
+Example in English:
+
+> Here are the commands to fix LSP:
+>
+> Plugins:
+> ```
+> claude plugin enable pyright-lsp@claude-plugins-official
+> claude plugin enable typescript-lsp@claude-plugins-official
+> ```
+> Binaries:
+> ```
+> pip install pyright
+> npm i -g typescript-language-server typescript
+> ```
+>
+> What do you prefer?
+> **A)** Continue without LSP
+> **B)** I'll handle it myself — here are the commands above
+> **C)** Install/enable plugins only (I run the plugin commands for you)
+> **D)** Install everything (I run all commands — plugins + binaries)
+
+**Wait for the user's answer.** Do NOT proceed to Step 1 (Brainstorm) until the user has responded.
+- **A** → proceed to Step 1 without LSP.
+- **B** → stop here, the user will fix and relaunch.
+- **C** → list the exact commands you are about to run, then execute only the `claude plugin enable/install` commands via Bash. After execution, ask the user to type `/reload-plugins` in the prompt. Wait for confirmation, re-run Level 1 LSP tests, then proceed to Step 1.
+- **D** → list the exact commands you are about to run (both binary installs and plugin commands), then execute them all via Bash. After execution, ask the user to type `/reload-plugins`. Wait for confirmation, re-run Level 1 LSP tests, then proceed to Step 1.
+
+For C and D: always show the user what you will run BEFORE running it. Transparency is mandatory.
 
 ---
 
@@ -185,99 +344,9 @@ If they agree to the companion, read the detailed guide before proceeding:
 
 ## Step 2: Context Detection
 
-**Do NOT skip this step.** Steps 2a and 2b take 30 seconds and inform every agent downstream. If you jump straight to Step 3 (Research) without doing context detection, you have skipped a required step.
+**Do NOT skip this step.** It takes seconds and informs every agent downstream. If you jump straight to Step 3 (Research) without doing context detection, you have skipped a required step.
 
-### 2a. Detect languages
-
-Scan the codebase to identify the primary languages and frameworks:
-- Use Glob to check for file extensions (e.g., `**/*.py`, `**/*.ts`, `**/*.go`, `**/*.rs`, `**/*.java`, `**/*.rb`, `**/*.yaml`, `**/*.sh`)
-- Read config files that indicate the stack (`package.json`, `Cargo.toml`, `go.mod`, `requirements.txt`, `Gemfile`, `Makefile`, etc.)
-
-Present the detected languages to the user (one line is enough, e.g., "Languages detected: YAML, Shell, Go templates").
-
-### 2b. Check LSP availability
-
-LSP (Language Server Protocol) gives the agent real diagnostics (type errors, missing imports, syntax issues) instead of guessing. It makes every agent in the pipeline smarter.
-
-**You MUST at least run Level 1** (test `LSP documentSymbol` on one representative file per detected language). This takes seconds and tells you whether LSP is available. If Level 1 succeeds, you're done. If it fails, proceed to Level 2-4 OR inform the user that LSP is unavailable for that language and move on.
-
-For each language detected in Step 2a, check if LSP is usable by working through 4 levels. Stop as soon as LSP works for that language.
-
-#### Level 1: Test LSP per language
-
-For each detected language, pick a representative file and call `LSP documentSymbol` on it.
-- **If it returns symbols** → LSP is active for this language. Move on.
-- **If it returns an error** (e.g., "no server available") → this language has no working LSP. Continue to Level 2.
-
-Example: project has `.py`, `.sh`, `.yaml` files → test each:
-```
-LSP documentSymbol on src/main.py:1:1
-LSP documentSymbol on scripts/deploy.sh:1:1
-LSP documentSymbol on config/app.yaml:1:1
-```
-
-#### Level 2: Check marketplaces
-
-The LSP plugins come from two marketplaces. Verify the user has the required one configured by reading `~/.claude/settings.json` → `extraKnownMarketplaces`.
-
-| Marketplace | Repo | Languages covered | Add command |
-|-------------|------|-------------------|-------------|
-| `claude-plugins-official` | `anthropics/claude-plugins-official` | TypeScript, Python, Go, Rust, C/C++, Java, C#, PHP, Swift, Kotlin, Lua | `/plugin marketplace add anthropics/claude-plugins-official` |
-| `claude-code-lsps` | `boostvolt/claude-code-lsps` | Bash/Shell, YAML | `/plugin marketplace add boostvolt/claude-code-lsps` |
-
-If the required marketplace is missing, ask the user to add it, then continue to Level 3.
-
-#### Level 3: Check plugins
-
-Read `~/.claude/settings.json` → `enabledPlugins` to see if the LSP plugin is installed and enabled.
-
-| Language | Plugin | Marketplace | Install command |
-|----------|--------|-------------|-----------------|
-| TypeScript/JavaScript | typescript-lsp | `claude-plugins-official` | `/plugin install typescript-lsp@claude-plugins-official` |
-| Python | pyright-lsp | `claude-plugins-official` | `/plugin install pyright-lsp@claude-plugins-official` |
-| Go | gopls-lsp | `claude-plugins-official` | `/plugin install gopls-lsp@claude-plugins-official` |
-| Rust | rust-analyzer-lsp | `claude-plugins-official` | `/plugin install rust-analyzer-lsp@claude-plugins-official` |
-| C/C++ | clangd-lsp | `claude-plugins-official` | `/plugin install clangd-lsp@claude-plugins-official` |
-| Java | jdtls-lsp | `claude-plugins-official` | `/plugin install jdtls-lsp@claude-plugins-official` |
-| C# | csharp-lsp | `claude-plugins-official` | `/plugin install csharp-lsp@claude-plugins-official` |
-| PHP | php-lsp | `claude-plugins-official` | `/plugin install php-lsp@claude-plugins-official` |
-| Swift | swift-lsp | `claude-plugins-official` | `/plugin install swift-lsp@claude-plugins-official` |
-| Kotlin | kotlin-lsp | `claude-plugins-official` | `/plugin install kotlin-lsp@claude-plugins-official` |
-| Lua | lua-lsp | `claude-plugins-official` | `/plugin install lua-lsp@claude-plugins-official` |
-| Bash/Shell | bash-language-server | `claude-code-lsps` | `/plugin install bash-language-server@claude-code-lsps` |
-| YAML | yaml-language-server | `claude-code-lsps` | `/plugin install yaml-language-server@claude-code-lsps` |
-
-- If the plugin is **not installed** → ask the user to install it + restart Claude Code.
-- If the plugin is **installed but disabled** (`false` in `enabledPlugins`) → ask the user to enable it + restart Claude Code.
-
-#### Level 4: Check LSP binary
-
-If the plugin is installed and enabled but Level 1 still fails, the language server binary may be missing from the system.
-
-| Plugin | Binary | Check command |
-|--------|--------|---------------|
-| typescript-lsp | `typescript-language-server` | `which typescript-language-server` |
-| pyright-lsp | `pyright` | `which pyright` |
-| gopls-lsp | `gopls` | `which gopls` |
-| rust-analyzer-lsp | `rust-analyzer` | `which rust-analyzer` |
-| clangd-lsp | `clangd` | `which clangd` |
-| jdtls-lsp | `jdtls` | `which jdtls` |
-| csharp-lsp | `OmniSharp` | `which OmniSharp` |
-| php-lsp | `phpactor` | `which phpactor` |
-| swift-lsp | `sourcekit-lsp` | `which sourcekit-lsp` |
-| kotlin-lsp | `kotlin-language-server` | `which kotlin-language-server` |
-| lua-lsp | `lua-language-server` | `which lua-language-server` |
-| bash-language-server | `bash-language-server` | `which bash-language-server` |
-| yaml-language-server | `yaml-language-server` | `which yaml-language-server` |
-
-If the binary is missing, tell the user how to install it (e.g., `npm i -g typescript-language-server`, `pip install pyright`, `go install golang.org/x/tools/gopls@latest`). A restart of Claude Code is required after installing the binary.
-
-#### Rules
-
-- Only check languages actually found in the project. Do NOT list the entire table.
-- **Do NOT block on this.** If the user declines at any level, proceed without LSP. It's a recommendation, not a gate.
-
-### 2c. Explore project structure
+### Explore project structure
 
 Read CLAUDE.md (if it exists), directory structure, and key config files to understand conventions. If no CLAUDE.md exists, infer conventions from the codebase.
 

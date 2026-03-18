@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.5.0 (2026-03-18)
+
+- feat: move language detection and LSP diagnostic to Step 0 (runs before brainstorming to catch restart-requiring issues early)
+
 ## 1.4.2 (2026-03-17)
 
 - docs: fix install instructions — separate marketplace and local clone methods, remove incorrect commands
