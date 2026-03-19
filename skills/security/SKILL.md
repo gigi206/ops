@@ -97,8 +97,14 @@ When the security-reviewer returns, present its report directly to the user.
 If the user asks to fix issues:
 1. Apply the fixes
 2. Run validation (build, lint, tests as appropriate)
-3. Re-dispatch the **security-reviewer** on the fixed diff to verify the fixes don't introduce new issues
-4. Present the verification result
+3. Re-dispatch the **security-reviewer** with an optimized prompt that includes:
+   - The security-reviewer's previous findings
+   - The fixes applied and why
+   - The new diff (`git diff`)
+   - A request for the full standard verdict
+   - Do NOT re-include the original diff or the security domains list — the agent handled those on the first pass
+4. If the re-review finds **new critical issues**: fix them, run validation again, and re-dispatch with the same optimized prompt pattern. This is a **loop capped at 3 iterations**. After 3 iterations without approval, stop and escalate to the user.
+5. Present the verification result
 
 ---
 

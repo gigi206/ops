@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.5.2 (2026-03-19)
+
+- feat: optimize review agent re-dispatch prompts — re-dispatches now include previous findings + corrections instead of full context
+- feat: standardize circuit breaker caps to 3 iterations — spec-reviewer stays at 3, critic 2→3, security-reviewer loops capped at 3
+- feat: add re-dispatch loop for security-reviewer in implement and security skills (previously single conditional re-dispatch)
+
 ## 1.5.1 (2026-03-19)
 
 - feat: add Terraform, Clojure, Dart, Elixir, Gleam, Nix, OCaml, Ruby, Zig LSP support (boostvolt/claude-code-lsps)

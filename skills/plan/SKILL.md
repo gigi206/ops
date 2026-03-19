@@ -525,8 +525,13 @@ User preferences for spec location override the default path.
 Dispatch the **spec-reviewer** agent to verify the spec is complete and ready for planning.
 
 1. If **Issues Found**: fix the issues, then **re-dispatch the spec-reviewer** on the updated spec. This re-dispatch is MANDATORY — the reviewer must confirm the fixes are adequate. Do NOT assume your fixes are correct without re-verification.
-2. Repeat until **Approved** (max 3 iterations)
-3. If still not approved after 3 iterations, surface the remaining issues to the user for guidance
+2. **Re-dispatch prompts must be optimized.** Do NOT re-include the full spec inline — the agent can re-read it at the file path. The re-dispatch prompt must contain only:
+   - The spec-reviewer's previous findings (the issues list verbatim)
+   - The corrections applied and the rationale for each
+   - The path to the updated spec file (so the agent re-reads it fresh)
+   - A request to produce the full standard verdict (`Status: Approved` / `Status: Issues Found`)
+3. Repeat until **Approved** (max 3 iterations)
+4. If still not approved after 3 iterations, surface the remaining issues to the user for guidance
 
 ### 6d. User reviews spec
 
@@ -599,7 +604,9 @@ The critic:
 6. **Escalation**: If CRITICAL found or 3+ IMPORTANT → adversarial mode (expand scope, challenge every decision)
 7. **Verdict**: APPROVE or REJECT with confidence levels and perspective attribution
 
-**If REJECT**: Revise the plan addressing the critic's concerns, then **re-dispatch the critic** with the revised plan. This re-dispatch is MANDATORY — do NOT skip it. The critic must verify that the fixes actually address the concerns. Maximum 2 iterations. If still rejected after 2 rounds, present both the plan and the critic's concerns to the user for decision.
+**If REJECT**: Revise the plan addressing the critic's concerns, then **re-dispatch the critic** with the revised plan. This re-dispatch is MANDATORY — do NOT skip it. The critic must verify that the fixes actually address the concerns. Maximum 3 iterations. If still rejected after 3 rounds, present both the plan and the critic's concerns to the user for decision.
+
+The re-dispatch prompt must be optimized: include the critic's specific concerns/findings, the corrections you applied to the plan, and a request to produce the full standard verdict (Verdict: APPROVE / REJECT with confidence levels and perspective attribution). Do NOT re-include the full plan in the prompt — the agent can re-read the relevant sections itself.
 
 If you fix the critic's concerns but do not re-dispatch the critic, you have FAILED this skill. The whole point of the critic is adversarial validation — bypassing the re-check defeats the purpose.
 

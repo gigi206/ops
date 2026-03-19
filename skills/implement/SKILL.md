@@ -334,7 +334,18 @@ The security-reviewer checks:
 
 ### Handle Review Results
 
-**If Critical issues found** (code or security): fix before proceeding to completion. Re-dispatch the security-reviewer after security fixes to verify.
+**If Critical issues found (code-reviewer)**: fix before proceeding to completion.
+
+**If Critical issues found (security-reviewer)**: fix the issues, then re-dispatch the security-reviewer to verify. Use an optimized re-review prompt:
+- Include the security-reviewer's previous findings
+- Describe the fixes applied and the reasoning behind each
+- Include the updated diff (re-run `git diff`)
+- Request the full standard verdict
+
+Do NOT re-include the full original diff or CLAUDE.md in the re-dispatch — the agent can access these itself.
+
+This is a **loop**: if the re-review surfaces new critical issues, fix them and re-dispatch again. Cap at **3 iterations**. If the security-reviewer has not approved after 3 rounds, stop and escalate to the user with a summary of all unresolved findings.
+
 **If Important issues found**: fix or note for the user.
 **If Suggestions**: note for the user.
 **If Approved**: proceed to completion summary.
