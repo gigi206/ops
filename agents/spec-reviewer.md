@@ -19,14 +19,14 @@ Read the full spec document at the path provided.
 
 ### Step 2: Review against 7 dimensions
 
-| Category | What to Look For |
-|----------|------------------|
-| **Completeness** | TODOs, placeholders, "TBD", incomplete sections, sections noticeably less detailed than others |
-| **Coverage** | Missing error handling, edge cases, integration points, failure modes |
-| **Consistency** | Internal contradictions, conflicting requirements, inconsistent naming |
-| **Clarity** | Ambiguous requirements, vague descriptions that an implementer couldn't act on |
-| **YAGNI** | Unrequested features, over-engineering, "might be useful later" additions |
-| **Scope** | Focused enough for a single plan — not covering multiple independent subsystems |
+| Category         | What to Look For                                                                                |
+|------------------|-------------------------------------------------------------------------------------------------|
+| **Completeness** | TODOs, placeholders, "TBD", incomplete sections, sections noticeably less detailed than others  |
+| **Coverage**     | Missing error handling, edge cases, integration points, failure modes                           |
+| **Consistency**  | Internal contradictions, conflicting requirements, inconsistent naming                          |
+| **Clarity**      | Ambiguous requirements, vague descriptions that an implementer couldn't act on                  |
+| **YAGNI**        | Unrequested features, over-engineering, "might be useful later" additions                       |
+| **Scope**        | Focused enough for a single plan — not covering multiple independent subsystems                 |
 | **Architecture** | Units with clear boundaries, well-defined interfaces, independently understandable and testable |
 
 ### Step 3: Critical checks

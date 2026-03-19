@@ -177,11 +177,11 @@ Next failing test for next feature.
 
 ## Good Tests
 
-| Quality | Good | Bad |
-|---------|------|-----|
-| **Minimal** | One thing. "and" in name? Split it. | `test('validates email and domain and whitespace')` |
-| **Clear** | Name describes behavior | `test('test1')` |
-| **Shows intent** | Demonstrates desired API | Obscures what code should do |
+| Quality          | Good                                | Bad                                                 |
+|------------------|-------------------------------------|-----------------------------------------------------|
+| **Minimal**      | One thing. "and" in name? Split it. | `test('validates email and domain and whitespace')` |
+| **Clear**        | Name describes behavior             | `test('test1')`                                     |
+| **Shows intent** | Demonstrates desired API            | Obscures what code should do                        |
 
 ## Why Order Matters
 
@@ -233,13 +233,13 @@ Tests-first force edge case discovery before implementing. Tests-after verify yo
 
 ## When Stuck
 
-| Problem | Solution |
-|---------|----------|
-| Don't know how to test | Write wished-for API. Write assertion first. Ask the user. |
-| Test too complicated | Design too complicated. Simplify interface. |
-| Must mock everything | Code too coupled. Use dependency injection. |
-| Test setup huge | Extract helpers. Still complex? Simplify design. |
-| Test hard = can't write it | Listen to the test. Hard to test = hard to use. Redesign. |
+| Problem                    | Solution                                                   |
+|----------------------------|------------------------------------------------------------|
+| Don't know how to test     | Write wished-for API. Write assertion first. Ask the user. |
+| Test too complicated       | Design too complicated. Simplify interface.                |
+| Must mock everything       | Code too coupled. Use dependency injection.                |
+| Test setup huge            | Extract helpers. Still complex? Simplify design.           |
+| Test hard = can't write it | Listen to the test. Hard to test = hard to use. Redesign.  |
 
 ## Example: Bug Fix
 

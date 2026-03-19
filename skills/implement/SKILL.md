@@ -121,14 +121,14 @@ After the implementer reports DONE, **verify with evidence**.
 
 Run the appropriate validation commands depending on file types:
 
-| Type | Example Commands |
-|------|-----------------|
-| Syntax check | Linter for the file type (e.g., `eslint`, `pylint`, `rubocop`) |
+| Type          | Example Commands                                                          |
+|---------------|---------------------------------------------------------------------------|
+| Syntax check  | Linter for the file type (e.g., `eslint`, `pylint`, `rubocop`)            |
 | Build/compile | Build tool for the project (e.g., `make`, `npm run build`, `cargo check`) |
-| Dry-run | Validate without applying (e.g., `--dry-run`, `--check`, `--validate`) |
-| Tests | Run relevant test suite (e.g., `npm test`, `pytest`, `go test`) |
-| Shell scripts | `bash -n <file>`, `shellcheck <file>` |
-| Custom | Whatever the task's validation command specifies |
+| Dry-run       | Validate without applying (e.g., `--dry-run`, `--check`, `--validate`)    |
+| Tests         | Run relevant test suite (e.g., `npm test`, `pytest`, `go test`)           |
+| Shell scripts | `bash -n <file>`, `shellcheck <file>`                                     |
+| Custom        | Whatever the task's validation command specifies                          |
 
 **CRITICAL**: Do NOT mark a task as complete without running validation. No "it should work" — show the output.
 

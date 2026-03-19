@@ -36,13 +36,13 @@ When you receive feedback on your code:
 
 **Never do these when receiving feedback:**
 
-| Behavior | Why it's bad |
-|----------|-------------|
-| "You're absolutely right!" without checking | Performative agreement — you didn't verify |
-| "Great catch!" then making a random change | You're guessing at what the reviewer meant |
+| Behavior                                     | Why it's bad                                                  |
+|----------------------------------------------|---------------------------------------------------------------|
+| "You're absolutely right!" without checking  | Performative agreement — you didn't verify                    |
+| "Great catch!" then making a random change   | You're guessing at what the reviewer meant                    |
 | Accepting all suggestions without evaluation | Some suggestions may conflict with the spec or introduce bugs |
-| Silently ignoring feedback you disagree with | If you disagree, say so with evidence |
-| Changing code the reviewer didn't mention | Scope creep — only address the specific feedback |
+| Silently ignoring feedback you disagree with | If you disagree, say so with evidence                         |
+| Changing code the reviewer didn't mention    | Scope creep — only address the specific feedback              |
 
 ---
 

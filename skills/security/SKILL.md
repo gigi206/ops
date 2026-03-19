@@ -24,13 +24,13 @@ Launch a deep security review on demand — outside of `/ops:implement` or `/ops
 
 The user may invoke this skill in several ways:
 
-| Invocation | Scope |
-|------------|-------|
-| `/ops:security` (no args) | Staged + unstaged changes (git diff) |
-| `/ops:security path/to/file` | Specific file(s) |
-| `/ops:security path/to/dir` | All files in directory |
-| `/ops:security --branch` | Full diff from current branch vs. base branch |
-| `/ops:security --commit <ref>` | Diff of a specific commit |
+| Invocation                     | Scope                                         |
+|--------------------------------|-----------------------------------------------|
+| `/ops:security` (no args)      | Staged + unstaged changes (git diff)          |
+| `/ops:security path/to/file`   | Specific file(s)                              |
+| `/ops:security path/to/dir`    | All files in directory                        |
+| `/ops:security --branch`       | Full diff from current branch vs. base branch |
+| `/ops:security --commit <ref>` | Diff of a specific commit                     |
 
 ---
 

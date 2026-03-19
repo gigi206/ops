@@ -124,12 +124,12 @@ Plus : circuit breaker enrichi (5+ échecs → diagnostic + options).
 
 **ops** : critères mesurables avec preuves requises :
 
-| Dimension | Suffisant quand | Evidence requise |
-|-----------|----------------|------------------|
-| Technical context | Au moins 1 implémentation similaire trouvée | Citer `file:line` |
-| Dependencies | Liste explicite des fichiers affectés | Liste de researcher-code |
-| Risks | Au moins 1 risque concret identifié | Citer ce qui a été vérifié |
-| Documentation | Sources consultées nommées avec versions | e.g., "Context7: express v4.18" |
+| Dimension         | Suffisant quand                             | Evidence requise                |
+|-------------------|---------------------------------------------|---------------------------------|
+| Technical context | Au moins 1 implémentation similaire trouvée | Citer `file:line`               |
+| Dependencies      | Liste explicite des fichiers affectés       | Liste de researcher-code        |
+| Risks             | Au moins 1 risque concret identifié         | Citer ce qui a été vérifié      |
+| Documentation     | Sources consultées nommées avec versions    | e.g., "Context7: express v4.18" |
 
 ## 13. Clarity gate
 
@@ -237,27 +237,27 @@ Narrowe l'investigation de "quelque part dans la stack" à "entre composant X et
 
 ## Résumé
 
-| # | Dimension | ops | Superpowers |
-|---|-----------|-----|-------------|
-| 1 | Critic adversarial | 7 phases | 1 reviewer basique |
-| 2 | Discovery handling | 3 niveaux, 2 skills | DONE_WITH_CONCERNS noté |
-| 3 | Circuit breaker | Diagnostic + 5 options | Stoppe et rapporte |
-| 4 | Security reviewer | Pipeline 2 étages | Une ligne dans review |
-| 5 | Git intelligence | 2 modes, 3 skills | Rien |
-| 6 | LSP detection | 4 niveaux | Rien |
-| 7 | LSP in review | Diagnostics auto | Rien |
-| 8 | Debug workflow | 8 étapes | 4 phases |
-| 9 | Non-deterministic bugs | Protocole dédié | Rien |
-| 10 | CLAUDE.md-driven tasks | Rules → tasks | Convention only |
-| 11 | Conformity check | Étape dédiée | Implicite |
-| 12 | Research adequacy | Quantitatif + preuves | Yes/No subjectif |
-| 13 | Clarity gate | What/Why/Success | Explore d'abord |
-| 14 | Instruction priority | 4 niveaux documentés | 3 niveaux, 1 skill |
-| 15 | Learnings capture | Template structuré | Rien |
-| 16 | Rule proposals | Learnings → .claude/rules/ | Rien |
-| 17 | Task tracking | TaskCreate/TaskUpdate | Rien |
-| 18 | Resilience lens | Dimension review dédiée | Standard review |
-| 19 | Spec "don't trust" | Vérification source | Trust-based |
-| 20 | Cost optimization | Skip trivial reviews | Toujours full review |
-| 21 | Instrumentation debug | Step 1.5 dédié | Pas d'instrumentation |
-| 22 | Subagent context | 4 règles concrètes | Principe général |
+| #   | Dimension              | ops                        | Superpowers             |
+|-----|------------------------|----------------------------|-------------------------|
+| 1   | Critic adversarial     | 7 phases                   | 1 reviewer basique      |
+| 2   | Discovery handling     | 3 niveaux, 2 skills        | DONE_WITH_CONCERNS noté |
+| 3   | Circuit breaker        | Diagnostic + 5 options     | Stoppe et rapporte      |
+| 4   | Security reviewer      | Pipeline 2 étages          | Une ligne dans review   |
+| 5   | Git intelligence       | 2 modes, 3 skills          | Rien                    |
+| 6   | LSP detection          | 4 niveaux                  | Rien                    |
+| 7   | LSP in review          | Diagnostics auto           | Rien                    |
+| 8   | Debug workflow         | 8 étapes                   | 4 phases                |
+| 9   | Non-deterministic bugs | Protocole dédié            | Rien                    |
+| 10  | CLAUDE.md-driven tasks | Rules → tasks              | Convention only         |
+| 11  | Conformity check       | Étape dédiée               | Implicite               |
+| 12  | Research adequacy      | Quantitatif + preuves      | Yes/No subjectif        |
+| 13  | Clarity gate           | What/Why/Success           | Explore d'abord         |
+| 14  | Instruction priority   | 4 niveaux documentés       | 3 niveaux, 1 skill      |
+| 15  | Learnings capture      | Template structuré         | Rien                    |
+| 16  | Rule proposals         | Learnings → .claude/rules/ | Rien                    |
+| 17  | Task tracking          | TaskCreate/TaskUpdate      | Rien                    |
+| 18  | Resilience lens        | Dimension review dédiée    | Standard review         |
+| 19  | Spec "don't trust"     | Vérification source        | Trust-based             |
+| 20  | Cost optimization      | Skip trivial reviews       | Toujours full review    |
+| 21  | Instrumentation debug  | Step 1.5 dédié             | Pas d'instrumentation   |
+| 22  | Subagent context       | 4 règles concrètes         | Principe général        |

@@ -45,29 +45,29 @@ Verify the implementation matches what was specified:
 
 Evaluate the implementation quality:
 
-| Dimension | What to check |
-|-----------|---------------|
-| **Architecture** | Clear boundaries, well-defined interfaces, single responsibility |
-| **Readability** | Can someone understand this code without explanation? (Carmack test: would the code make sense without comments?) |
-| **Conventions** | Matches existing codebase patterns (indentation, naming, structure) |
-| **Error handling** | Failure modes handled, no silent failures |
-| **Resilience** | How does this code fail? What happens under unexpected input, network timeout, missing resource, concurrent access? Is failure graceful or catastrophic? |
-| **Performance** | No obvious inefficiencies (N+1 queries, unbounded loops, missing limits) |
-| **Security** | No hardcoded secrets, no disabled TLS, no injection vectors |
-| **File growth** | Files haven't grown unreasonably — large files signal too many responsibilities |
+| Dimension          | What to check                                                                                                                                            |
+|--------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Architecture**   | Clear boundaries, well-defined interfaces, single responsibility                                                                                         |
+| **Readability**    | Can someone understand this code without explanation? (Carmack test: would the code make sense without comments?)                                        |
+| **Conventions**    | Matches existing codebase patterns (indentation, naming, structure)                                                                                      |
+| **Error handling** | Failure modes handled, no silent failures                                                                                                                |
+| **Resilience**     | How does this code fail? What happens under unexpected input, network timeout, missing resource, concurrent access? Is failure graceful or catastrophic? |
+| **Performance**    | No obvious inefficiencies (N+1 queries, unbounded loops, missing limits)                                                                                 |
+| **Security**       | No hardcoded secrets, no disabled TLS, no injection vectors                                                                                              |
+| **File growth**    | Files haven't grown unreasonably — large files signal too many responsibilities                                                                          |
 
 ### Step 5: Security Scan
 
 Check the diff for security anti-patterns:
 
-| Category | What to look for |
-|----------|-----------------|
-| **Secrets** | Hardcoded passwords, API keys, tokens, connection strings |
-| **Injection** | SQL injection, command injection, template injection, XSS |
-| **TLS** | `--insecure`, `verify: false`, `skip_tls_verify`, disabled certificate validation |
-| **Auth** | Missing authentication checks, broken authorization, privilege escalation |
-| **Input validation** | Unsanitized user input, missing boundary checks, path traversal |
-| **Sensitive data** | Logging secrets, exposing internal errors to users, PII in logs |
+| Category             | What to look for                                                                  |
+|----------------------|-----------------------------------------------------------------------------------|
+| **Secrets**          | Hardcoded passwords, API keys, tokens, connection strings                         |
+| **Injection**        | SQL injection, command injection, template injection, XSS                         |
+| **TLS**              | `--insecure`, `verify: false`, `skip_tls_verify`, disabled certificate validation |
+| **Auth**             | Missing authentication checks, broken authorization, privilege escalation         |
+| **Input validation** | Unsanitized user input, missing boundary checks, path traversal                   |
+| **Sensitive data**   | Logging secrets, exposing internal errors to users, PII in logs                   |
 
 **Rules:**
 - Only flag issues **in the diff** — do not audit the entire codebase

@@ -77,11 +77,11 @@ This narrows the investigation from "somewhere in the stack" to "between compone
 
 Form **maximum 3 hypotheses** for the root cause. For each:
 
-| # | Hypothesis | Supporting evidence | Would disprove it |
-|---|-----------|-------------------|-------------------|
-| 1 | ... | ... | ... |
-| 2 | ... | ... | ... |
-| 3 | ... | ... | ... |
+| #   | Hypothesis | Supporting evidence | Would disprove it |
+|-----|------------|---------------------|-------------------|
+| 1   | ...        | ...                 | ...               |
+| 2   | ...        | ...                 | ...               |
+| 3   | ...        | ...                 | ...               |
 
 Rank by likelihood. Present to the user before proceeding.
 

@@ -27,11 +27,11 @@ For each target:
 1. Use `resolve-library-id` to find the correct Context7 library ID
 2. Use `query-docs` with a **focused topic query** — not the library name, but the specific aspect relevant to the task
 
-| Bad query | Good query |
-|-----------|-----------|
-| "express" | "express v4.18 middleware error handling with async routes" |
-| "postgres" | "postgres jsonb partial index query optimization" |
-| "react" | "react server components data fetching with suspense" |
+| Bad query  | Good query                                                  |
+|------------|-------------------------------------------------------------|
+| "express"  | "express v4.18 middleware error handling with async routes" |
+| "postgres" | "postgres jsonb partial index query optimization"           |
+| "react"    | "react server components data fetching with suspense"       |
 
 3. If the first query returns generic results, **refine and retry once** with more specific terms before falling back
 

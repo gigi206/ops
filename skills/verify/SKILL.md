@@ -38,14 +38,14 @@ If any step fails, the claim is **not verified**. Say what happened instead of w
 
 ## Common Failures
 
-| Claim | Required Evidence | NOT Evidence |
-|-------|-------------------|--------------|
-| "Tests pass" | Test command output showing 0 failures | "I ran the tests earlier" |
-| "Build succeeds" | Build command output with exit code 0 | "The code looks correct" |
-| "No lint errors" | Linter output showing 0 warnings/errors | "I followed the conventions" |
-| "Fix works" | Original failing command now succeeds | "I addressed the root cause" |
-| "Deploy succeeded" | Status command showing healthy state | "I applied the manifest" |
-| "PR is clean" | CI checks passing, no conflicts | "I pushed the changes" |
+| Claim              | Required Evidence                       | NOT Evidence                 |
+|--------------------|-----------------------------------------|------------------------------|
+| "Tests pass"       | Test command output showing 0 failures  | "I ran the tests earlier"    |
+| "Build succeeds"   | Build command output with exit code 0   | "The code looks correct"     |
+| "No lint errors"   | Linter output showing 0 warnings/errors | "I followed the conventions" |
+| "Fix works"        | Original failing command now succeeds   | "I addressed the root cause" |
+| "Deploy succeeded" | Status command showing healthy state    | "I applied the manifest"     |
+| "PR is clean"      | CI checks passing, no conflicts         | "I pushed the changes"       |
 
 ---
 

@@ -78,18 +78,18 @@ Next failing test for next behavior. One cycle per behavior.
 
 Do NOT skip TDD for any of these reasons:
 
-| Rationalization | Reality |
-|-----------------|---------|
-| "It's too simple to test" | Simple things break too. The test takes 30 seconds. Write it. |
-| "I'll write the tests after" | Tests written after pass immediately and prove nothing. Tests-after answer "what does this do?". Tests-first answer "what should this do?". |
-| "It's just a refactor" | Refactors break things. The test catches it. |
-| "The test framework isn't set up" | Then set it up. That's the first task. |
-| "I already know it works" | Prove it. Run the failing test. |
-| "Tests after achieve the same goals" | They don't. A test that never failed proves nothing about correctness. |
-| "I'll keep the code as reference and write tests first" | No. You'll adapt it. Delete means delete. |
-| "Mocking is too hard for this" | Use real code. Mocks only if unavoidable (external APIs, databases). |
-| "The test would just duplicate the implementation" | Then your test is wrong. Test behavior, not implementation. |
-| "This is just config/data, not logic" | If it can be wrong, it can be tested. Write a validation test. |
+| Rationalization                                         | Reality                                                                                                                                     |
+|---------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------|
+| "It's too simple to test"                               | Simple things break too. The test takes 30 seconds. Write it.                                                                               |
+| "I'll write the tests after"                            | Tests written after pass immediately and prove nothing. Tests-after answer "what does this do?". Tests-first answer "what should this do?". |
+| "It's just a refactor"                                  | Refactors break things. The test catches it.                                                                                                |
+| "The test framework isn't set up"                       | Then set it up. That's the first task.                                                                                                      |
+| "I already know it works"                               | Prove it. Run the failing test.                                                                                                             |
+| "Tests after achieve the same goals"                    | They don't. A test that never failed proves nothing about correctness.                                                                      |
+| "I'll keep the code as reference and write tests first" | No. You'll adapt it. Delete means delete.                                                                                                   |
+| "Mocking is too hard for this"                          | Use real code. Mocks only if unavoidable (external APIs, databases).                                                                        |
+| "The test would just duplicate the implementation"      | Then your test is wrong. Test behavior, not implementation.                                                                                 |
+| "This is just config/data, not logic"                   | If it can be wrong, it can be tested. Write a validation test.                                                                              |
 
 #### Deletion rule
 
@@ -139,14 +139,14 @@ Make the changes specified by the task:
 
 Run the validation command specified in the task:
 
-| Type | Command |
-|------|---------|
-| Syntax check | Linter for the file type (e.g., `eslint`, `pylint`, `rubocop`) |
-| Build/compile | Build tool (e.g., `make`, `npm run build`, `cargo check`) |
-| Dry-run | Validate without applying (e.g., `--dry-run`, `--check`) |
-| Tests | Relevant test suite (e.g., `npm test`, `pytest`, `go test`) |
-| Shell | `bash -n <file>`, `shellcheck <file>` |
-| Custom | Whatever the task specifies |
+| Type          | Command                                                        |
+|---------------|----------------------------------------------------------------|
+| Syntax check  | Linter for the file type (e.g., `eslint`, `pylint`, `rubocop`) |
+| Build/compile | Build tool (e.g., `make`, `npm run build`, `cargo check`)      |
+| Dry-run       | Validate without applying (e.g., `--dry-run`, `--check`)       |
+| Tests         | Relevant test suite (e.g., `npm test`, `pytest`, `go test`)    |
+| Shell         | `bash -n <file>`, `shellcheck <file>`                          |
+| Custom        | Whatever the task specifies                                    |
 
 **Show the validation output.** Do not claim success without evidence.
 

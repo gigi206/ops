@@ -26,15 +26,15 @@ The steps are: 0. Environment Setup → 1. Brainstorm WITH the user → 2. Conte
 
 ## When to use which skill
 
-| Situation | Skill | Why |
-|-----------|-------|-----|
-| New feature, change, or task | `/ops:plan` | Design before coding |
-| Plan approved, ready to build | `/ops:implement` | Execute with validation gates |
-| Bug, error, or unexpected behavior | `/ops:debug` | Investigate before fixing |
-| Work is done, ready to commit | `/ops:ship` | Commit, PR, capture learnings |
-| Claiming something works | `/ops:verify` | Evidence before claims (always active) |
-| Received code review feedback | `/ops:review` | Evaluate technically, don't agree blindly |
-| Quick fix you already understand | No skill needed | Just do it |
+| Situation                          | Skill            | Why                                       |
+|------------------------------------|------------------|-------------------------------------------|
+| New feature, change, or task       | `/ops:plan`      | Design before coding                      |
+| Plan approved, ready to build      | `/ops:implement` | Execute with validation gates             |
+| Bug, error, or unexpected behavior | `/ops:debug`     | Investigate before fixing                 |
+| Work is done, ready to commit      | `/ops:ship`      | Commit, PR, capture learnings             |
+| Claiming something works           | `/ops:verify`    | Evidence before claims (always active)    |
+| Received code review feedback      | `/ops:review`    | Evaluate technically, don't agree blindly |
+| Quick fix you already understand   | No skill needed  | Just do it                                |
 
 ## Overview
 
@@ -103,11 +103,11 @@ LSP documentSymbol on config/app.yaml:1:1
 
 The LSP plugins come from three marketplaces. Read `~/.claude/settings.json` → `extraKnownMarketplaces` to verify the user has the required one configured.
 
-| Marketplace | Repo | Languages covered | Add command |
-|-------------|------|-------------------|-------------|
-| `claude-plugins-official` | `anthropics/claude-plugins-official` | TypeScript, Python, Go, Rust, C/C++, Java, C#, PHP, Swift, Kotlin, Lua | `/plugin marketplace add anthropics/claude-plugins-official` |
-| `claude-code-lsps` | `boostvolt/claude-code-lsps` | Bash/Shell, YAML, Terraform, Clojure, Dart/Flutter, Elixir, Gleam, Nix, OCaml, Ruby, Zig | `/plugin marketplace add boostvolt/claude-code-lsps` |
-| `claude-code-lsps` | `Piebald-AI/claude-code-lsps` | HTML/CSS, Vue, Scala, PowerShell, Julia, LaTeX, Ada, Solidity | `/plugin marketplace add Piebald-AI/claude-code-lsps` |
+| Marketplace               | Repo                                 | Languages covered                                                                        | Add command                                                  |
+|---------------------------|--------------------------------------|------------------------------------------------------------------------------------------|--------------------------------------------------------------|
+| `claude-plugins-official` | `anthropics/claude-plugins-official` | TypeScript, Python, Go, Rust, C/C++, Java, C#, PHP, Swift, Kotlin, Lua                   | `/plugin marketplace add anthropics/claude-plugins-official` |
+| `claude-code-lsps`        | `boostvolt/claude-code-lsps`         | Bash/Shell, YAML, Terraform, Clojure, Dart/Flutter, Elixir, Gleam, Nix, OCaml, Ruby, Zig | `/plugin marketplace add boostvolt/claude-code-lsps`         |
+| `claude-code-lsps`        | `Piebald-AI/claude-code-lsps`        | HTML/CSS, Vue, Scala, PowerShell, Julia, LaTeX, Ada, Solidity                            | `/plugin marketplace add Piebald-AI/claude-code-lsps`        |
 
 > **Note :** `Piebald-AI/claude-code-lsps` est un dépôt communautaire (Piebald LLC). Il n'est pas affilié à Anthropic ni à boostvolt. Informer l'utilisateur avant de proposer son installation.
 
@@ -119,38 +119,38 @@ If the required marketplace is missing, tell the user and continue to Level 3.
 
 Read `~/.claude/settings.json` → `enabledPlugins` to see if the LSP plugin is installed and enabled.
 
-| Language | Plugin | Marketplace | Install command |
-|----------|--------|-------------|-----------------|
-| TypeScript/JavaScript | typescript-lsp | `claude-plugins-official` | `/plugin install typescript-lsp@claude-plugins-official` |
-| Python | pyright-lsp | `claude-plugins-official` | `/plugin install pyright-lsp@claude-plugins-official` |
-| Go | gopls-lsp | `claude-plugins-official` | `/plugin install gopls-lsp@claude-plugins-official` |
-| Rust | rust-analyzer-lsp | `claude-plugins-official` | `/plugin install rust-analyzer-lsp@claude-plugins-official` |
-| C/C++ | clangd-lsp | `claude-plugins-official` | `/plugin install clangd-lsp@claude-plugins-official` |
-| Java | jdtls-lsp | `claude-plugins-official` | `/plugin install jdtls-lsp@claude-plugins-official` |
-| C# | csharp-lsp | `claude-plugins-official` | `/plugin install csharp-lsp@claude-plugins-official` |
-| PHP | php-lsp | `claude-plugins-official` | `/plugin install php-lsp@claude-plugins-official` |
-| Swift | swift-lsp | `claude-plugins-official` | `/plugin install swift-lsp@claude-plugins-official` |
-| Kotlin | kotlin-lsp | `claude-plugins-official` | `/plugin install kotlin-lsp@claude-plugins-official` |
-| Lua | lua-lsp | `claude-plugins-official` | `/plugin install lua-lsp@claude-plugins-official` |
-| Bash/Shell | bash-language-server | `claude-code-lsps` | `/plugin install bash-language-server@claude-code-lsps` |
-| YAML | yaml-language-server | `claude-code-lsps` | `/plugin install yaml-language-server@claude-code-lsps` |
-| Terraform | terraform-ls | `claude-code-lsps` | `/plugin install terraform-ls@claude-code-lsps` |
-| Clojure | clojure-lsp | `claude-code-lsps` | `/plugin install clojure-lsp@claude-code-lsps` |
-| Dart/Flutter | dart-analyzer | `claude-code-lsps` | `/plugin install dart-analyzer@claude-code-lsps` |
-| Elixir | elixir-ls | `claude-code-lsps` | `/plugin install elixir-ls@claude-code-lsps` |
-| Gleam | gleam | `claude-code-lsps` | `/plugin install gleam@claude-code-lsps` |
-| Nix | nixd | `claude-code-lsps` | `/plugin install nixd@claude-code-lsps` |
-| OCaml | ocaml-lsp | `claude-code-lsps` | `/plugin install ocaml-lsp@claude-code-lsps` |
-| Ruby | solargraph | `claude-code-lsps` | `/plugin install solargraph@claude-code-lsps` |
-| Zig | zls | `claude-code-lsps` | `/plugin install zls@claude-code-lsps` |
-| HTML/CSS | vscode-langservers | `Piebald-AI/claude-code-lsps` | `/plugin install vscode-langservers@Piebald-AI/claude-code-lsps` |
-| Vue | vue-volar | `Piebald-AI/claude-code-lsps` | `/plugin install vue-volar@Piebald-AI/claude-code-lsps` |
-| Scala | metals | `Piebald-AI/claude-code-lsps` | `/plugin install metals@Piebald-AI/claude-code-lsps` |
-| PowerShell | powershell-editor-services | `Piebald-AI/claude-code-lsps` | `/plugin install powershell-editor-services@Piebald-AI/claude-code-lsps` |
-| Julia | julia-lsp | `Piebald-AI/claude-code-lsps` | `/plugin install julia-lsp@Piebald-AI/claude-code-lsps` |
-| LaTeX | texlab | `Piebald-AI/claude-code-lsps` | `/plugin install texlab@Piebald-AI/claude-code-lsps` |
-| Ada | ada-language-server | `Piebald-AI/claude-code-lsps` | `/plugin install ada-language-server@Piebald-AI/claude-code-lsps` |
-| Solidity | solidity-language-server | `Piebald-AI/claude-code-lsps` | `/plugin install solidity-language-server@Piebald-AI/claude-code-lsps` |
+| Language              | Plugin                     | Marketplace                   | Install command                                                          |
+|-----------------------|----------------------------|-------------------------------|--------------------------------------------------------------------------|
+| TypeScript/JavaScript | typescript-lsp             | `claude-plugins-official`     | `/plugin install typescript-lsp@claude-plugins-official`                 |
+| Python                | pyright-lsp                | `claude-plugins-official`     | `/plugin install pyright-lsp@claude-plugins-official`                    |
+| Go                    | gopls-lsp                  | `claude-plugins-official`     | `/plugin install gopls-lsp@claude-plugins-official`                      |
+| Rust                  | rust-analyzer-lsp          | `claude-plugins-official`     | `/plugin install rust-analyzer-lsp@claude-plugins-official`              |
+| C/C++                 | clangd-lsp                 | `claude-plugins-official`     | `/plugin install clangd-lsp@claude-plugins-official`                     |
+| Java                  | jdtls-lsp                  | `claude-plugins-official`     | `/plugin install jdtls-lsp@claude-plugins-official`                      |
+| C#                    | csharp-lsp                 | `claude-plugins-official`     | `/plugin install csharp-lsp@claude-plugins-official`                     |
+| PHP                   | php-lsp                    | `claude-plugins-official`     | `/plugin install php-lsp@claude-plugins-official`                        |
+| Swift                 | swift-lsp                  | `claude-plugins-official`     | `/plugin install swift-lsp@claude-plugins-official`                      |
+| Kotlin                | kotlin-lsp                 | `claude-plugins-official`     | `/plugin install kotlin-lsp@claude-plugins-official`                     |
+| Lua                   | lua-lsp                    | `claude-plugins-official`     | `/plugin install lua-lsp@claude-plugins-official`                        |
+| Bash/Shell            | bash-language-server       | `claude-code-lsps`            | `/plugin install bash-language-server@claude-code-lsps`                  |
+| YAML                  | yaml-language-server       | `claude-code-lsps`            | `/plugin install yaml-language-server@claude-code-lsps`                  |
+| Terraform             | terraform-ls               | `claude-code-lsps`            | `/plugin install terraform-ls@claude-code-lsps`                          |
+| Clojure               | clojure-lsp                | `claude-code-lsps`            | `/plugin install clojure-lsp@claude-code-lsps`                           |
+| Dart/Flutter          | dart-analyzer              | `claude-code-lsps`            | `/plugin install dart-analyzer@claude-code-lsps`                         |
+| Elixir                | elixir-ls                  | `claude-code-lsps`            | `/plugin install elixir-ls@claude-code-lsps`                             |
+| Gleam                 | gleam                      | `claude-code-lsps`            | `/plugin install gleam@claude-code-lsps`                                 |
+| Nix                   | nixd                       | `claude-code-lsps`            | `/plugin install nixd@claude-code-lsps`                                  |
+| OCaml                 | ocaml-lsp                  | `claude-code-lsps`            | `/plugin install ocaml-lsp@claude-code-lsps`                             |
+| Ruby                  | solargraph                 | `claude-code-lsps`            | `/plugin install solargraph@claude-code-lsps`                            |
+| Zig                   | zls                        | `claude-code-lsps`            | `/plugin install zls@claude-code-lsps`                                   |
+| HTML/CSS              | vscode-langservers         | `Piebald-AI/claude-code-lsps` | `/plugin install vscode-langservers@Piebald-AI/claude-code-lsps`         |
+| Vue                   | vue-volar                  | `Piebald-AI/claude-code-lsps` | `/plugin install vue-volar@Piebald-AI/claude-code-lsps`                  |
+| Scala                 | metals                     | `Piebald-AI/claude-code-lsps` | `/plugin install metals@Piebald-AI/claude-code-lsps`                     |
+| PowerShell            | powershell-editor-services | `Piebald-AI/claude-code-lsps` | `/plugin install powershell-editor-services@Piebald-AI/claude-code-lsps` |
+| Julia                 | julia-lsp                  | `Piebald-AI/claude-code-lsps` | `/plugin install julia-lsp@Piebald-AI/claude-code-lsps`                  |
+| LaTeX                 | texlab                     | `Piebald-AI/claude-code-lsps` | `/plugin install texlab@Piebald-AI/claude-code-lsps`                     |
+| Ada                   | ada-language-server        | `Piebald-AI/claude-code-lsps` | `/plugin install ada-language-server@Piebald-AI/claude-code-lsps`        |
+| Solidity              | solidity-language-server   | `Piebald-AI/claude-code-lsps` | `/plugin install solidity-language-server@Piebald-AI/claude-code-lsps`   |
 
 - If the plugin is **not installed** → note it in the diagnostic table. Do NOT install it yet.
 - If the plugin is **installed but disabled** (`false` in `enabledPlugins`) → note it in the diagnostic table. Do NOT enable it yet.
@@ -161,38 +161,38 @@ Read `~/.claude/settings.json` → `enabledPlugins` to see if the LSP plugin is 
 
 **Always run this level** for any language where Level 1 failed, regardless of the plugin state. The binary is required for LSP to work — if the plugin is fixable (Level 3) but the binary is missing, enabling the plugin alone won't help.
 
-| Plugin | Binary | Check command |
-|--------|--------|---------------|
-| typescript-lsp | `typescript-language-server` | `which typescript-language-server` |
-| pyright-lsp | `pyright` | `which pyright` |
-| gopls-lsp | `gopls` | `which gopls` |
-| rust-analyzer-lsp | `rust-analyzer` | `which rust-analyzer` |
-| clangd-lsp | `clangd` | `which clangd` |
-| jdtls-lsp | `jdtls` | `which jdtls` |
-| csharp-lsp | `OmniSharp` | `which OmniSharp` |
-| php-lsp | `phpactor` | `which phpactor` |
-| swift-lsp | `sourcekit-lsp` | `which sourcekit-lsp` |
-| kotlin-lsp | `kotlin-language-server` | `which kotlin-language-server` |
-| lua-lsp | `lua-language-server` | `which lua-language-server` |
-| bash-language-server | `bash-language-server` | `which bash-language-server` |
-| yaml-language-server | `yaml-language-server` | `which yaml-language-server` |
-| terraform-ls | `terraform-ls` | `which terraform-ls` |
-| clojure-lsp | `clojure-lsp` | `which clojure-lsp` |
-| dart-analyzer | `dart` | `which dart` |
-| elixir-ls | `elixir-ls` | `which elixir-ls` |
-| gleam | `gleam` | `which gleam` |
-| nixd | `nixd` | `which nixd` |
-| ocaml-lsp | `ocamllsp` | `which ocamllsp` |
-| solargraph | `solargraph` | `which solargraph` |
-| zls | `zls` | `which zls` |
-| vscode-langservers | `vscode-html-language-server` | `which vscode-html-language-server` |
-| vue-volar | `vue-language-server` | `which vue-language-server` |
-| metals | `metals` | `which metals` |
-| powershell-editor-services | `pwsh` | `which pwsh` |
-| julia-lsp | `julia` | `which julia` |
-| texlab | `texlab` | `which texlab` |
-| ada-language-server | `ada_language_server` | `which ada_language_server` |
-| solidity-language-server | `solidity-language-server` | `which solidity-language-server` |
+| Plugin                     | Binary                        | Check command                       |
+|----------------------------|-------------------------------|-------------------------------------|
+| typescript-lsp             | `typescript-language-server`  | `which typescript-language-server`  |
+| pyright-lsp                | `pyright`                     | `which pyright`                     |
+| gopls-lsp                  | `gopls`                       | `which gopls`                       |
+| rust-analyzer-lsp          | `rust-analyzer`               | `which rust-analyzer`               |
+| clangd-lsp                 | `clangd`                      | `which clangd`                      |
+| jdtls-lsp                  | `jdtls`                       | `which jdtls`                       |
+| csharp-lsp                 | `OmniSharp`                   | `which OmniSharp`                   |
+| php-lsp                    | `phpactor`                    | `which phpactor`                    |
+| swift-lsp                  | `sourcekit-lsp`               | `which sourcekit-lsp`               |
+| kotlin-lsp                 | `kotlin-language-server`      | `which kotlin-language-server`      |
+| lua-lsp                    | `lua-language-server`         | `which lua-language-server`         |
+| bash-language-server       | `bash-language-server`        | `which bash-language-server`        |
+| yaml-language-server       | `yaml-language-server`        | `which yaml-language-server`        |
+| terraform-ls               | `terraform-ls`                | `which terraform-ls`                |
+| clojure-lsp                | `clojure-lsp`                 | `which clojure-lsp`                 |
+| dart-analyzer              | `dart`                        | `which dart`                        |
+| elixir-ls                  | `elixir-ls`                   | `which elixir-ls`                   |
+| gleam                      | `gleam`                       | `which gleam`                       |
+| nixd                       | `nixd`                        | `which nixd`                        |
+| ocaml-lsp                  | `ocamllsp`                    | `which ocamllsp`                    |
+| solargraph                 | `solargraph`                  | `which solargraph`                  |
+| zls                        | `zls`                         | `which zls`                         |
+| vscode-langservers         | `vscode-html-language-server` | `which vscode-html-language-server` |
+| vue-volar                  | `vue-language-server`         | `which vue-language-server`         |
+| metals                     | `metals`                      | `which metals`                      |
+| powershell-editor-services | `pwsh`                        | `which pwsh`                        |
+| julia-lsp                  | `julia`                       | `which julia`                       |
+| texlab                     | `texlab`                      | `which texlab`                      |
+| ada-language-server        | `ada_language_server`         | `which ada_language_server`         |
+| solidity-language-server   | `solidity-language-server`    | `which solidity-language-server`    |
 
 If the binary is missing, tell the user how to install it (e.g., `npm i -g typescript-language-server`, `pip install pyright`, `go install golang.org/x/tools/gopls@latest`). A restart of Claude Code is required after installing the binary.
 
@@ -205,9 +205,9 @@ If the binary is missing, tell the user how to install it (e.g., `npm i -g types
 
 You MUST present this table for each language where Level 1 failed:
 
-| Language | Level 1 | Level 2 (marketplace) | Level 3 (plugin) | Level 4 (binary) | Fix |
-|----------|---------|----------------------|-------------------|-------------------|-----|
-| Python | No server | ? | ? | ? | ? |
+| Language | Level 1   | Level 2 (marketplace) | Level 3 (plugin) | Level 4 (binary) | Fix |
+|----------|-----------|-----------------------|------------------|------------------|-----|
+| Python   | No server | ?                     | ?                | ?                | ?   |
 
 Fill in every column. If you say "LSP unavailable" without showing this table with all levels checked, you have FAILED this skill.
 
@@ -428,12 +428,12 @@ Before designing approaches, verify the research produced concrete evidence — 
 
 **You MUST present this table to the user** with the evidence filled in:
 
-| Dimension | Status | Evidence |
-|-----------|--------|----------|
-| **Technical context** | OK / GAP | [Cite `file:line` of similar code or list files read] |
-| **Dependencies** | OK / GAP | [List of files affected from researcher-code] |
-| **Risks** | OK / GAP | [Concrete risks found, or "none found after checking X, Y, Z"] |
-| **Documentation** | OK / GAP | [Sources with versions, e.g., "Context7: express v4.18.2"] |
+| Dimension             | Status   | Evidence                                                       |
+|-----------------------|----------|----------------------------------------------------------------|
+| **Technical context** | OK / GAP | [Cite `file:line` of similar code or list files read]          |
+| **Dependencies**      | OK / GAP | [List of files affected from researcher-code]                  |
+| **Risks**             | OK / GAP | [Concrete risks found, or "none found after checking X, Y, Z"] |
+| **Documentation**     | OK / GAP | [Sources with versions, e.g., "Context7: express v4.18.2"]     |
 
 This table is not a mental checklist — it must appear in your output so the user can verify the research was adequate.
 

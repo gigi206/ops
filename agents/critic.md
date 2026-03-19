@@ -72,11 +72,11 @@ Read the full plan and evaluate against **4 lenses**:
 
 Review the plan from **3 different viewpoints** to catch problems that a single perspective misses:
 
-| Perspective | What they look for |
-|-------------|-------------------|
-| **Executor** | "Can I actually implement this step by step? Are instructions clear enough? Are there ambiguous tasks I'd get stuck on?" |
-| **Stakeholder** | "Does this actually solve the stated problem? Is scope appropriate? Are there missing requirements?" |
-| **Skeptic** | "What could go wrong in production? What failure modes aren't handled? What assumptions might be wrong?" |
+| Perspective     | What they look for                                                                                                       |
+|-----------------|--------------------------------------------------------------------------------------------------------------------------|
+| **Executor**    | "Can I actually implement this step by step? Are instructions clear enough? Are there ambiguous tasks I'd get stuck on?" |
+| **Stakeholder** | "Does this actually solve the stated problem? Is scope appropriate? Are there missing requirements?"                     |
+| **Skeptic**     | "What could go wrong in production? What failure modes aren't handled? What assumptions might be wrong?"                 |
 
 For each finding, note which perspective surfaced it.
 

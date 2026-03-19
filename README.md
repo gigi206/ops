@@ -25,16 +25,16 @@ ops enforces a staged workflow with explicit gates, parallel research, adversari
 
 ### Agents
 
-| Agent | Model | Role |
-|-------|-------|------|
-| **researcher-code** | Opus | Codebase patterns, conventions, architecture, risks |
-| **researcher-doc** | Sonnet | External docs via Context7 MCP (fallback: web search) |
-| **git-historian** | Sonnet | Commit timeline, regressions, ownership, hotspots |
-| **critic** | Opus | Adversarial plan review (4 lenses, 3 perspectives, self-audit) |
-| **spec-reviewer** | Opus | Spec completeness (7 dimensions) |
-| **implementer** | Opus | Task execution with TDD, validation, reporting |
-| **code-reviewer** | Opus | LSP diagnostics, spec compliance, code quality, security scan |
-| **security-reviewer** | Opus | Deep security analysis — code, infra, CI/CD, supply chain, runtime, policy |
+| Agent                 | Model  | Role                                                                       |
+|-----------------------|--------|----------------------------------------------------------------------------|
+| **researcher-code**   | Opus   | Codebase patterns, conventions, architecture, risks                        |
+| **researcher-doc**    | Sonnet | External docs via Context7 MCP (fallback: web search)                      |
+| **git-historian**     | Sonnet | Commit timeline, regressions, ownership, hotspots                          |
+| **critic**            | Opus   | Adversarial plan review (4 lenses, 3 perspectives, self-audit)             |
+| **spec-reviewer**     | Opus   | Spec completeness (7 dimensions)                                           |
+| **implementer**       | Opus   | Task execution with TDD, validation, reporting                             |
+| **code-reviewer**     | Opus   | LSP diagnostics, spec compliance, code quality, security scan              |
+| **security-reviewer** | Opus   | Deep security analysis — code, infra, CI/CD, supply chain, runtime, policy |
 
 ## Install
 
@@ -102,17 +102,17 @@ Brainstorm, research, and plan before writing code.
 /ops:plan <description of what you want to do>
 ```
 
-| Step | What happens |
-|------|-------------|
-| Brainstorm | Socratic-style design discussion — one question at a time |
-| Context detection | Detect languages, check LSP availability, read project conventions |
-| Parallel research | 3 agents in parallel: researcher-doc, researcher-code, git-historian |
-| Research adequacy | Evidence table presented to user — gaps trigger follow-up research |
-| Design approaches | 2-3 options with pros/cons, recommendation first |
-| Spec writing | Design document written, reviewed by spec-reviewer, approved by user |
-| Task decomposition | Ordered tasks with files, changes, and validation commands |
-| Critic review | Adversarial review (4 lenses, 3 perspectives, self-audit) |
-| User approval | Plan presented for final approval before implementation |
+| Step               | What happens                                                         |
+|--------------------|----------------------------------------------------------------------|
+| Brainstorm         | Socratic-style design discussion — one question at a time            |
+| Context detection  | Detect languages, check LSP availability, read project conventions   |
+| Parallel research  | 3 agents in parallel: researcher-doc, researcher-code, git-historian |
+| Research adequacy  | Evidence table presented to user — gaps trigger follow-up research   |
+| Design approaches  | 2-3 options with pros/cons, recommendation first                     |
+| Spec writing       | Design document written, reviewed by spec-reviewer, approved by user |
+| Task decomposition | Ordered tasks with files, changes, and validation commands           |
+| Critic review      | Adversarial review (4 lenses, 3 perspectives, self-audit)            |
+| User approval      | Plan presented for final approval before implementation              |
 
 Agents used: **researcher-code**, **researcher-doc**, **git-historian**, **spec-reviewer**, **critic**
 
@@ -130,14 +130,14 @@ Prerequisite: a plan from `/ops:plan` or user-provided.
 
 Each task goes through the full pipeline:
 
-| Step | What happens |
-|------|-------------|
-| Implementer | One agent per task, TDD enforced when tests are relevant |
-| Validation gate | Run validation commands, show output — no "it should work" |
-| Conformity check | Diff vs. plan — no drift, no secrets, conventions preserved |
-| Code review | LSP diagnostics, spec compliance, code quality, security scan |
-| Security review | **Mandatory** if the task touches security-sensitive areas (see below) |
-| Discovery check | Pause on significant findings, stop on major discoveries |
+| Step             | What happens                                                           |
+|------------------|------------------------------------------------------------------------|
+| Implementer      | One agent per task, TDD enforced when tests are relevant               |
+| Validation gate  | Run validation commands, show output — no "it should work"             |
+| Conformity check | Diff vs. plan — no drift, no secrets, conventions preserved            |
+| Code review      | LSP diagnostics, spec compliance, code quality, security scan          |
+| Security review  | **Mandatory** if the task touches security-sensitive areas (see below) |
+| Discovery check  | Pause on significant findings, stop on major discoveries               |
 
 After all tasks: final review of the entire implementation (code-reviewer + security-reviewer if applicable).
 
@@ -172,16 +172,16 @@ Systematic debugging: investigate, hypothesize, fix.
 /ops:debug <description of the problem>
 ```
 
-| Step | What happens |
-|------|-------------|
-| Investigate | Read errors, reproduce, dispatch git-historian for recent changes |
-| Instrument | Add temporary logging at component boundaries (multi-component bugs only) |
-| Hypothesize | Max 3 hypotheses with supporting evidence and disproof criteria |
-| Test | Confirm or refute each hypothesis with minimal tests |
-| Fix | Minimal fix addressing root cause, not symptoms |
-| Code review | Same pipeline as `/ops:implement` including security escalation |
-| Discovery check | Pause if the bug is broader than diagnosed |
-| Verify | Original failing command passes, no regressions — show proof |
+| Step            | What happens                                                              |
+|-----------------|---------------------------------------------------------------------------|
+| Investigate     | Read errors, reproduce, dispatch git-historian for recent changes         |
+| Instrument      | Add temporary logging at component boundaries (multi-component bugs only) |
+| Hypothesize     | Max 3 hypotheses with supporting evidence and disproof criteria           |
+| Test            | Confirm or refute each hypothesis with minimal tests                      |
+| Fix             | Minimal fix addressing root cause, not symptoms                           |
+| Code review     | Same pipeline as `/ops:implement` including security escalation           |
+| Discovery check | Pause if the bug is broader than diagnosed                                |
+| Verify          | Original failing command passes, no regressions — show proof              |
 
 **Circuit breaker**: 5+ failed fix attempts triggers diagnostic agents and presents options.
 
@@ -200,13 +200,13 @@ On-demand security review of code, infrastructure, or pipeline changes.
 /ops:security --commit <ref>      # specific commit
 ```
 
-| Step | What happens |
-|------|-------------|
-| Scope | Determine what to review based on arguments |
-| Triage | Identify which security domains are touched |
-| Review | Dispatch security-reviewer with scoped diff and context |
-| Report | Present findings with attack scenarios and fix recommendations |
-| Fix (optional) | Apply fixes if requested, re-verify with security-reviewer |
+| Step           | What happens                                                   |
+|----------------|----------------------------------------------------------------|
+| Scope          | Determine what to review based on arguments                    |
+| Triage         | Identify which security domains are touched                    |
+| Review         | Dispatch security-reviewer with scoped diff and context        |
+| Report         | Present findings with attack scenarios and fix recommendations |
+| Fix (optional) | Apply fixes if requested, re-verify with security-reviewer     |
 
 If no security-sensitive areas are found, reports that and offers to run anyway.
 
@@ -224,12 +224,12 @@ Evaluate code review feedback technically before acting.
 
 Use when you receive feedback from a human reviewer, CI check, or code-reviewer agent.
 
-| Feedback type | Response |
-|---------------|----------|
-| Factual ("bug on line 42") | Reproduce, confirm or refute with evidence |
-| Style ("use X pattern") | Check project conventions first, then evaluate on merit |
-| Architectural ("restructure this") | Evaluate against spec, discuss before changing |
-| Security ("vulnerable to X") | Always take seriously, verify attack vector, fix if confirmed |
+| Feedback type                      | Response                                                      |
+|------------------------------------|---------------------------------------------------------------|
+| Factual ("bug on line 42")         | Reproduce, confirm or refute with evidence                    |
+| Style ("use X pattern")            | Check project conventions first, then evaluate on merit       |
+| Architectural ("restructure this") | Evaluate against spec, discuss before changing                |
+| Security ("vulnerable to X")       | Always take seriously, verify attack vector, fix if confirmed |
 
 Rules: no performative agreement, no silent ignoring, no unverified changes. Push back with evidence when feedback is incorrect.
 
@@ -243,13 +243,13 @@ Commit, PR, and capture learnings.
 /ops:ship
 ```
 
-| Step | What happens |
-|------|-------------|
-| Verify | Run all validation commands, linters, tests |
-| Summarize | Files modified/created, what was done, deviations from plan |
-| Commit | Stage specific files, propose message, wait for approval |
-| PR (optional) | Push and create PR if requested |
-| Learnings | Problems solved, decisions made, gotchas, patterns that worked |
+| Step           | What happens                                                          |
+|----------------|-----------------------------------------------------------------------|
+| Verify         | Run all validation commands, linters, tests                           |
+| Summarize      | Files modified/created, what was done, deviations from plan           |
+| Commit         | Stage specific files, propose message, wait for approval              |
+| PR (optional)  | Push and create PR if requested                                       |
+| Learnings      | Problems solved, decisions made, gotchas, patterns that worked        |
 | Rule proposals | Recurring learnings proposed as `.claude/rules/` (with user approval) |
 
 Rules: never commit secrets, never push without approval, never skip validation.
@@ -262,13 +262,13 @@ Evidence before claims. Always active — not a workflow, a behavioral rule.
 
 This skill is **always on** across all other skills and outside of ops. It enforces one rule: **never claim a result without showing the evidence.**
 
-| Claim | Required evidence |
-|-------|-------------------|
-| "Tests pass" | Test command output showing 0 failures |
-| "Build succeeds" | Build command output with exit code 0 |
-| "No lint errors" | Linter output showing 0 warnings/errors |
-| "Fix works" | Original failing command now succeeds |
-| "Deploy succeeded" | Status command showing healthy state |
+| Claim              | Required evidence                       |
+|--------------------|-----------------------------------------|
+| "Tests pass"       | Test command output showing 0 failures  |
+| "Build succeeds"   | Build command output with exit code 0   |
+| "No lint errors"   | Linter output showing 0 warnings/errors |
+| "Fix works"        | Original failing command now succeeds   |
+| "Deploy succeeded" | Status command showing healthy state    |
 
 Red flags: "should", "probably", "seems to", "I believe" — if these appear instead of command output, the claim is unverified.
 
