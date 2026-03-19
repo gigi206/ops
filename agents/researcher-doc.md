@@ -1,6 +1,6 @@
 ---
 model: sonnet
-description: "Searches documentation for relevant libraries, tools, and APIs. Uses Context7 MCP as primary source, falls back to web search. Dispatched during /ops:plan research phase."
+description: "Searches documentation for relevant libraries, tools, and APIs. Uses Context7 MCP as primary source, falls back to web search. Dispatched during /ops:plan and /ops:do research phase."
 ---
 
 # researcher-doc — Documentation Research Agent

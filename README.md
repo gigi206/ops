@@ -9,6 +9,7 @@ ops enforces a staged workflow with explicit gates, parallel research, adversari
 ### Workflow
 
 ```
+/ops:do (lightweight)
 /ops:plan → /ops:implement → /ops:ship
                 ↑                ↑
            /ops:debug       /ops:security
@@ -16,6 +17,7 @@ ops enforces a staged workflow with explicit gates, parallel research, adversari
 ```
 
 - **`/ops:plan`** — Brainstorm with user, run parallel research (3 agents), write spec, decompose into tasks, adversarial critic review, user approval
+- **`/ops:do`** — Lightweight structured workflow: research, execute, verify, review. For well-understood tasks that don't need design discussion
 - **`/ops:implement`** — Execute tasks one by one via implementer agent, validation gates, conformity checks, code review, security escalation, circuit breakers
 - **`/ops:debug`** — Systematic root-cause investigation: hypothesize, test, fix, verify. Circuit breaker at 5 failed attempts
 - **`/ops:review`** — Evaluate code review feedback technically before acting. No performative agreement.
@@ -115,6 +117,32 @@ Brainstorm, research, and plan before writing code.
 | User approval      | Plan presented for final approval before implementation              |
 
 Agents used: **researcher-code**, **researcher-doc**, **git-historian**, **spec-reviewer**, **critic**
+
+---
+
+### `/ops:do`
+
+Lightweight structured workflow for well-understood tasks.
+
+```
+/ops:do <description of what you want to do>
+```
+
+| Step               | What happens                                                         |
+|--------------------|----------------------------------------------------------------------|
+| Environment setup  | Detect languages, check LSP availability                             |
+| Restatement        | Quick reformulation of intent — no brainstorming                     |
+| Research           | 2 agents in parallel: researcher-code, researcher-doc                |
+| Scope guard        | If too complex, suggest escalating to `/ops:plan`                    |
+| Tasks (optional)   | Light task breakdown based on decision complexity                    |
+| Execute            | Implement changes directly                                           |
+| Verify             | Build/compile check — evidence before claims                         |
+| Code review        | Light code review (1 cycle max)                                      |
+| Update docs        | Update documentation if affected                                     |
+| Run tests          | Run test suite if it exists (max 2 fix attempts)                     |
+| Check CLAUDE.md    | Verify all project rules were followed                               |
+
+Agents used: **researcher-code**, **researcher-doc**, **code-reviewer**
 
 ---
 
@@ -281,7 +309,7 @@ Red flags: "should", "probably", "seems to", "I believe" — if these appear ins
 - **Instruction priority** — user > CLAUDE.md > ops > system defaults. Conflicts resolved explicitly.
 - **TDD enforced** — the implementer follows Red-Green-Refactor with anti-rationalization gates and a deletion rule for code written before tests.
 - **Minimal hooks** — one SessionStart hook injects skill awareness. No keyword detection, no prompt interception, no hidden automation.
-- **Lightweight** — 240 KB, pure documentation + a small brainstorm server. No npm deps, no database, no compiled code.
+- **Lightweight** — ~380 KB, pure documentation + a small brainstorm server. No npm deps, no database, no compiled code.
 
 ## Structure
 
@@ -301,8 +329,9 @@ ops/
 ├── hooks/
 │   ├── hooks.json               # SessionStart hook config
 │   └── session-start            # Injects skill routing context
-├── skills/                      # 7 workflow skills
+├── skills/                      # 8 workflow skills
 │   ├── debug/SKILL.md
+│   ├── do/SKILL.md
 │   ├── implement/
 │   │   ├── SKILL.md
 │   │   ├── tdd-reference.md         # Full TDD methodology

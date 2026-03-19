@@ -34,7 +34,8 @@ The steps are: 0. Environment Setup → 1. Brainstorm WITH the user → 2. Conte
 | Work is done, ready to commit      | `/ops:ship`      | Commit, PR, capture learnings             |
 | Claiming something works           | `/ops:verify`    | Evidence before claims (always active)    |
 | Received code review feedback      | `/ops:review`    | Evaluate technically, don't agree blindly |
-| Quick fix you already understand   | No skill needed  | Just do it                                |
+| Small task, already understood     | `/ops:do`        | Research + execute + verify + review      |
+| Trivial fix (typo, rename)         | No skill needed  | Just do it                                |
 
 ## Overview
 

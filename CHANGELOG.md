@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.6.0 (2026-03-19)
+
+- feat: add `/ops:do` skill — lightweight structured workflow (research, execute, verify, review) for well-understood tasks
+
 ## 1.5.2 (2026-03-19)
 
 - feat: optimize review agent re-dispatch prompts — re-dispatches now include previous findings + corrections instead of full context

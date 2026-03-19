@@ -26,11 +26,13 @@ You have access to ops workflow skills. Before starting any non-trivial work, ch
 | Security audit on changes | `/ops:security` |
 | Work is done, ready to commit | `/ops:ship` |
 | Claiming something works | `/ops:verify` (always active) |
-| Quick fix you already understand | No skill needed |
+| Small task, already understood | `/ops:do` |
+| Trivial fix (typo, rename) | No skill needed |
 
 If the user describes a task that needs design or research, suggest `/ops:plan` before coding.
 If the user asks to commit or ship, suggest `/ops:ship`.
 If the user reports a bug, suggest `/ops:debug`.
+If the user describes a task that is well-understood and doesn't need design discussion, suggest `/ops:do` before coding.
 Do NOT force skills on trivial requests (rename a variable, fix a typo, answer a question).
 CONTEXT_EOF
 

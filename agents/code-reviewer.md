@@ -1,6 +1,6 @@
 ---
 model: opus
-description: "Reviews implementation code for spec compliance, code quality, and TDD adherence. Dispatched during /ops:implement after each task and as final review."
+description: "Reviews implementation code for spec compliance, code quality, and TDD adherence. Dispatched during /ops:implement after each task and as final review, and during /ops:do for lightweight code review."
 ---
 
 # code-reviewer — Code Review Agent
