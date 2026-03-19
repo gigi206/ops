@@ -75,7 +75,7 @@ This step runs BEFORE any brainstorming. If LSP needs fixing, the user may need 
 ### 0a. Detect languages
 
 Scan the codebase to identify the primary languages and frameworks:
-- Use Glob to check for file extensions (e.g., `**/*.py`, `**/*.ts`, `**/*.go`, `**/*.rs`, `**/*.java`, `**/*.rb`, `**/*.yaml`, `**/*.sh`)
+- Use Glob to check for file extensions (e.g., `**/*.py`, `**/*.ts`, `**/*.go`, `**/*.rs`, `**/*.java`, `**/*.rb`, `**/*.yaml`, `**/*.sh`, `**/*.tf`, `**/*.clj`, `**/*.dart`, `**/*.ex`, `**/*.gleam`, `**/*.nix`, `**/*.ml`, `**/*.zig`, `**/*.html`, `**/*.css`, `**/*.vue`, `**/*.scala`, `**/*.ps1`, `**/*.jl`, `**/*.tex`, `**/*.adb`, `**/*.ads`, `**/*.sol`)
 - Read config files that indicate the stack (`package.json`, `Cargo.toml`, `go.mod`, `requirements.txt`, `Gemfile`, `Makefile`, etc.)
 
 Present the detected languages to the user (one line is enough, e.g., "Languages detected: Python, TypeScript, YAML").
@@ -101,12 +101,17 @@ LSP documentSymbol on config/app.yaml:1:1
 
 #### Level 2: Check marketplaces
 
-The LSP plugins come from two marketplaces. Read `~/.claude/settings.json` → `extraKnownMarketplaces` to verify the user has the required one configured.
+The LSP plugins come from three marketplaces. Read `~/.claude/settings.json` → `extraKnownMarketplaces` to verify the user has the required one configured.
 
 | Marketplace | Repo | Languages covered | Add command |
 |-------------|------|-------------------|-------------|
 | `claude-plugins-official` | `anthropics/claude-plugins-official` | TypeScript, Python, Go, Rust, C/C++, Java, C#, PHP, Swift, Kotlin, Lua | `/plugin marketplace add anthropics/claude-plugins-official` |
-| `claude-code-lsps` | `boostvolt/claude-code-lsps` | Bash/Shell, YAML | `/plugin marketplace add boostvolt/claude-code-lsps` |
+| `claude-code-lsps` | `boostvolt/claude-code-lsps` | Bash/Shell, YAML, Terraform, Clojure, Dart/Flutter, Elixir, Gleam, Nix, OCaml, Ruby, Zig | `/plugin marketplace add boostvolt/claude-code-lsps` |
+| `claude-code-lsps` | `Piebald-AI/claude-code-lsps` | HTML/CSS, Vue, Scala, PowerShell, Julia, LaTeX, Ada, Solidity | `/plugin marketplace add Piebald-AI/claude-code-lsps` |
+
+> **Note :** `Piebald-AI/claude-code-lsps` est un dépôt communautaire (Piebald LLC). Il n'est pas affilié à Anthropic ni à boostvolt. Informer l'utilisateur avant de proposer son installation.
+
+**Priorité des marketplaces :** si un langage est couvert par plusieurs marketplaces, préférer dans cet ordre : `claude-plugins-official` → `boostvolt/claude-code-lsps` → `Piebald-AI/claude-code-lsps`.
 
 If the required marketplace is missing, tell the user and continue to Level 3.
 
@@ -129,6 +134,23 @@ Read `~/.claude/settings.json` → `enabledPlugins` to see if the LSP plugin is 
 | Lua | lua-lsp | `claude-plugins-official` | `/plugin install lua-lsp@claude-plugins-official` |
 | Bash/Shell | bash-language-server | `claude-code-lsps` | `/plugin install bash-language-server@claude-code-lsps` |
 | YAML | yaml-language-server | `claude-code-lsps` | `/plugin install yaml-language-server@claude-code-lsps` |
+| Terraform | terraform-ls | `claude-code-lsps` | `/plugin install terraform-ls@claude-code-lsps` |
+| Clojure | clojure-lsp | `claude-code-lsps` | `/plugin install clojure-lsp@claude-code-lsps` |
+| Dart/Flutter | dart-analyzer | `claude-code-lsps` | `/plugin install dart-analyzer@claude-code-lsps` |
+| Elixir | elixir-ls | `claude-code-lsps` | `/plugin install elixir-ls@claude-code-lsps` |
+| Gleam | gleam | `claude-code-lsps` | `/plugin install gleam@claude-code-lsps` |
+| Nix | nixd | `claude-code-lsps` | `/plugin install nixd@claude-code-lsps` |
+| OCaml | ocaml-lsp | `claude-code-lsps` | `/plugin install ocaml-lsp@claude-code-lsps` |
+| Ruby | solargraph | `claude-code-lsps` | `/plugin install solargraph@claude-code-lsps` |
+| Zig | zls | `claude-code-lsps` | `/plugin install zls@claude-code-lsps` |
+| HTML/CSS | vscode-langservers | `Piebald-AI/claude-code-lsps` | `/plugin install vscode-langservers@Piebald-AI/claude-code-lsps` |
+| Vue | vue-volar | `Piebald-AI/claude-code-lsps` | `/plugin install vue-volar@Piebald-AI/claude-code-lsps` |
+| Scala | metals | `Piebald-AI/claude-code-lsps` | `/plugin install metals@Piebald-AI/claude-code-lsps` |
+| PowerShell | powershell-editor-services | `Piebald-AI/claude-code-lsps` | `/plugin install powershell-editor-services@Piebald-AI/claude-code-lsps` |
+| Julia | julia-lsp | `Piebald-AI/claude-code-lsps` | `/plugin install julia-lsp@Piebald-AI/claude-code-lsps` |
+| LaTeX | texlab | `Piebald-AI/claude-code-lsps` | `/plugin install texlab@Piebald-AI/claude-code-lsps` |
+| Ada | ada-language-server | `Piebald-AI/claude-code-lsps` | `/plugin install ada-language-server@Piebald-AI/claude-code-lsps` |
+| Solidity | solidity-language-server | `Piebald-AI/claude-code-lsps` | `/plugin install solidity-language-server@Piebald-AI/claude-code-lsps` |
 
 - If the plugin is **not installed** → note it in the diagnostic table. Do NOT install it yet.
 - If the plugin is **installed but disabled** (`false` in `enabledPlugins`) → note it in the diagnostic table. Do NOT enable it yet.
@@ -154,6 +176,23 @@ Read `~/.claude/settings.json` → `enabledPlugins` to see if the LSP plugin is 
 | lua-lsp | `lua-language-server` | `which lua-language-server` |
 | bash-language-server | `bash-language-server` | `which bash-language-server` |
 | yaml-language-server | `yaml-language-server` | `which yaml-language-server` |
+| terraform-ls | `terraform-ls` | `which terraform-ls` |
+| clojure-lsp | `clojure-lsp` | `which clojure-lsp` |
+| dart-analyzer | `dart` | `which dart` |
+| elixir-ls | `elixir-ls` | `which elixir-ls` |
+| gleam | `gleam` | `which gleam` |
+| nixd | `nixd` | `which nixd` |
+| ocaml-lsp | `ocamllsp` | `which ocamllsp` |
+| solargraph | `solargraph` | `which solargraph` |
+| zls | `zls` | `which zls` |
+| vscode-langservers | `vscode-html-language-server` | `which vscode-html-language-server` |
+| vue-volar | `vue-language-server` | `which vue-language-server` |
+| metals | `metals` | `which metals` |
+| powershell-editor-services | `pwsh` | `which pwsh` |
+| julia-lsp | `julia` | `which julia` |
+| texlab | `texlab` | `which texlab` |
+| ada-language-server | `ada_language_server` | `which ada_language_server` |
+| solidity-language-server | `solidity-language-server` | `which solidity-language-server` |
 
 If the binary is missing, tell the user how to install it (e.g., `npm i -g typescript-language-server`, `pip install pyright`, `go install golang.org/x/tools/gopls@latest`). A restart of Claude Code is required after installing the binary.
 

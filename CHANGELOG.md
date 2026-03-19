@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.5.1 (2026-03-19)
+
+- feat: add Terraform, Clojure, Dart, Elixir, Gleam, Nix, OCaml, Ruby, Zig LSP support (boostvolt/claude-code-lsps)
+- feat: add Piebald-AI/claude-code-lsps as third marketplace (community) for HTML/CSS, Vue, Scala, PowerShell, Julia, LaTeX, Ada, Solidity
+- fix: clarify HARD-GATE-0 wording — "do not ask design questions" instead of "do not talk to user"
+
 ## 1.5.0 (2026-03-18)
 
 - feat: move language detection and LSP diagnostic to Step 0 (runs before brainstorming to catch restart-requiring issues early)
