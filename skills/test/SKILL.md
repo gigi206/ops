@@ -42,7 +42,7 @@ This is a soft gate — proceed if the user confirms or doesn't object.
 
 ## Step 2: Research (2 agents in parallel)
 
-Dispatch two agents **in parallel**:
+Dispatch two agents **in parallel** — both Agent tool_use blocks in a **single message** (see `ops:subagent-rules`):
 
 ### researcher-code
 - Explore the target code: behavior, dependencies, integration points

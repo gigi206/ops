@@ -41,7 +41,7 @@ Present the scope:
 
 ## Step 2: Research (2 agents in parallel)
 
-Dispatch two agents **in parallel**:
+Dispatch two agents **in parallel** — both Agent tool_use blocks in a **single message** (see `ops:subagent-rules`):
 
 ### researcher-code
 - Map the target code: structure, dependencies, integration points

@@ -172,7 +172,10 @@ This prevents building the wrong thing. A 10-second check saves hours of wasted 
 
 ### Gate
 
-**Do NOT proceed to context detection until the objective is clear and the scope is agreed.**
+**Do NOT proceed to context detection until:**
+- The objective is clear and the scope is agreed.
+- You have evaluated whether the topic involves visual questions (UI, layouts, mockups, diagrams).
+- If visual: you MUST have offered the visual companion before proceeding. If you skipped the offer, go back and make it now — it MUST be its own message, not combined with other questions.
 
 ### Visual Companion
 
@@ -299,7 +302,7 @@ Present the design in sections scaled to their complexity:
 
 ### 6b. Write spec document
 
-Once the user approves the design, write it to `docs/specs/YYYY-MM-DD-<topic>-design.md` and commit.
+Write the spec to `docs/specs/YYYY-MM-DD-<topic>-design.md`. Do NOT commit yet — the spec review loop may modify it.
 
 The spec captures the **what** and **why** — the plan (Step 7) captures the **how** (task breakdown).
 
@@ -309,17 +312,23 @@ User preferences for spec location override the default path.
 
 Dispatch the **spec-reviewer** agent to verify the spec is complete and ready for planning.
 
-1. If **Issues Found**: fix the issues, then **re-dispatch the spec-reviewer** following the `ops:redispatch-optimization` process. This re-dispatch is MANDATORY — the reviewer must confirm the fixes are adequate.
+1. If **Issues Found**:
+   - If the reviewer found **security-related issues** (permissions too broad, missing access checks, data exposure), present them to the user and wait for direction before fixing — security decisions should be transparent, not silently resolved.
+   - Fix the issues (for security issues, follow the user's direction).
+   - **Re-dispatch the spec-reviewer** following the `ops:redispatch-optimization` process. This re-dispatch is MANDATORY — the reviewer must confirm the fixes are adequate.
 2. Repeat until **Approved** (max 3 iterations).
 3. If still not approved after 3 iterations, surface the remaining issues to the user for guidance.
 
-### 6d. User reviews spec
+### 6d. Commit and present to user
 
-After the spec review loop passes, ask the user to review the written spec:
+After the spec review loop passes:
+
+1. Stage and commit the spec with git (`git add <path> && git commit -m "<descriptive message>"`). Do NOT say "committed" unless `git commit` succeeded — writing a file to disk is not a commit.
+2. Ask the user to review:
 
 > "Spec written and committed to `<path>`. Please review it and let me know if you want to make any changes before we start writing the implementation plan."
 
-Wait for the user's response. If they request changes, make them and re-run the spec review loop. Only proceed once the user approves.
+Wait for the user's response. If they request changes, make them, re-run the spec review loop, and commit again. Only proceed once the user approves.
 
 ---
 

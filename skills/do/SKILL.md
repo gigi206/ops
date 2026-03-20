@@ -31,7 +31,7 @@ This is NOT a gate — no user approval required. State what you understood and 
 
 ## Step 2: Research (2 agents in parallel)
 
-Dispatch two agents **in parallel** using the Agent tool:
+Dispatch two agents **in parallel** — both Agent tool_use blocks in a **single message** (see `ops:subagent-rules`):
 
 ### researcher-code
 - Explore the codebase for patterns, conventions, existing implementations, integration points, and risks relevant to the task.
@@ -80,7 +80,7 @@ Implement the changes directly (no implementer agent). If tasks were defined in 
 
 ### Security Gate
 
-Run the `ops:security-gate` process on the complete diff. If triggers match, the security-reviewer is dispatched in parallel with the code-reviewer.
+Run the `ops:security-gate` process on the complete diff. If triggers match, dispatch the security-reviewer in the **same message** as the code-reviewer (see `ops:subagent-rules`).
 
 ### Code Review (light)
 

@@ -15,7 +15,7 @@ When repeated failures occur, do NOT just stop and report. Diagnose the root cau
 
 ## Diagnostic process
 
-1. **Dispatch researcher-code and git-historian in parallel**:
+1. **Dispatch researcher-code and git-historian in parallel** — both Agent tool_use blocks in a **single message** (see `ops:subagent-rules`):
 
    **researcher-code**:
    - All error outputs and attempted fixes/implementations

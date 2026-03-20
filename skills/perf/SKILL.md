@@ -69,7 +69,7 @@ Record the baseline with exact numbers:
 
 ## Step 3: Research (2 agents in parallel)
 
-Dispatch two agents **in parallel**:
+Dispatch two agents **in parallel** — both Agent tool_use blocks in a **single message** (see `ops:subagent-rules`):
 
 ### researcher-code
 - Profile the target code: trace the hot path, identify where time is spent

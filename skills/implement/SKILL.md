@@ -80,7 +80,7 @@ TaskUpdate(id: <task_id>, status: "in_progress")
 **One task per agent.** Each implementer agent receives exactly ONE task from the plan. Do NOT bundle multiple tasks into a single agent prompt — even if they seem related or touch similar files.
 
 **Parallelization rules:**
-- Tasks with no dependency between them MAY be dispatched in parallel (multiple implementer agents at once).
+- Tasks with no dependency between them MAY be dispatched in parallel — all Agent tool_use blocks in a **single message** (see `ops:subagent-rules`).
 - But each parallel task MUST independently complete steps 2b–2e before being marked completed.
 - If Task B depends on files created/modified by Task A, Task B MUST wait until Task A's full pipeline is complete.
 - Maximum 3 implementer agents running in parallel — more than this makes conformity checks unmanageable.
@@ -211,7 +211,7 @@ Dispatch the **code-reviewer** agent with:
 - The project's CLAUDE.md rules (if the project has one)
 - Instruction to evaluate the implementation as a whole, not task by task
 
-If security triage is YES, dispatch the **security-reviewer** agent **in parallel** with:
+If security triage is YES, dispatch the **security-reviewer** agent **in parallel** (same message as code-reviewer) with:
 - The complete diff
 - The list of security triggers matched
 - The project's CLAUDE.md rules
@@ -244,7 +244,7 @@ The security-reviewer checks:
 ## Step 5: Completion
 
 After the final review passes:
-1. Run a final full validation (all validation commands from all tasks)
+1. **Run a final full validation (MANDATORY)**: re-run all validation commands from all tasks. Do NOT skip this — it catches cross-task regressions that per-task validation misses.
 2. **Verify task tracking is consistent**: run `TaskList` and confirm all tasks are either `completed` or `cancelled` — no tasks left `in_progress` or `pending`. This is a MANDATORY call, not a mental check. You MUST call `TaskList` and show the result.
 3. Present a summary:
    - Tasks completed: N/N (from `TaskList`)
@@ -253,7 +253,7 @@ After the final review passes:
    - Any concerns raised by the implementer (including DONE_WITH_CONCERNS)
    - Code review findings
    - Security review findings (if dispatched)
-3. **Capture learnings** — reflect on what happened during implementation:
+4. **Capture learnings** — reflect on what happened during implementation:
 
 ```markdown
 ## Learnings
@@ -273,4 +273,4 @@ After the final review passes:
 
 Include this section in the completion summary. If the user saves it (e.g., in a project doc or memory), it becomes searchable context for future tasks.
 
-4. Ask the user what to do next (commit, review, continue)
+5. Ask the user what to do next (commit, review, continue)

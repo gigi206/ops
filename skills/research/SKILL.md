@@ -35,7 +35,7 @@ Restate the user's question or topic in one sentence to confirm understanding. I
 
 ## Step 2: Parallel Research
 
-Spawn 3 agents **in parallel** using the Agent tool:
+Spawn 3 agents **in parallel** — all 3 Agent tool_use blocks in a **single message** (see `ops:subagent-rules`):
 
 ### researcher-code
 - Explore the codebase for patterns, conventions, existing implementations, integration points, and risks relevant to the topic.

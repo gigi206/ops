@@ -124,7 +124,7 @@ The code-reviewer checks: LSP diagnostics, code quality, security scan.
 **If Suggestions**: note, proceed.
 **If Approved**: proceed to Step 6.
 
-**Security escalation — MANDATORY when applicable**: If the fix touches any security-sensitive area (auth, APIs, secrets, encryption, user input, access control, network exposure, IaC, CI/CD, runtime privileges, dependencies, policy enforcement, data storage, or logging/audit), you MUST dispatch the **security-reviewer** in parallel (same rules as `/ops:implement` Step 2d).
+**Security escalation — MANDATORY when applicable**: If the fix touches any security-sensitive area (auth, APIs, secrets, encryption, user input, access control, network exposure, IaC, CI/CD, runtime privileges, dependencies, policy enforcement, data storage, or logging/audit), you MUST dispatch the **security-reviewer** in the **same message** as the code-reviewer (see `ops:subagent-rules`; same review handling rules as `/ops:implement` Step 4).
 
 **Trivial fix exception:** You may skip the code review ONLY if the fix modifies ≤1 file AND is a pure typo, comment edit, or single config value change with no logic involved.
 

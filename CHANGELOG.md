@@ -1,5 +1,29 @@
 # Changelog
 
+## 2.0.1 (2026-03-21)
+
+### Fixes from session 615af0fa analysis
+
+#### Parallel dispatch enforcement (11 skills)
+- fix: explicit "single message, multiple Agent tool_use blocks" rule in `ops:subagent-rules` — models were dispatching agents in separate messages (sequential) despite "in parallel" instructions
+- fix: inline reminders at every parallel dispatch site (research, implement, do, test, perf, refactor, circuit-breaker, review-pr, debug)
+- fix: `ops:subagent-rules` heading and description updated to reflect new parallelism scope
+
+#### Spec commit sequencing (plan)
+- fix: move spec git commit from Step 6b (before review) to Step 6d (after review loop) — previously, the committed version was stale if the spec-reviewer found issues
+- fix: explicit `git add && git commit` instruction with guard: "Do NOT say committed unless git commit succeeded"
+
+#### Visual Companion gate (plan)
+- fix: add visual companion check to brainstorm gate — model must evaluate whether the topic involves visual questions before proceeding to context detection
+
+#### Security transparency in spec review (plan)
+- fix: security-related issues found by spec-reviewer must be presented to user before fixing — security decisions should be transparent, not silently resolved
+
+#### Cross-reference and numbering fixes
+- fix: `debug/SKILL.md` cross-reference corrected from `/ops:implement Step 2d` (Discovery Check) to `Step 4` (Final Review)
+- fix: `implement/SKILL.md` Step 5 final validation marked MANDATORY with justification
+- fix: `implement/SKILL.md` Step 5 duplicate numbering (two `3.`) corrected to sequential 1-2-3-4-5
+
 ## 2.0.0 (2026-03-20)
 
 ### Composable phases architecture

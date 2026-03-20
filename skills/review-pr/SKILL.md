@@ -67,7 +67,7 @@ Dispatch the **pr-reviewer** agent with:
 
 ## Step 4: Security Gate
 
-Run the `ops:security-gate` process on the PR diff. If security triggers match, dispatch the **security-reviewer** in parallel — merge its findings into the final review.
+Run the `ops:security-gate` process on the PR diff. If security triggers match, dispatch the **security-reviewer** in the **same message** as the pr-reviewer (see `ops:subagent-rules`) — merge its findings into the final review.
 
 ---
 
