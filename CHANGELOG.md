@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.6.1 (2026-03-20)
+
+- feat: add Ansible LSP support (ansible-language-server via boostvolt/claude-code-lsps)
+- feat: add Ansible-specific detection in Step 0a (ansible.cfg, galaxy.yml, roles/, playbooks/ markers)
+
 ## 1.6.0 (2026-03-19)
 
 - feat: add `/ops:do` skill — lightweight structured workflow (research, execute, verify, review) for well-understood tasks

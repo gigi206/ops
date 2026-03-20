@@ -77,6 +77,7 @@ This step runs BEFORE any brainstorming. If LSP needs fixing, the user may need 
 
 Scan the codebase to identify the primary languages and frameworks:
 - Use Glob to check for file extensions (e.g., `**/*.py`, `**/*.ts`, `**/*.go`, `**/*.rs`, `**/*.java`, `**/*.rb`, `**/*.yaml`, `**/*.sh`, `**/*.tf`, `**/*.clj`, `**/*.dart`, `**/*.ex`, `**/*.gleam`, `**/*.nix`, `**/*.ml`, `**/*.zig`, `**/*.html`, `**/*.css`, `**/*.vue`, `**/*.scala`, `**/*.ps1`, `**/*.jl`, `**/*.tex`, `**/*.adb`, `**/*.ads`, `**/*.sol`)
+- **Ansible detection:** if `.yaml`/`.yml` files exist, check for Ansible markers: `ansible.cfg`, `galaxy.yml`, `playbooks/`, `roles/`, `inventory/`, or YAML files containing `hosts:` + `tasks:` patterns. If Ansible is detected, list it as a separate language from YAML.
 - Read config files that indicate the stack (`package.json`, `Cargo.toml`, `go.mod`, `requirements.txt`, `Gemfile`, `Makefile`, etc.)
 
 Present the detected languages to the user (one line is enough, e.g., "Languages detected: Python, TypeScript, YAML").
@@ -107,7 +108,7 @@ The LSP plugins come from three marketplaces. Read `~/.claude/settings.json` →
 | Marketplace               | Repo                                 | Languages covered                                                                        | Add command                                                  |
 |---------------------------|--------------------------------------|------------------------------------------------------------------------------------------|--------------------------------------------------------------|
 | `claude-plugins-official` | `anthropics/claude-plugins-official` | TypeScript, Python, Go, Rust, C/C++, Java, C#, PHP, Swift, Kotlin, Lua                   | `/plugin marketplace add anthropics/claude-plugins-official` |
-| `claude-code-lsps`        | `boostvolt/claude-code-lsps`         | Bash/Shell, YAML, Terraform, Clojure, Dart/Flutter, Elixir, Gleam, Nix, OCaml, Ruby, Zig | `/plugin marketplace add boostvolt/claude-code-lsps`         |
+| `claude-code-lsps`        | `boostvolt/claude-code-lsps`         | Ansible, Bash/Shell, YAML, Terraform, Clojure, Dart/Flutter, Elixir, Gleam, Nix, OCaml, Ruby, Zig | `/plugin marketplace add boostvolt/claude-code-lsps`         |
 | `claude-code-lsps`        | `Piebald-AI/claude-code-lsps`        | HTML/CSS, Vue, Scala, PowerShell, Julia, LaTeX, Ada, Solidity                            | `/plugin marketplace add Piebald-AI/claude-code-lsps`        |
 
 > **Note :** `Piebald-AI/claude-code-lsps` est un dépôt communautaire (Piebald LLC). Il n'est pas affilié à Anthropic ni à boostvolt. Informer l'utilisateur avant de proposer son installation.
@@ -133,6 +134,7 @@ Read `~/.claude/settings.json` → `enabledPlugins` to see if the LSP plugin is 
 | Swift                 | swift-lsp                  | `claude-plugins-official`     | `/plugin install swift-lsp@claude-plugins-official`                      |
 | Kotlin                | kotlin-lsp                 | `claude-plugins-official`     | `/plugin install kotlin-lsp@claude-plugins-official`                     |
 | Lua                   | lua-lsp                    | `claude-plugins-official`     | `/plugin install lua-lsp@claude-plugins-official`                        |
+| Ansible               | ansible-language-server    | `claude-code-lsps`            | `/plugin install ansible-language-server@claude-code-lsps`               |
 | Bash/Shell            | bash-language-server       | `claude-code-lsps`            | `/plugin install bash-language-server@claude-code-lsps`                  |
 | YAML                  | yaml-language-server       | `claude-code-lsps`            | `/plugin install yaml-language-server@claude-code-lsps`                  |
 | Terraform             | terraform-ls               | `claude-code-lsps`            | `/plugin install terraform-ls@claude-code-lsps`                          |
@@ -175,6 +177,7 @@ Read `~/.claude/settings.json` → `enabledPlugins` to see if the LSP plugin is 
 | swift-lsp                  | `sourcekit-lsp`               | `which sourcekit-lsp`               |
 | kotlin-lsp                 | `kotlin-language-server`      | `which kotlin-language-server`      |
 | lua-lsp                    | `lua-language-server`         | `which lua-language-server`         |
+| ansible-language-server    | `ansible-language-server`     | `which ansible-language-server`     |
 | bash-language-server       | `bash-language-server`        | `which bash-language-server`        |
 | yaml-language-server       | `yaml-language-server`        | `which yaml-language-server`        |
 | terraform-ls               | `terraform-ls`                | `which terraform-ls`                |
