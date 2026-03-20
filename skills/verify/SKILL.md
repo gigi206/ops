@@ -7,12 +7,7 @@ description: "Evidence before claims. Always."
 
 ## Instruction Priority
 
-When instructions conflict, follow this order:
-
-1. **User's explicit instructions** — highest priority.
-2. **CLAUDE.md project rules** — project-specific overrides.
-3. **ops skill instructions** — this document.
-4. **Default system prompt** — lowest priority.
+Follow the `ops:instruction-priority` rules when instructions conflict.
 
 ## Purpose
 

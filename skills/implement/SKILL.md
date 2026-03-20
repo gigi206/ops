@@ -19,21 +19,11 @@ Code review and security review happen ONCE at the end (Step 4), on the complete
 
 ## Instruction Priority
 
-When instructions conflict, follow this order:
+Follow the `ops:instruction-priority` rules when instructions conflict.
 
-1. **User's explicit instructions** — highest priority.
-2. **CLAUDE.md project rules** — project-specific overrides.
-3. **ops skill instructions** — this document.
-4. **Default system prompt** — lowest priority.
+## Subagent Rules
 
-## Subagent Context Rules
-
-When dispatching any subagent (implementer, code-reviewer, security-reviewer, researcher-code, git-historian — code-reviewer and security-reviewer are dispatched only at final review, Step 4):
-
-- **Provide content inline.** If you already read a file, paste the relevant content into the agent prompt. Do NOT ask the agent to re-read the same file.
-- **Scope the context.** Give the implementer only the current task + relevant context — not the entire plan. Give the code-reviewer only the diff + task description — not every file in the project.
-- **Name what you provide.** Always label pasted content with its source: `[From file.yaml:15-42]`. The agent needs to know where the content comes from.
-- **Let the agent explore beyond.** The agent can and should read additional files it discovers — the goal is to avoid redundant reads, not to limit scope.
+Before dispatching any agent in this skill, follow the `ops:subagent-rules` process.
 
 ## Prerequisite
 
@@ -91,7 +81,7 @@ TaskUpdate(id: <task_id>, status: "in_progress")
 
 **Parallelization rules:**
 - Tasks with no dependency between them MAY be dispatched in parallel (multiple implementer agents at once).
-- But each parallel task MUST independently complete steps 2b–2d before being marked completed.
+- But each parallel task MUST independently complete steps 2b–2e before being marked completed.
 - If Task B depends on files created/modified by Task A, Task B MUST wait until Task A's full pipeline is complete.
 - Maximum 3 implementer agents running in parallel — more than this makes conformity checks unmanageable.
 
@@ -152,45 +142,7 @@ TaskUpdate(id: <task_id>, status: "completed")
 
 ### 2d. Discovery Check
 
-After each task completes, check if the implementer reported discoveries — things that were unexpected, different from what the plan assumed, or newly learned.
-
-Categorize each discovery:
-
-#### Minor discovery
-*Something unexpected but doesn't affect the plan (e.g., "this file uses tabs instead of spaces").*
-
-→ Note it in the discovery log. Continue to next task.
-
-#### Significant discovery
-*Something that affects upcoming tasks but doesn't invalidate the approach (e.g., "the API returns XML, not JSON — tasks 5-6 need to parse XML instead").*
-
-→ **PAUSE implementation.** Present the discovery to the user with 2-3 options:
-
-> "During task N, I discovered that [description]. This affects [which tasks].
-> Options:
-> A) [Concrete adaptation — e.g., add XML parser to tasks 5-6]
-> B) [Alternative approach — e.g., use a different endpoint that returns JSON]
-> C) Something else?
-> Implementation is paused until you decide."
-
-Wait for user decision. Amend the remaining tasks accordingly, then resume.
-
-#### Major discovery
-*Something that invalidates the chosen approach (e.g., "the library doesn't support streaming — the entire architecture is compromised").*
-
-→ **STOP implementation.** Present the discovery to the user with options:
-
-> "During task N, I discovered that [description]. This fundamentally affects the approach.
-> Options:
-> A) [Alternative approach — e.g., switch to library Y which supports streaming]
-> B) [Reduced scope — e.g., implement without streaming, add later]
-> C) Replanify from scratch with `/ops:plan` using this new information
-> D) Something else?
-> Implementation is stopped until you decide."
-
-Wait for user decision. Depending on the choice, either amend and resume, or restart the planning cycle.
-
-**The implementer MUST NOT silently work around significant or major discoveries.** If the reality doesn't match the plan, the user must be informed and must decide.
+After each task completes, check if the implementer reported discoveries. The scope is "the current plan" and the pause target is "implementation". Categorize each discovery using the `ops:discovery-checks` process.
 
 ### 2e. Task Completion Record (MANDATORY)
 
@@ -220,39 +172,7 @@ If you skip this record for a task, you have skipped mandatory pipeline steps.
 
 **If 3+ consecutive tasks fail (circuit breaker):**
 
-Do NOT just stop and report. Diagnose the root cause first:
-
-1. **Dispatch researcher-code and git-historian in parallel**:
-
-   **researcher-code**:
-   - The 3+ error outputs
-   - The code produced by the implementer
-   - The relevant plan tasks
-   - Ask: "Why are these tasks failing? Is there a common root cause? Is the plan wrong?"
-
-   **git-historian** (Investigation Mode):
-   - Scope: files that failed
-   - Window: 30 days
-   - Focus: regressions — were these files recently changed? Any reverts or hotfixes?
-   - Look for suspect commits that might explain the failures
-
-2. **Combine diagnostics and present to the user** with options:
-   > "3+ consecutive tasks failed. Diagnosis by researcher-code + git-historian:
-   > [root cause analysis]
-   >
-   > Options:
-   > A) [Specific fix — e.g., add missing task 4.5 to configure session store, then retry tasks 5-7]
-   > B) [Alternative approach — e.g., switch to a different implementation strategy]
-   > C) Investigate further with `/ops:debug`
-   > D) Replanify with `/ops:plan` using these findings
-   > E) Abandon
-   > Implementation is stopped until you decide."
-
-3. **Wait for user decision.** Then:
-   - If A/B: amend the plan, resume implementation
-   - If C: hand off to `/ops:debug`
-   - If D: hand off to `/ops:plan` with the diagnostic as input
-   - If E: stop
+Trigger the `ops:circuit-breaker` process (threshold: 3+, window: 30 days for git-historian).
 
 ---
 
@@ -275,36 +195,13 @@ Before dispatching the final review, output this audit summary by counting from 
 
 **If fewer implementers were dispatched than tasks in the plan**, you bundled tasks — STOP and re-run the bundled tasks individually before proceeding.
 
+### Code Quality (MANDATORY)
+
+Run the `ops:code-quality` process on all modified files (format + lint). Fix any issues before dispatching reviewers.
+
 ### Security Triage (MANDATORY)
 
-Before dispatching reviewers, determine whether the security-reviewer is needed by evaluating the **complete diff** against these triggers:
-
-- Authentication, authorization, or identity federation
-- APIs, endpoints, or interfaces exposed beyond the trust boundary
-- Secrets, credentials, keys, or tokens (creation, storage, rotation, transmission)
-- Encryption, TLS, or certificate configuration
-- User input handling or data validation
-- Access control rules or permission models
-- Network exposure, firewall rules, or traffic policies
-- Infrastructure definitions (IaC) that provision or modify security-relevant resources
-- CI/CD pipeline configuration (build, deploy, release workflows)
-- Container, VM, or runtime privilege configuration
-- Dependency or supply chain changes (new packages, registries, image sources)
-- Policy enforcement, admission control, or compliance rules
-- Data storage, retention, or backup configuration handling sensitive data
-- Logging, audit, or observability configuration (risk of leaking sensitive data)
-
-**Output the triage result:**
-```
-## Security Triage
-- Security-sensitive areas in diff: YES / NO
-- Triggers matched: <list which triggers and which files>
-- Security-reviewer dispatch: YES / NOT NEEDED
-```
-
-If ANY trigger matches, dispatch the security-reviewer. If in doubt, dispatch — false positives are cheap; missed vulnerabilities are not.
-
-If you write "NO" when the diff clearly contains security-sensitive changes, you have FAILED this skill.
+Run the `ops:security-gate` process on the **complete diff** to determine whether the security-reviewer is needed, and handle re-verification if critical issues are found. If you write "NO" when the diff clearly contains security-sensitive changes, you have FAILED this skill.
 
 ### Dispatch Reviews
 
@@ -336,15 +233,7 @@ The security-reviewer checks:
 
 **If Critical issues found (code-reviewer)**: fix before proceeding to completion.
 
-**If Critical issues found (security-reviewer)**: fix the issues, then re-dispatch the security-reviewer to verify. Use an optimized re-review prompt:
-- Include the security-reviewer's previous findings
-- Describe the fixes applied and the reasoning behind each
-- Include the updated diff (re-run `git diff`)
-- Request the full standard verdict
-
-Do NOT re-include the full original diff or CLAUDE.md in the re-dispatch — the agent can access these itself.
-
-This is a **loop**: if the re-review surfaces new critical issues, fix them and re-dispatch again. Cap at **3 iterations**. If the security-reviewer has not approved after 3 rounds, stop and escalate to the user with a summary of all unresolved findings.
+**If Critical issues found (security-reviewer)**: the `ops:security-gate` re-verification loop handles this (fix → re-dispatch → cap 3 iterations).
 
 **If Important issues found**: fix or note for the user.
 **If Suggestions**: note for the user.

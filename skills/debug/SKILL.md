@@ -7,21 +7,11 @@ description: "Systematic debugging: investigate, hypothesize, fix."
 
 ## Instruction Priority
 
-When instructions conflict, follow this order:
+Follow the `ops:instruction-priority` rules when instructions conflict.
 
-1. **User's explicit instructions** — highest priority.
-2. **CLAUDE.md project rules** — project-specific overrides.
-3. **ops skill instructions** — this document.
-4. **Default system prompt** — lowest priority.
+## Subagent Rules
 
-## Subagent Context Rules
-
-When dispatching any subagent (git-historian, code-reviewer, security-reviewer, researcher-code):
-
-- **Provide content inline.** If you already read a file or error output, paste it into the agent prompt. Do NOT ask the agent to re-read the same file or re-run the same command.
-- **Scope the context.** Give the git-historian only the relevant file paths and error context. Give the code-reviewer only the diff of the fix. Do NOT dump the entire investigation.
-- **Name what you provide.** Always label pasted content: `[Error output from kubectl apply]`, `[From config.yaml:10-25]`.
-- **Let the agent explore beyond.** The agent can and should read additional files — the goal is to avoid redundant reads, not to limit scope.
+Before dispatching any agent in this skill, follow the `ops:subagent-rules` process.
 
 ## Philosophy
 
@@ -142,43 +132,7 @@ The code-reviewer checks: LSP diagnostics, code quality, security scan.
 
 ## Step 6: Discovery Check
 
-After the fix and code review, check if anything unexpected was revealed — by the fix itself, by the code-reviewer, or by the validation output.
-
-#### Minor discovery
-*Something unexpected but doesn't affect the fix (e.g., "the config file has inconsistent formatting").*
-
-→ Note it. Proceed to Step 7.
-
-#### Significant discovery
-*The bug is broader than initially diagnosed — other components are affected (e.g., "the same misconfiguration exists in 3 other services").*
-
-→ **PAUSE.** Present the discovery to the user with options:
-
-> "While fixing [original bug], I discovered that [description]. This affects [what else].
-> Options:
-> A) [Fix the original bug only — address the broader issue separately]
-> B) [Expand the fix to cover all affected components]
-> C) Plan a comprehensive fix with `/ops:plan`
-> D) Something else?
-> Debugging is paused until you decide."
-
-Wait for user decision, then proceed accordingly.
-
-#### Major discovery
-*The fix is a band-aid — the root cause is architectural (e.g., "this breaks because the module assumes synchronous calls, but the dependency switched to async in v3").*
-
-→ **STOP.** Present the discovery to the user with options:
-
-> "While fixing [original bug], I discovered that [description]. The real problem is architectural.
-> Options:
-> A) [Apply the band-aid fix now, plan the architectural fix separately]
-> B) [Skip the band-aid, plan the architectural fix with `/ops:plan`]
-> C) Something else?
-> Debugging is stopped until you decide."
-
-Wait for user decision.
-
-**The goal**: catch structural problems at the first fix attempt instead of looping 5 times until the circuit breaker triggers.
+After the fix and code review, check if anything unexpected was revealed — by the fix itself, by the code-reviewer, or by the validation output. Categorize each discovery using the `ops:discovery-checks` process. The scope is "the current fix" and the pause target is "debugging".
 
 ---
 
@@ -194,34 +148,4 @@ Only declare fixed after showing proof.
 
 ## Circuit Breaker
 
-**5+ failed fix attempts** = this is likely an architectural problem, not a simple bug.
-
-Do NOT just stop and report. Diagnose the root cause first:
-
-1. **Dispatch researcher-code and git-historian in parallel**:
-
-   **researcher-code**:
-   - The 5+ error outputs and attempted fixes
-   - The code/config being debugged
-   - Ask: "Why do all fix attempts fail? Is this a symptom of a deeper problem?"
-
-   **git-historian** (Investigation Mode):
-   - Scope: all files touched during debugging
-   - Window: 60 days (broader for architectural issues)
-   - Focus: regressions, architectural milestones — has this area been structurally changed recently?
-
-2. **Present the diagnostic to the user** with options:
-   > "5+ fix attempts failed. Diagnosis by researcher-code + git-historian:
-   > [root cause analysis]
-   >
-   > Options:
-   > A) [Specific fix — e.g., the real root cause is X, fix that instead]
-   > B) [Architectural change — e.g., this component needs restructuring]
-   > C) Plan a proper fix with `/ops:plan` using these findings
-   > D) Abandon
-   > Debugging is stopped until you decide."
-
-3. **Wait for user decision.** Then:
-   - If A: attempt the targeted fix
-   - If B/C: hand off to `/ops:plan` with the diagnostic as input
-   - If D: stop
+**5+ failed fix attempts** triggers the `ops:circuit-breaker` process (threshold: 5+, window: 60 days for git-historian). This is likely an architectural problem, not a simple bug.

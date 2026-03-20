@@ -37,29 +37,17 @@ The steps are: 0. Environment Setup → 1. Brainstorm WITH the user → 2. Conte
 | Small task, already understood     | `/ops:do`        | Research + execute + verify + review      |
 | Trivial fix (typo, rename)         | No skill needed  | Just do it                                |
 
+## Instruction Priority
+
+Follow the `ops:instruction-priority` rules when instructions conflict.
+
+## Subagent Rules
+
+Before dispatching any agent in this skill, follow the `ops:subagent-rules` process.
+
 ## Overview
 
 This skill runs before any implementation. It brainstorms the design with the user, gathers intelligence via parallel research agents, writes a detailed plan decomposed into tasks, and validates it through an adversarial critic.
-
-## Instruction Priority
-
-When instructions conflict, follow this order:
-
-1. **User's explicit instructions** — highest priority. If the user says "skip TDD", skip it.
-2. **CLAUDE.md project rules** — project-specific overrides.
-3. **ops skill instructions** — this document.
-4. **Default system prompt** — lowest priority.
-
-If a CLAUDE.md rule contradicts an ops skill instruction, follow CLAUDE.md. If the user contradicts CLAUDE.md, follow the user. When in doubt, ask.
-
-## Subagent Context Rules
-
-When dispatching any subagent (researcher-code, researcher-doc, git-historian, spec-reviewer, critic):
-
-- **Provide content inline.** If you already read a file, paste the relevant content into the agent prompt. Do NOT ask the agent to re-read the same file.
-- **Scope the context.** Give the agent only what it needs for its task — not the entire plan, not every file you've read. A researcher-code analyzing conventions needs the task area files, not the brainstorm transcript.
-- **Name what you provide.** Always label pasted content with its source: `[From src/auth/middleware.ts:15-42]`. The agent needs to know where the content comes from to cite it.
-- **Let the agent explore beyond.** Providing context doesn't mean restricting the agent. It can and should read additional files it discovers during exploration — the goal is to avoid redundant reads, not to limit scope.
 
 ## Workflow
 
@@ -75,189 +63,7 @@ This step runs BEFORE any brainstorming. If LSP needs fixing, the user may need 
 
 ### 0a. Detect languages
 
-Scan the codebase to identify the primary languages and frameworks:
-- Use Glob to check for file extensions (e.g., `**/*.py`, `**/*.ts`, `**/*.go`, `**/*.rs`, `**/*.java`, `**/*.rb`, `**/*.yaml`, `**/*.sh`, `**/*.tf`, `**/*.clj`, `**/*.dart`, `**/*.ex`, `**/*.gleam`, `**/*.nix`, `**/*.ml`, `**/*.zig`, `**/*.html`, `**/*.css`, `**/*.vue`, `**/*.scala`, `**/*.ps1`, `**/*.jl`, `**/*.tex`, `**/*.adb`, `**/*.ads`, `**/*.sol`)
-- **Ansible detection:** if `.yaml`/`.yml` files exist, check for Ansible markers: `ansible.cfg`, `galaxy.yml`, `playbooks/`, `roles/`, `inventory/`, or YAML files containing `hosts:` + `tasks:` patterns. If Ansible is detected, list it as a separate language from YAML.
-- Read config files that indicate the stack (`package.json`, `Cargo.toml`, `go.mod`, `requirements.txt`, `Gemfile`, `Makefile`, etc.)
-
-Present the detected languages to the user (one line is enough, e.g., "Languages detected: Python, TypeScript, YAML").
-
-### 0b. Check LSP availability
-
-LSP (Language Server Protocol) gives the agent real diagnostics (type errors, missing imports, syntax issues) instead of guessing. It makes every agent in the pipeline smarter.
-
-For each language detected in Step 0a, work through 4 levels. Stop as soon as LSP works for that language.
-
-#### Level 1: Test LSP per language
-
-For each detected language, pick a representative file and call `LSP documentSymbol` on it.
-- **If it returns symbols** → LSP is active for this language. Move on.
-- **If it returns an error** (e.g., "no server available") → this language has no working LSP. **Continue to Level 2.**
-
-Example: project has `.py`, `.sh`, `.yaml` files → test each:
-```
-LSP documentSymbol on src/main.py:1:1
-LSP documentSymbol on scripts/deploy.sh:1:1
-LSP documentSymbol on config/app.yaml:1:1
-```
-
-#### Level 2: Check marketplaces
-
-The LSP plugins come from three marketplaces. Read `~/.claude/settings.json` → `extraKnownMarketplaces` to verify the user has the required one configured.
-
-| Marketplace               | Repo                                 | Languages covered                                                                        | Add command                                                  |
-|---------------------------|--------------------------------------|------------------------------------------------------------------------------------------|--------------------------------------------------------------|
-| `claude-plugins-official` | `anthropics/claude-plugins-official` | TypeScript, Python, Go, Rust, C/C++, Java, C#, PHP, Swift, Kotlin, Lua                   | `/plugin marketplace add anthropics/claude-plugins-official` |
-| `claude-code-lsps`        | `boostvolt/claude-code-lsps`         | Ansible, Bash/Shell, YAML, Terraform, Clojure, Dart/Flutter, Elixir, Gleam, Nix, OCaml, Ruby, Zig | `/plugin marketplace add boostvolt/claude-code-lsps`         |
-| `claude-code-lsps`        | `Piebald-AI/claude-code-lsps`        | HTML/CSS, Vue, Scala, PowerShell, Julia, LaTeX, Ada, Solidity                            | `/plugin marketplace add Piebald-AI/claude-code-lsps`        |
-
-> **Note :** `Piebald-AI/claude-code-lsps` est un dépôt communautaire (Piebald LLC). Il n'est pas affilié à Anthropic ni à boostvolt. Informer l'utilisateur avant de proposer son installation.
-
-**Priorité des marketplaces :** si un langage est couvert par plusieurs marketplaces, préférer dans cet ordre : `claude-plugins-official` → `boostvolt/claude-code-lsps` → `Piebald-AI/claude-code-lsps`.
-
-If the required marketplace is missing, tell the user and continue to Level 3.
-
-#### Level 3: Check plugins
-
-Read `~/.claude/settings.json` → `enabledPlugins` to see if the LSP plugin is installed and enabled.
-
-| Language              | Plugin                     | Marketplace                   | Install command                                                          |
-|-----------------------|----------------------------|-------------------------------|--------------------------------------------------------------------------|
-| TypeScript/JavaScript | typescript-lsp             | `claude-plugins-official`     | `/plugin install typescript-lsp@claude-plugins-official`                 |
-| Python                | pyright-lsp                | `claude-plugins-official`     | `/plugin install pyright-lsp@claude-plugins-official`                    |
-| Go                    | gopls-lsp                  | `claude-plugins-official`     | `/plugin install gopls-lsp@claude-plugins-official`                      |
-| Rust                  | rust-analyzer-lsp          | `claude-plugins-official`     | `/plugin install rust-analyzer-lsp@claude-plugins-official`              |
-| C/C++                 | clangd-lsp                 | `claude-plugins-official`     | `/plugin install clangd-lsp@claude-plugins-official`                     |
-| Java                  | jdtls-lsp                  | `claude-plugins-official`     | `/plugin install jdtls-lsp@claude-plugins-official`                      |
-| C#                    | csharp-lsp                 | `claude-plugins-official`     | `/plugin install csharp-lsp@claude-plugins-official`                     |
-| PHP                   | php-lsp                    | `claude-plugins-official`     | `/plugin install php-lsp@claude-plugins-official`                        |
-| Swift                 | swift-lsp                  | `claude-plugins-official`     | `/plugin install swift-lsp@claude-plugins-official`                      |
-| Kotlin                | kotlin-lsp                 | `claude-plugins-official`     | `/plugin install kotlin-lsp@claude-plugins-official`                     |
-| Lua                   | lua-lsp                    | `claude-plugins-official`     | `/plugin install lua-lsp@claude-plugins-official`                        |
-| Ansible               | ansible-language-server    | `claude-code-lsps`            | `/plugin install ansible-language-server@claude-code-lsps`               |
-| Bash/Shell            | bash-language-server       | `claude-code-lsps`            | `/plugin install bash-language-server@claude-code-lsps`                  |
-| YAML                  | yaml-language-server       | `claude-code-lsps`            | `/plugin install yaml-language-server@claude-code-lsps`                  |
-| Terraform             | terraform-ls               | `claude-code-lsps`            | `/plugin install terraform-ls@claude-code-lsps`                          |
-| Clojure               | clojure-lsp                | `claude-code-lsps`            | `/plugin install clojure-lsp@claude-code-lsps`                           |
-| Dart/Flutter          | dart-analyzer              | `claude-code-lsps`            | `/plugin install dart-analyzer@claude-code-lsps`                         |
-| Elixir                | elixir-ls                  | `claude-code-lsps`            | `/plugin install elixir-ls@claude-code-lsps`                             |
-| Gleam                 | gleam                      | `claude-code-lsps`            | `/plugin install gleam@claude-code-lsps`                                 |
-| Nix                   | nixd                       | `claude-code-lsps`            | `/plugin install nixd@claude-code-lsps`                                  |
-| OCaml                 | ocaml-lsp                  | `claude-code-lsps`            | `/plugin install ocaml-lsp@claude-code-lsps`                             |
-| Ruby                  | solargraph                 | `claude-code-lsps`            | `/plugin install solargraph@claude-code-lsps`                            |
-| Zig                   | zls                        | `claude-code-lsps`            | `/plugin install zls@claude-code-lsps`                                   |
-| HTML/CSS              | vscode-langservers         | `Piebald-AI/claude-code-lsps` | `/plugin install vscode-langservers@Piebald-AI/claude-code-lsps`         |
-| Vue                   | vue-volar                  | `Piebald-AI/claude-code-lsps` | `/plugin install vue-volar@Piebald-AI/claude-code-lsps`                  |
-| Scala                 | metals                     | `Piebald-AI/claude-code-lsps` | `/plugin install metals@Piebald-AI/claude-code-lsps`                     |
-| PowerShell            | powershell-editor-services | `Piebald-AI/claude-code-lsps` | `/plugin install powershell-editor-services@Piebald-AI/claude-code-lsps` |
-| Julia                 | julia-lsp                  | `Piebald-AI/claude-code-lsps` | `/plugin install julia-lsp@Piebald-AI/claude-code-lsps`                  |
-| LaTeX                 | texlab                     | `Piebald-AI/claude-code-lsps` | `/plugin install texlab@Piebald-AI/claude-code-lsps`                     |
-| Ada                   | ada-language-server        | `Piebald-AI/claude-code-lsps` | `/plugin install ada-language-server@Piebald-AI/claude-code-lsps`        |
-| Solidity              | solidity-language-server   | `Piebald-AI/claude-code-lsps` | `/plugin install solidity-language-server@Piebald-AI/claude-code-lsps`   |
-
-- If the plugin is **not installed** → note it in the diagnostic table. Do NOT install it yet.
-- If the plugin is **installed but disabled** (`false` in `enabledPlugins`) → note it in the diagnostic table. Do NOT enable it yet.
-
-**Do NOT fix anything at this stage.** Levels 1-4 are diagnostic only. Fixes happen after the user chooses option C in the "After the diagnostic table" section.
-
-#### Level 4: Check LSP binary
-
-**Always run this level** for any language where Level 1 failed, regardless of the plugin state. The binary is required for LSP to work — if the plugin is fixable (Level 3) but the binary is missing, enabling the plugin alone won't help.
-
-| Plugin                     | Binary                        | Check command                       |
-|----------------------------|-------------------------------|-------------------------------------|
-| typescript-lsp             | `typescript-language-server`  | `which typescript-language-server`  |
-| pyright-lsp                | `pyright`                     | `which pyright`                     |
-| gopls-lsp                  | `gopls`                       | `which gopls`                       |
-| rust-analyzer-lsp          | `rust-analyzer`               | `which rust-analyzer`               |
-| clangd-lsp                 | `clangd`                      | `which clangd`                      |
-| jdtls-lsp                  | `jdtls`                       | `which jdtls`                       |
-| csharp-lsp                 | `OmniSharp`                   | `which OmniSharp`                   |
-| php-lsp                    | `phpactor`                    | `which phpactor`                    |
-| swift-lsp                  | `sourcekit-lsp`               | `which sourcekit-lsp`               |
-| kotlin-lsp                 | `kotlin-language-server`      | `which kotlin-language-server`      |
-| lua-lsp                    | `lua-language-server`         | `which lua-language-server`         |
-| ansible-language-server    | `ansible-language-server`     | `which ansible-language-server`     |
-| bash-language-server       | `bash-language-server`        | `which bash-language-server`        |
-| yaml-language-server       | `yaml-language-server`        | `which yaml-language-server`        |
-| terraform-ls               | `terraform-ls`                | `which terraform-ls`                |
-| clojure-lsp                | `clojure-lsp`                 | `which clojure-lsp`                 |
-| dart-analyzer              | `dart`                        | `which dart`                        |
-| elixir-ls                  | `elixir-ls`                   | `which elixir-ls`                   |
-| gleam                      | `gleam`                       | `which gleam`                       |
-| nixd                       | `nixd`                        | `which nixd`                        |
-| ocaml-lsp                  | `ocamllsp`                    | `which ocamllsp`                    |
-| solargraph                 | `solargraph`                  | `which solargraph`                  |
-| zls                        | `zls`                         | `which zls`                         |
-| vscode-langservers         | `vscode-html-language-server` | `which vscode-html-language-server` |
-| vue-volar                  | `vue-language-server`         | `which vue-language-server`         |
-| metals                     | `metals`                      | `which metals`                      |
-| powershell-editor-services | `pwsh`                        | `which pwsh`                        |
-| julia-lsp                  | `julia`                       | `which julia`                       |
-| texlab                     | `texlab`                      | `which texlab`                      |
-| ada-language-server        | `ada_language_server`         | `which ada_language_server`         |
-| solidity-language-server   | `solidity-language-server`    | `which solidity-language-server`    |
-
-If the binary is missing, tell the user how to install it (e.g., `npm i -g typescript-language-server`, `pip install pyright`, `go install golang.org/x/tools/gopls@latest`). A restart of Claude Code is required after installing the binary.
-
-#### Rules
-
-- Only check languages actually found in the project. Do NOT list the entire table.
-- Levels 1-4 are **diagnostic only**. Do NOT install, enable, or fix anything during the diagnostic. The user decides what to do in the next step.
-
-#### Mandatory output
-
-You MUST present this table for each language where Level 1 failed:
-
-| Language | Level 1   | Level 2 (marketplace) | Level 3 (plugin) | Level 4 (binary) | Fix |
-|----------|-----------|-----------------------|------------------|------------------|-----|
-| Python   | No server | ?                     | ?                | ?                | ?   |
-
-Fill in every column. If you say "LSP unavailable" without showing this table with all levels checked, you have FAILED this skill.
-
-#### After the diagnostic table
-
-If nothing needed fixing (all LSP working) → proceed to Step 1 directly.
-
-If fixes are needed, present the fix commands and options **in the user's language** (match the language they used in their message).
-
-First, list ALL the commands grouped by category:
-- **Plugin commands**: `claude plugin enable/install ...`
-- **Binary commands** (if missing): `pip install pyright`, `npm i -g typescript-language-server typescript`, etc.
-
-Then present the options. Only show the options that are relevant to the diagnostic:
-- Always show **A** and **B**.
-- Show **C** only if there are plugin fixes (enable/install).
-- Show **D** only if there are BOTH plugin fixes AND missing binaries.
-
-Example in English:
-
-> Here are the commands to fix LSP:
->
-> Plugins:
-> ```
-> claude plugin enable pyright-lsp@claude-plugins-official
-> claude plugin enable typescript-lsp@claude-plugins-official
-> ```
-> Binaries:
-> ```
-> pip install pyright
-> npm i -g typescript-language-server typescript
-> ```
->
-> What do you prefer?
-> **A)** Continue without LSP
-> **B)** I'll handle it myself — here are the commands above
-> **C)** Install/enable plugins only (I run the plugin commands for you)
-> **D)** Install everything (I run all commands — plugins + binaries)
-
-**Wait for the user's answer.** Do NOT proceed to Step 1 (Brainstorm) until the user has responded.
-- **A** → proceed to Step 1 without LSP.
-- **B** → stop here, the user will fix and relaunch.
-- **C** → list the exact commands you are about to run, then execute only the `claude plugin enable/install` commands via Bash. After execution, ask the user to type `/reload-plugins` in the prompt. Wait for confirmation, re-run Level 1 LSP tests, then proceed to Step 1.
-- **D** → list the exact commands you are about to run (both binary installs and plugin commands), then execute them all via Bash. After execution, ask the user to type `/reload-plugins`. Wait for confirmation, re-run Level 1 LSP tests, then proceed to Step 1.
-
-For C and D: always show the user what you will run BEFORE running it. Transparency is mandatory.
+Run the `ops:environment-setup` process (detect languages + LSP diagnostic). Wait for the user's decision before proceeding to Step 1.
 
 ---
 
@@ -397,32 +203,7 @@ Read CLAUDE.md (if it exists), directory structure, and key config files to unde
 
 ## Step 3: Parallel Research
 
-Spawn 3 agents **in parallel** using the Agent tool:
-
-### researcher-doc
-- Query Context7 MCP for relevant library/tool documentation
-- If Context7 returns insufficient results, fall back to WebSearch + WebFetch
-- Focus: official docs, API schemas, configuration references for the specific versions involved
-
-### researcher-code
-- Explore the codebase for patterns, conventions, and existing implementations
-- Find similar existing code that can serve as a template
-- Identify dependencies, integration points, and files to create/modify
-- **Map architecture**: Trace the dependency chain for the task area (what depends on what, what breaks if this changes)
-- **Flag risks**: Note missing tests, fragile patterns, or undocumented assumptions found in the code
-
-### git-historian — Research Mode
-- Scope: files and directories relevant to the task
-- Window: 6 months
-- Focus: all (timeline, regressions, ownership, hotspots, architectural milestones)
-- Build commit timeline for the task area
-- Detect regressions: reverts, hotfixes, rollbacks
-- Map ownership: who maintains this code, who touched it recently
-- Identify hotspots: high-churn files (risk indicators)
-- Find architectural milestones: past design decisions, migrations, refactors
-- **Output**: structured YAML with risk assessment (HIGH/MEDIUM/LOW per area)
-
-**Wait for all 3 agents to return before proceeding.**
+Run the `ops:research` process (Steps 2-3: dispatch 3 agents in parallel — researcher-code, researcher-doc, git-historian — and synthesize findings). Scope the research to the task area identified during brainstorming.
 
 ---
 
@@ -528,14 +309,9 @@ User preferences for spec location override the default path.
 
 Dispatch the **spec-reviewer** agent to verify the spec is complete and ready for planning.
 
-1. If **Issues Found**: fix the issues, then **re-dispatch the spec-reviewer** on the updated spec. This re-dispatch is MANDATORY — the reviewer must confirm the fixes are adequate. Do NOT assume your fixes are correct without re-verification.
-2. **Re-dispatch prompts must be optimized.** Do NOT re-include the full spec inline — the agent can re-read it at the file path. The re-dispatch prompt must contain only:
-   - The spec-reviewer's previous findings (the issues list verbatim)
-   - The corrections applied and the rationale for each
-   - The path to the updated spec file (so the agent re-reads it fresh)
-   - A request to produce the full standard verdict (`Status: Approved` / `Status: Issues Found`)
-3. Repeat until **Approved** (max 3 iterations)
-4. If still not approved after 3 iterations, surface the remaining issues to the user for guidance
+1. If **Issues Found**: fix the issues, then **re-dispatch the spec-reviewer** following the `ops:redispatch-optimization` process. This re-dispatch is MANDATORY — the reviewer must confirm the fixes are adequate.
+2. Repeat until **Approved** (max 3 iterations).
+3. If still not approved after 3 iterations, surface the remaining issues to the user for guidance.
 
 ### 6d. User reviews spec
 
@@ -608,9 +384,7 @@ The critic:
 6. **Escalation**: If CRITICAL found or 3+ IMPORTANT → adversarial mode (expand scope, challenge every decision)
 7. **Verdict**: APPROVE or REJECT with confidence levels and perspective attribution
 
-**If REJECT**: Revise the plan addressing the critic's concerns, then **re-dispatch the critic** with the revised plan. This re-dispatch is MANDATORY — do NOT skip it. The critic must verify that the fixes actually address the concerns. Maximum 3 iterations. If still rejected after 3 rounds, present both the plan and the critic's concerns to the user for decision.
-
-The re-dispatch prompt must be optimized: include the critic's specific concerns/findings, the corrections you applied to the plan, and a request to produce the full standard verdict (Verdict: APPROVE / REJECT with confidence levels and perspective attribution). Do NOT re-include the full plan in the prompt — the agent can re-read the relevant sections itself.
+**If REJECT**: Revise the plan addressing the critic's concerns, then **re-dispatch the critic** following the `ops:redispatch-optimization` process. This re-dispatch is MANDATORY — do NOT skip it. Maximum 3 iterations. If still rejected after 3 rounds, present both the plan and the critic's concerns to the user for decision.
 
 If you fix the critic's concerns but do not re-dispatch the critic, you have FAILED this skill. The whole point of the critic is adversarial validation — bypassing the re-check defeats the purpose.
 
@@ -622,7 +396,7 @@ If you fix the critic's concerns but do not re-dispatch the critic, you have FAI
 
 Present the validated plan to the user with an explicit question:
 
-> "Le plan est validé par le critic. Tu veux le lancer tel quel, modifier quelque chose, ou revoir un point ?"
+> "The plan has been validated by the critic. Do you want to launch it as-is, modify something, or review a specific point?"
 
 Do NOT proceed to `/ops:implement` until the user explicitly approves. The user invoking `/ops:implement` counts as approval, but you should still ask before they need to invoke it.
 

@@ -7,12 +7,7 @@ description: "Receive and evaluate code review feedback."
 
 ## Instruction Priority
 
-When instructions conflict, follow this order:
-
-1. **User's explicit instructions** — highest priority.
-2. **CLAUDE.md project rules** — project-specific overrides.
-3. **ops skill instructions** — this document.
-4. **Default system prompt** — lowest priority.
+Follow the `ops:instruction-priority` rules when instructions conflict.
 
 ## Purpose
 

@@ -1,5 +1,56 @@
 # Changelog
 
+## 2.0.0 (2026-03-20)
+
+### Composable phases architecture
+
+Extracted ~400 lines of duplicated content from 8 skills into 8 reusable internal phases. Skills now reference phases instead of inlining shared content.
+
+#### New internal phases (`user-invocable: false`)
+- `ops:instruction-priority` — instruction hierarchy (user > CLAUDE.md > ops skill > system prompt)
+- `ops:subagent-rules` — context rules for dispatching subagents
+- `ops:environment-setup` — language/framework detection + 4-level LSP diagnostic (test, marketplace, plugin, binary)
+- `ops:code-quality` — format + lint modified files before code review
+- `ops:discovery-checks` — Minor/Significant/Major discovery categorization
+- `ops:circuit-breaker` — repeated failure diagnostic (researcher-code + git-historian)
+- `ops:security-gate` — triage (14 triggers) + dispatch security-reviewer + re-verification loop (cap 3)
+- `ops:redispatch-optimization` — generic re-dispatch prompt optimization pattern
+
+#### New skills
+- `/ops:research` — autonomous exploration: dispatches researcher-code + researcher-doc + git-historian in parallel
+- `/ops:brainstorm` — interactive Socratic brainstorming extracted from /ops:plan Step 1
+- `/ops:full` — meta-pipeline: chains /ops:plan → user approval → /ops:implement → /ops:ship
+- `/ops:test` — add tests to existing untested code (dispatches test-writer agent)
+- `/ops:refactor` — restructure code without changing behavior (coverage gate → incremental steps → verify)
+- `/ops:perf` — performance investigation and optimization (baseline → profile → optimize → measure)
+- `/ops:review-pr` — review external PRs (dispatches pr-reviewer agent + security-gate)
+
+#### New agents
+- `test-writer` — analyzes existing code and writes meaningful tests (behavior, not implementation)
+- `pr-reviewer` — reviews external PRs with structured actionable comments
+
+#### Refactored skills
+- `/ops:plan` — removed inline instruction-priority, subagent-rules, environment-setup, lsp-setup, redispatch-optimization
+- `/ops:implement` — removed inline instruction-priority, subagent-rules, discovery-checks, circuit-breaker, security-triage, security-redispatch, redispatch-optimization
+- `/ops:do` — removed inline instruction-priority, subagent-rules, environment-setup, lsp-setup
+- `/ops:debug` — removed inline instruction-priority, subagent-rules, discovery-checks, circuit-breaker
+- `/ops:security` — removed inline instruction-priority, security-triage, security-redispatch
+- `/ops:verify` — removed inline instruction-priority
+- `/ops:review` — removed inline instruction-priority
+- `/ops:ship` — removed inline instruction-priority
+
+#### Harmonization
+- Ansible detection added to `ops:environment-setup` (previously only in `/ops:plan` inline)
+- Ansible LSP entry added to boostvolt marketplace table in `ops:environment-setup`
+- Instruction-priority extracted into `ops:instruction-priority` phase and referenced from all 11 user-facing skills
+
+#### Hook updated
+- SessionStart routing table expanded: 15 entries (was 8) — added research, brainstorm, full, test, refactor, perf, review-pr
+
+#### Stats
+- Skills: 8 → 15 user-facing + 8 internal phases = 23 total
+- Agents: 8 → 10 (+test-writer, +pr-reviewer)
+
 ## 1.6.1 (2026-03-20)
 
 - feat: add Ansible LSP support (ansible-language-server via boostvolt/claude-code-lsps)

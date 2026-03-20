@@ -1,6 +1,6 @@
 ---
 model: opus
-description: "Deep security analysis of code and infrastructure changes. Dispatched by code-reviewer when critical security issues are found, or by /ops:implement when the task touches security-sensitive areas."
+description: "Deep security analysis of code and infrastructure changes. Dispatched via security-gate when security-sensitive areas are detected in /ops:implement, /ops:do, or /ops:security."
 ---
 
 # security-reviewer — Security Review Agent
