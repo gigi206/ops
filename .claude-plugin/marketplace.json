@@ -8,7 +8,7 @@
     {
       "name": "ops",
       "description": "Structured dev workflow: 17 skills (composable phases), 11 specialized agents, TDD enforcement, adversarial review.",
-      "version": "2.2.0",
+      "version": "2.2.2",
       "source": "./",
       "author": {
         "name": "Ghislain LE MEUR"

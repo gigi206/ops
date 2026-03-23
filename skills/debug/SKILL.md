@@ -118,23 +118,31 @@ Do NOT fix symptoms. Fix the root cause.
 
 ---
 
-## Step 5: Code Review
+## Step 5: Code Quality + Code Review
+
+### Code Quality
+
+Run the `ops:code-quality` process on all modified files. Fix any issues before dispatching reviewers.
+
+### Security Gate
+
+Run the `ops:security-gate` process on the diff of the fix. If triggers match, dispatch the security-reviewer in the **same message** as the code-reviewer (see `ops:subagent-rules`).
+
+### Code Review
 
 Dispatch the **code-reviewer** agent with:
 - The root cause hypothesis that was confirmed
 - The diff of the fix
 - The project's CLAUDE.md rules (if the project has one)
 
-The code-reviewer checks: LSP diagnostics, code quality, security scan.
+The code-reviewer checks: LSP diagnostics, code quality, conventions.
 
 **If Critical issues found**: fix before proceeding to verification.
 **If Important issues found**: fix before proceeding to verification.
 **If Suggestions**: note, proceed.
 **If Approved**: proceed to Step 6.
 
-**Security escalation — MANDATORY when applicable**: If the fix touches any security-sensitive area (auth, APIs, secrets, encryption, user input, access control, network exposure, IaC, CI/CD, runtime privileges, dependencies, policy enforcement, data storage, or logging/audit), you MUST dispatch the **security-reviewer** in the **same message** as the code-reviewer (see `ops:subagent-rules`; same review handling rules as `/ops:implement` Step 4).
-
-**Trivial fix exception:** You may skip the code review ONLY if the fix modifies ≤1 file AND is a pure typo, comment edit, or single config value change with no logic involved.
+**Trivial fix exception:** You may skip code quality and code review ONLY if the fix modifies ≤1 file AND is a pure typo, comment edit, or single config value change with no logic involved.
 
 ---
 

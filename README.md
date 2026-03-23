@@ -31,6 +31,9 @@ A structured development workflow plugin for Claude Code. Plan, implement, debug
 /ops:clone-analyze how does express handle middleware error propagation
 /ops:brainstorm I need some kind of caching layer
 /ops:security
+
+# Useful combo
+/ops:brainstorm → /ops:do         clarify needs first, then execute
 ```
 
 ## What it does
@@ -176,10 +179,10 @@ Shared logic extracted from skills. Not callable by the user — invoked program
 |---|---|---|
 | `ops:instruction-priority` | Instruction hierarchy (user > CLAUDE.md > ops skill > system prompt) | all skills |
 | `ops:subagent-rules` | Context rules for dispatching subagents (inline content, scoping, labeling) | plan, implement, do, debug, research, clone-analyze, test, refactor, perf, review-pr |
-| `ops:code-quality` | Format + lint modified files (qlty or project tools) before code review | implement, do, test, refactor, perf |
+| `ops:code-quality` | Format, lint, and structural analysis (smells, metrics) on modified files (qlty or project tools) before code review | implement, do, debug, test, refactor, perf |
 | `ops:discovery-checks` | Categorize unexpected discoveries (Minor / Significant / Major) | implement, debug |
 | `ops:circuit-breaker` | Diagnose repeated failures (researcher-code + git-historian) | implement (3+ failures), debug (5+ failures) |
-| `ops:security-gate` | Triage (14 triggers) + SAST scan (semgrep) + dispatch security-reviewer + re-verification loop (cap 3) | implement, do, security, review-pr |
+| `ops:security-gate` | Triage (14 triggers) + SAST scan (semgrep, diff-aware) + qlty security findings + dispatch security-reviewer + re-verification loop (cap 3) | implement, do, debug, security, review-pr |
 | `ops:redispatch-optimization` | Generic re-dispatch prompt optimization for review agents | plan (spec-reviewer, critic), implement (code-reviewer), security (security-reviewer) |
 
 ### Agents
@@ -238,7 +241,7 @@ This detects languages, LSP availability, code quality tools (qlty), security an
 - **Git** — needed by the git-historian agent (optional, skipped if unavailable)
 - **Context7 MCP** — needed by researcher-doc (optional, falls back to web search). Install: `/plugin install context7@claude-plugins-official`
 - **chrome-devtools-mcp** — needed by ops:debug for browser debugging, accessibility audits, LCP optimization (optional). Install: `/plugin install chrome-devtools-mcp@chrome-devtools-plugins`
-- **qlty** — optional, used by code-quality for unified formatting and linting (install: `curl https://qlty.sh | bash`)
+- **qlty** — optional, used by code-quality for unified formatting, linting, and structural analysis (smells, metrics, security plugins) (install: `curl https://qlty.sh | bash`)
 - **semgrep** — optional, used by security-gate for SAST scanning (install: `pip install semgrep`)
 
 No npm dependencies. No database. No compiled binaries.
@@ -339,7 +342,7 @@ Lightweight structured workflow for well-understood tasks.
 | Scope guard                  | If too complex, suggest escalating to `/ops:plan`                    |
 | Tasks (optional)             | Light task breakdown based on decision complexity                    |
 | Execute                      | Implement changes directly                                           |
-| Verify + Code quality        | Build/compile check + format/lint (`ops:code-quality`, qlty or project tools) |
+| Verify + Code quality        | Build/compile check + format, lint, structural analysis (`ops:code-quality`, qlty or project tools) |
 | Security gate + Code review  | Security triage + light code review (1 cycle max)                    |
 | Tests + Docs + CLAUDE.md     | Run tests, update docs, verify project rules                        |
 
@@ -378,7 +381,7 @@ Each task goes through the full pipeline:
 | Conformity check | Diff vs. plan — no drift, no secrets, conventions preserved            |
 | Discovery check  | Pause on significant findings, stop on major discoveries               |
 
-After all tasks: code quality (`ops:code-quality`, qlty or project tools) → security triage → final review (code-reviewer + security-reviewer if applicable).
+After all tasks: code quality (`ops:code-quality`: format, lint, smells, metrics) → security triage (semgrep + qlty findings) → final review (code-reviewer + security-reviewer if applicable).
 
 **Security escalation triggers** — the security-reviewer is dispatched when the task touches:
 
@@ -432,7 +435,7 @@ Systematic debugging: investigate, hypothesize, fix.
 | Hypothesize     | Max 3 hypotheses with supporting evidence and disproof criteria           |
 | Test            | Confirm or refute each hypothesis with minimal tests                      |
 | Fix             | Minimal fix addressing root cause, not symptoms                           |
-| Code review     | Same pipeline as `/ops:implement` including security escalation           |
+| Code quality + Code review | Code quality → security gate → code review (same pipeline as `/ops:implement`) |
 | Discovery check | Pause if the bug is broader than diagnosed                                |
 | Verify          | Original failing command passes, no regressions — show proof              |
 
@@ -445,8 +448,10 @@ flowchart TD
     INS --> H["Hypothesize"]
     H --> T["Test hypotheses"]
     T --> F["Fix"]
-    F --> CODREV{{"code-reviewer"}}
-    F -.->|if triggers| SECREV{{"security-reviewer"}}
+    F --> CQ["Code quality"]
+    CQ --> ST["Security triage"]
+    ST --> CODREV{{"code-reviewer"}}
+    ST -.->|if triggers| SECREV{{"security-reviewer"}}
     CODREV --> DC["Discovery check"]
     DC --> V["Verify"]
 ```
@@ -469,7 +474,7 @@ Add tests to existing untested code.
 | Research | 2 agents in parallel: researcher-code (code analysis), researcher-doc (test framework docs) |
 | Test-writer | Dispatch test-writer agent: analyze behavior, identify edge cases, write tests |
 | Validate | Run full test suite — new + existing tests must pass |
-| Code quality | Format + lint (`ops:code-quality`, qlty or project tools) |
+| Code quality | Format, lint, structural analysis (`ops:code-quality`, qlty or project tools) |
 | Code review | Light review focused on test quality (1 cycle max) |
 
 ```mermaid
@@ -501,7 +506,7 @@ Restructure code without changing behavior.
 | Plan steps | Break into small, independently verifiable transformations |
 | Execute | One step at a time, run tests after each step |
 | Verify | Full test suite passes, behavior unchanged |
-| Code quality | Format + lint (`ops:code-quality`, qlty or project tools) |
+| Code quality | Format, lint, structural analysis (`ops:code-quality`, qlty or project tools) |
 | Code review | Review focused on behavior preservation (1 cycle max) |
 
 ```mermaid
@@ -536,7 +541,7 @@ Performance investigation and optimization.
 | Optimize | One change at a time, preserve correctness |
 | Measure | Re-measure with same method — show before/after delta. No improvement → revert |
 | Verify | Full test suite passes, behavior unchanged |
-| Code quality | Format + lint (`ops:code-quality`, qlty or project tools) |
+| Code quality | Format, lint, structural analysis (`ops:code-quality`, qlty or project tools) |
 | Code review | Review focused on correctness preservation and optimization soundness (1 cycle max) |
 
 ```mermaid
@@ -823,10 +828,10 @@ ops/
 │   │── # ─── INTERNAL PHASES (user-invocable: false) ───
 │   ├── instruction-priority/SKILL.md  # Instruction hierarchy when conflicts arise
 │   ├── subagent-rules/SKILL.md        # Agent dispatch rules
-│   ├── code-quality/SKILL.md          # Format + lint (qlty or project tools) before review
+│   ├── code-quality/SKILL.md          # Format, lint, structural analysis (qlty or project tools) before review
 │   ├── discovery-checks/SKILL.md      # Minor/Significant/Major
 │   ├── circuit-breaker/SKILL.md       # Repeated failure diagnostic
-│   ├── security-gate/SKILL.md         # Triage + SAST (semgrep) + dispatch + re-verification loop
+│   ├── security-gate/SKILL.md         # Triage + SAST (semgrep, diff-aware) + qlty security + dispatch + re-verification loop
 │   ├── redispatch-optimization/SKILL.md # Re-dispatch prompt optimization
 │   │
 │   │── # ─── ANNEXES ───

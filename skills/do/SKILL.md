@@ -72,7 +72,7 @@ Implement the changes directly (no implementer agent). If tasks were defined in 
 ## Step 6: Verify + Code Quality
 
 1. **Verify**: run build/compile commands, validation commands, dry-runs. `/ops:verify` behavioral rule applies — never claim a result without showing the evidence.
-2. **Code quality**: run the `ops:code-quality` process on all modified files (format + lint). Fix any issues before proceeding.
+2. **Code quality**: run the `ops:code-quality` process on all modified files. Fix any issues before proceeding.
 
 ---
 

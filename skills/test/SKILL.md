@@ -94,7 +94,7 @@ If coverage tools are available, show the before/after delta.
 
 ## Step 5: Code Quality
 
-Run the `ops:code-quality` process on all modified/created files (format + lint). Fix any issues.
+Run the `ops:code-quality` process on all modified/created files. Fix any issues.
 
 ---
 

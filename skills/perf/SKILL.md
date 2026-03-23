@@ -144,7 +144,7 @@ Present the comparison:
 
 ## Step 8: Code Quality
 
-Run the `ops:code-quality` process on all modified files (format + lint). Fix any issues.
+Run the `ops:code-quality` process on all modified files. Fix any issues.
 
 ---
 

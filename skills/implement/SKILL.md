@@ -153,10 +153,14 @@ After each task completes, check if the implementer reported discoveries. The sc
 ```
 ### Task N: <name> — COMPLETED ✅ / BLOCKED ❌
 - Implementer: dispatched (agent), status: DONE/DONE_WITH_CONCERNS/BLOCKED/FAILED
-- Validation: `<command>` → exit code: N
+- Validation commands:
+  - `<command 1>` → exit code: N
+  - `<command 2>` → exit code: N
 - Conformity: diff matches plan ✅ | no drift ✅ | no security anti-patterns ✅ | conventions ✅
 - Discovery: NONE / MINOR(<detail>) / SIGNIFICANT(<detail>) / MAJOR(<detail>)
 ```
+
+**List every validation command you ran for this task** (tests, type checks, build, lint, dry-run, etc.). These commands are aggregated and re-run during the final validation (Step 5) — if you omit a command here, it will be silently skipped at the end.
 
 If you skip this record for a task, you have skipped mandatory pipeline steps.
 
@@ -200,14 +204,14 @@ Before dispatching the final review, output this audit summary by counting from 
 ### Code Quality (MANDATORY — runs BEFORE reviewers)
 
 <HARD-GATE-CODE-QUALITY>
-You MUST run the `ops:code-quality` process BEFORE dispatching any reviewer agent. If you dispatch code-reviewer or security-reviewer without having run formatting and linting first, you have FAILED this skill.
+You MUST run the `ops:code-quality` process BEFORE dispatching any reviewer agent. If you dispatch code-reviewer or security-reviewer without having run code quality checks first, you have FAILED this skill.
 
 Sequence: Pre-review Audit → Code Quality → Security Triage → Dispatch Reviews. Skipping Code Quality is not allowed even if the code "looks clean."
 
 Degraded case: if no formatter or linter is detected in the project, running `ops:code-quality` will report "No formatter or linter detected — Skipped." This counts as having run the process. The gate requires running the process, not that tools exist.
 </HARD-GATE-CODE-QUALITY>
 
-Run the `ops:code-quality` process on all modified files (format + lint). Fix any issues before dispatching reviewers.
+Run the `ops:code-quality` process on all modified files. Fix any issues before dispatching reviewers.
 
 ### Security Triage (MANDATORY — structured output required)
 
@@ -219,6 +223,8 @@ You MUST output the structured triage block defined in `ops:security-gate` Step 
 ## Security Triage
 - Security-sensitive areas in diff: YES / NO
 - Triggers matched: <list which triggers and which files>
+- SAST (semgrep): <N new findings (E errors, W warnings, I info)> / clean / not found / error
+- Security findings from qlty: <list> / none / not run
 - Security-reviewer dispatch: YES / NOT NEEDED
 ```
 
@@ -274,7 +280,23 @@ You MUST re-run ALL validation commands from ALL tasks. Not some — ALL. If a v
 Silently skipping a validation command — or running only some of them — is a FAILURE of this skill.
 </HARD-GATE-FINAL-VALIDATION>
 
-1. **Run a final full validation (MANDATORY)**: re-run all validation commands from all tasks. Do NOT skip this — it catches cross-task regressions that per-task validation misses.
+1. **Run a final full validation (MANDATORY)**: Collect every validation command from every Task Completion Record (Step 2e), deduplicate, and re-run all of them.
+
+**Process:**
+1. Scan ALL Task Completion Records from Step 2e and extract every validation command.
+2. Deduplicate: if the same command appears in multiple tasks, list it once and note which tasks it covers.
+3. Expand scope: if multiple tasks ran the same tool on different files (e.g., tests on different modules), combine into a single broader invocation (e.g., run the full relevant test suite rather than individual files).
+4. Execute every command in the checklist.
+5. Output the completed checklist — any failed command MUST be investigated before proceeding.
+
+```
+## Final Validation Checklist
+- [x] `<command A>` (Tasks 1, 3, 5) → pass
+- [x] `<command B>` (Tasks 2, 4) → pass
+- [ ] `<command C>` (Task 6) → FAIL (exit code 1) — investigating
+```
+
+This catches cross-task regressions that per-task validation misses.
 2. **Verify task tracking is consistent**: run `TaskList` and confirm all tasks are either `completed` or `cancelled` — no tasks left `in_progress` or `pending`. This is a MANDATORY call, not a mental check. You MUST call `TaskList` and show the result. If `TaskList` returns empty or unexpected results (e.g., "No tasks found" when you created tasks earlier), flag this anomaly explicitly to the user — do NOT silently proceed with your own count. The tool result is the source of truth; if it contradicts your records, investigate or explain the discrepancy.
 3. Present a summary:
    - Tasks completed: N/N (from `TaskList`)

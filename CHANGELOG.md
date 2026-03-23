@@ -1,5 +1,36 @@
 # Changelog
 
+## 2.2.2 (2026-03-23)
+
+### ops:code-quality — Structural analysis (smells + metrics)
+
+- feat: new Step 4 "Smells" — runs `qlty smells` on modified files to detect duplication, high cyclomatic complexity, and other structural issues
+- Distinguishes new vs pre-existing smells: only flags issues introduced by the current work
+- feat: new Step 5 "Metrics" — runs `qlty metrics --functions` on modified files, reports only functions exceeding thresholds (cognitive > 15, cyclomatic > 20)
+- feat: security findings passthrough — qlty security plugin findings (trivy, trufflehog, osv-scanner, bandit, checkov) are forwarded to `ops:security-gate` instead of being handled in code-quality
+- Steps renumbered: Report is now Step 6
+- Report output updated with Smells, Metrics, and Security findings lines
+
+### ops:security-gate — Diff-aware SAST + qlty integration
+
+- feat: diff-aware semgrep scanning via `--baseline-commit` — only reports new findings, not pre-existing ones
+- feat: baseline detection logic: feature branch → `git merge-base HEAD main`, main branch → `HEAD~1`, fallback documented
+- fix: empty semgrep config handling — `.semgrep.yml` with `rules: []` now falls back to `--config auto`
+- feat: new Step 1c — incorporates security findings from qlty into triage decision
+- Dispatch decision now considers three signal sources: trigger triage + semgrep + qlty
+
+### ops:implement — Traceable validation pipeline
+
+- fix: Task Completion Record (Step 2e) now lists multiple validation commands instead of a single line
+- fix: added explicit note linking per-task validation commands to final validation aggregation
+- fix: Final validation (Step 5) expanded from one-liner to structured 5-step process: scan → deduplicate → expand scope → execute → report
+- feat: Final Validation Checklist template with task attribution per command
+- Security triage output now includes SAST and qlty security findings lines
+
+### ops:debug — Aligned review pipeline
+
+- fix: Step 5 restructured to follow the same sequence as ops:implement: Code Quality → Security Gate → Code Review
+
 ## 2.2.1 (2026-03-23)
 
 ### /ops:setup — Piebald-AI marketplace removal

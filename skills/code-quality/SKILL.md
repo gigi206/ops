@@ -1,12 +1,12 @@
 ---
 name: ops:code-quality
-description: "Internal: run code formatting and linting on modified files (qlty or project tools). Activated before code review in implement and do skills."
+description: "Internal: run code formatting, linting, and structural analysis on modified files (qlty or project tools). Activated before code review in implement, do, and other skills."
 user-invocable: false
 ---
 
-# Code Quality — Format & Lint
+# Code Quality — Format, Lint & Structural Analysis
 
-Run formatting and linting on all modified files before code review. This ensures reviewers evaluate logic, not style.
+Run formatting, linting, and structural analysis on all modified files before code review. This ensures reviewers evaluate logic, not style.
 
 ## Step 1: Detect tools
 
@@ -48,11 +48,39 @@ Otherwise: run the detected linter on modified files.
 
 - **Errors**: fix them before proceeding.
 - **Warnings**: fix if trivial, otherwise note for the reviewer.
+- **Security findings**: qlty may include security plugins (trivy, trufflehog, osv-scanner, bandit, checkov). If `qlty check` reports findings from these plugins, do NOT fix them here — note them in the report under a `Security findings from qlty` line. The `ops:security-gate` process will use this information when deciding whether to dispatch the security-reviewer.
 - If linting fails after formatting, the formatter and linter may conflict — note this for the user.
 
 If qlty or the linter crashes or times out, log the error and continue — the tool is optional.
 
-## Step 4: Report
+## Step 4: Smells (structural analysis)
+
+If qlty is available (detected in Step 1): run `qlty smells` (defaults to git-changed files, no explicit file list needed).
+
+This detects code smells that formatting and linting miss: duplication across files, high cyclomatic complexity, functions with too many returns, etc.
+
+To compare against a specific base branch: `qlty smells --upstream <base-ref>`. Use `--no-snippets` to reduce output verbosity if needed.
+
+- **New smells** (introduced by the current work): fix if trivial (extract function/constant, inline duplicate). If the fix requires structural refactoring, do not fix — flag with file locations for the reviewer.
+- **Pre-existing smells** (both locations existed before the current work): do not touch. Mention in the report only.
+- If `qlty smells` is not available or crashes, skip and continue.
+
+## Step 5: Metrics (complexity hotspots)
+
+If qlty is available (detected in Step 1): run `qlty metrics --functions <modified files>` on the modified files.
+
+This provides per-function metrics: cyclomatic complexity, cognitive complexity, LOC, fields, and LCOM (cohesion).
+
+The output lists ALL functions in the modified files — most will be fine. **Only report functions that exceed a threshold:**
+- **Cognitive complexity > 15** — hard to understand, error-prone.
+- **Cyclomatic complexity > 20** — too many branches.
+
+In the report, list only the functions above these thresholds with their values. If no function exceeds the thresholds, report "all within thresholds". Do NOT dump the full metrics table — it's noise.
+
+Do NOT fix complexity issues here — they are informational for the reviewer.
+If `qlty metrics` is not available or crashes, skip and continue.
+
+## Step 6: Report
 
 Output a short summary:
 
@@ -61,6 +89,9 @@ If qlty was used:
 ## Code Quality
 - Formatter: qlty fmt — <N files formatted / no changes>
 - Linter: qlty check — <N errors fixed, N warnings remaining / clean>
+- Security findings from qlty: <list> / none
+- Smells: qlty smells — <N issues found (N new, N pre-existing) / clean>
+- Metrics: <N functions with high complexity> / all within thresholds
 ```
 
 If individual tools were used:
@@ -68,6 +99,8 @@ If individual tools were used:
 ## Code Quality
 - Formatter: <tool> — <N files formatted / no changes>
 - Linter: <tool> — <N errors fixed, N warnings remaining / clean>
+- Smells: skipped (qlty not available)
+- Metrics: skipped (qlty not available)
 ```
 
 If no tools were detected:
