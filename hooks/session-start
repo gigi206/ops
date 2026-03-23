@@ -31,6 +31,7 @@ You have access to ops workflow skills. Before starting any non-trivial work, ch
 | Clarify requirements interactively | `/ops:brainstorm` |
 | Received code review feedback | `/ops:review` |
 | Security audit on changes | `/ops:security` |
+| Analyze an external repository or library | `/ops:clone-analyze` |
 
 | Work is done, ready to commit | `/ops:ship` |
 | Claiming something works | `/ops:verify` (always active) |
@@ -47,6 +48,7 @@ If the user wants to add tests to existing code, suggest `/ops:test`.
 If the user wants to refactor or restructure code, suggest `/ops:refactor`.
 If the user reports a performance problem, suggest `/ops:perf`.
 If the user wants to review a PR, suggest `/ops:review-pr`.
+If the user wants to understand an external library, framework, or tool by reading its source code, suggest `/ops:clone-analyze`.
 If the user describes a task that is well-understood and doesn't need design discussion, suggest `/ops:do` before coding.
 Do NOT force skills on trivial requests (rename a variable, fix a typo, answer a question).
 CONTEXT_EOF

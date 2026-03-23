@@ -95,6 +95,16 @@ If multiple sources provide conflicting information:
 ### Sources
 - [Source 1]: URL or Context7 library ID (version, last updated)
 - [Source 2]: ...
+
+### Source Verification Needed
+- target: <name> (<ecosystem>) — Needed: high | low | none — Rationale: [why source code analysis is or isn't needed]
+- target: <name2> (<ecosystem>) — Needed: high | low | none — Rationale: [...]
+(one entry per library/tool investigated — omit targets with `none` if the list would be long)
+
+Example:
+- target: express (npm) — Needed: high — Rationale: docs do not explain how error-handling middleware interacts with async route handlers internally; the propagation mechanism is undocumented
+- target: zod (npm) — Needed: none — Rationale: validation pipeline is fully documented with version-matched examples for v3.22
+- target: prisma (npm) — Needed: low — Rationale: connection pooling behavior is documented but timeout semantics under load are ambiguous
 ```
 
 ## Constraints
@@ -105,3 +115,8 @@ If multiple sources provide conflicting information:
 - **Keep output focused** — only what's relevant to the task, not a full reference manual.
 - **Cite every claim** with a source. No unsourced assertions.
 - **Flag version mismatches.** If the only docs available are for v3.x but we use v4.x, say so explicitly.
+- **Source verification assessment**: For each library/tool investigated, evaluate whether documentation findings are sufficient or if reading its source code is needed. Produce one entry per target in the `Source Verification Needed` section:
+  - `none`: documentation fully answers the question with sourced, version-matched information
+  - `low`: documentation mostly answers the question but minor ambiguities remain — source code might clarify but is not critical
+  - `high`: documentation is insufficient, contradictory, or missing key details — reading the source code is needed to fill the gaps. Explain what specifically is missing.
+- **Source Verification context**: this field is consumed by `/ops:research` for conditional dispatch of `researcher-repo` agents. In other dispatch contexts (e.g., direct use during `/ops:do` or `/ops:plan`), this field is informational only and may be ignored by the caller.

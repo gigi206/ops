@@ -23,6 +23,7 @@ A structured development workflow plugin for Claude Code. Plan, implement, debug
 
 # Standalone
 /ops:research  how does the payment flow work
+/ops:clone-analyze how does express handle middleware error propagation
 /ops:brainstorm I need some kind of caching layer
 /ops:security
 ```
@@ -65,7 +66,8 @@ flowchart TD
     review-pr["/ops:review-pr"] -.->|comments on PR| ship
     security["/ops:security"] -.->|audits| ship
 
-    %% Always active (no edges — behavioral)
+    %% Always active or standalone (no edges — behavioral or independent)
+    clone-analyze["/ops:clone-analyze"]
     review["/ops:review"]
     verify["/ops:verify"]
 ```
@@ -91,7 +93,8 @@ flowchart TD
 
 | Skill | Role | When to use |
 |---|---|---|
-| `/ops:research` | Explore codebase and documentation (3 agents in parallel) | Understand a codebase area, gather docs, investigate history |
+| `/ops:research` | Explore codebase and documentation (3 agents + conditional repo clone) | Understand a codebase area, gather docs, investigate history |
+| `/ops:clone-analyze` | Clone and analyze an external repo to understand its internals | Understand a library, framework, or tool by reading its source code |
 | `/ops:brainstorm` | Clarify needs via Socratic dialogue | Explore intent and requirements before planning |
 | `/ops:review` | Technically evaluate code review feedback | Receiving comments on code (human or CI) |
 | `/ops:security` | On-demand security audit | Security review of changes or specific files |
@@ -104,7 +107,7 @@ Shared logic extracted from skills. Not callable by the user — invoked program
 | Phase | Role | Used by |
 |---|---|---|
 | `ops:instruction-priority` | Instruction hierarchy (user > CLAUDE.md > ops skill > system prompt) | all skills |
-| `ops:subagent-rules` | Context rules for dispatching subagents (inline content, scoping, labeling) | plan, implement, do, debug, research, test, refactor, perf, review-pr |
+| `ops:subagent-rules` | Context rules for dispatching subagents (inline content, scoping, labeling) | plan, implement, do, debug, research, clone-analyze, test, refactor, perf, review-pr |
 | `ops:environment-setup` | Detect languages/frameworks + 4-level LSP diagnostic | plan |
 | `ops:code-quality` | Format + lint modified files before code review | implement, do, test, refactor, perf |
 | `ops:discovery-checks` | Categorize unexpected discoveries (Minor / Significant / Major) | implement, debug |
@@ -119,6 +122,7 @@ Shared logic extracted from skills. Not callable by the user — invoked program
 | **researcher-code** | Explore codebase: patterns, conventions, implementations, integration points, risks | research, do, test, refactor, perf, implement (circuit-breaker), debug (circuit-breaker) | Read-only source code analysis |
 | **researcher-doc** | Search official docs for libs/tools/APIs (Context7 MCP, fallback WebSearch) | research, do, test, refactor, perf | Doc queries, API schemas, config references |
 | **git-historian** | Mine git history: timelines, regressions, ownership, hotspots, architectural decisions | research, implement (circuit-breaker), debug (circuit-breaker) | 2 modes: Research (broad exploration) and Investigation (targeted at failing files) |
+| **researcher-repo** | Clone and analyze external repositories: version-aware analysis, structured findings | research (conditional), clone-analyze | Shallow clone, code analysis, version comparison |
 | **spec-reviewer** | Review spec for completeness, consistency, clarity, and feasibility | plan | Verdict: Approved / Issues Found. Mandatory re-dispatch if issues (max 3 iterations) |
 | **critic** | Adversarial plan review: completeness, coherence, security, CLAUDE.md compliance | plan | Verdict: APPROVE / REJECT with confidence levels. Pre-engagement prediction to avoid confirmation bias |
 | **implementer** | Execute one plan task (TDD, code generation, validation) | implement | 1 agent per plan task. Pipeline: implement, validation gate, conformity check |
@@ -181,7 +185,7 @@ When done:
 
 ### Tips
 
-- **Unknown library or tool?** — If ops encounters a library, tool, or external application it doesn't fully understand, it can `git clone` the source code into a temporary directory to read and analyze it directly. This is a last resort — ops will first try Context7 MCP and web search before cloning.
+- **Unknown library or tool?** — Use `/ops:clone-analyze` to read the source code of an external library, framework, or tool. ops can also trigger this automatically during `/ops:research` when documentation is insufficient — it clones the source into a temporary directory, analyzes it, and cleans up.
 
 ## Skills Reference
 
@@ -205,7 +209,7 @@ Brainstorm, research, and plan before writing code.
 | Critic review      | Adversarial review (4 lenses, 3 perspectives, self-audit)            |
 | User approval      | Plan presented for final approval before implementation              |
 
-Agents used: via **`/ops:research`** (researcher-code, researcher-doc, git-historian), **spec-reviewer**, **critic**
+Agents used: via **`/ops:research`** (researcher-code, researcher-doc, git-historian, **researcher-repo** conditional), **spec-reviewer**, **critic**
 
 ---
 
@@ -409,7 +413,21 @@ Autonomous codebase and documentation exploration.
 /ops:research <topic or question>
 ```
 
-Dispatches 3 agents in parallel (researcher-code, researcher-doc, git-historian), synthesizes findings, and presents a structured report. Read-only — no changes made.
+Dispatches 3 agents in parallel (researcher-code, researcher-doc, git-historian), synthesizes findings, and conditionally dispatches researcher-repo when confidence is insufficient. Read-only — no changes made.
+
+---
+
+### `/ops:clone-analyze`
+
+Clone and analyze an external repository.
+
+```
+/ops:clone-analyze <library, framework, or tool to analyze>
+```
+
+Clones the repository (version-matched when possible), analyzes it, and presents structured findings. Use when documentation is insufficient or you need to understand internals.
+
+Agents used: **researcher-repo**
 
 ---
 
@@ -511,7 +529,7 @@ Red flags: "should", "probably", "seems to", "I believe" — if these appear ins
 ## Design Principles
 
 - **Evidence before claims** — `verify` is always active. No "it should work".
-- **Parallel research** — 3 agents run simultaneously during planning.
+- **Parallel research** — 3 agents run simultaneously during planning, with conditional repository cloning when confidence is insufficient.
 - **Adversarial review** — the critic agent tries to break your plan before you build it.
 - **Circuit breakers** — repeated failures escalate to diagnostics, not infinite retries.
 - **Instruction priority** — user > CLAUDE.md > ops > system defaults. Conflicts resolved explicitly.
@@ -527,7 +545,7 @@ ops/
 ├── .claude-plugin/
 │   ├── marketplace.json               # Marketplace registry entry
 │   └── plugin.json                    # Plugin manifest
-├── agents/                            # 10 specialized agents
+├── agents/                            # 11 specialized agents
 │   ├── code-reviewer.md
 │   ├── critic.md
 │   ├── git-historian.md
@@ -535,6 +553,7 @@ ops/
 │   ├── pr-reviewer.md
 │   ├── researcher-code.md
 │   ├── researcher-doc.md
+│   ├── researcher-repo.md
 │   ├── security-reviewer.md
 │   ├── spec-reviewer.md
 │   └── test-writer.md
@@ -556,8 +575,9 @@ ops/
 │   ├── review-pr/SKILL.md            # Load PR → analyze → review → security gate
 │   │
 │   │── # ─── STANDALONE (user-facing) ───
-│   ├── research/SKILL.md              # 3 agents in parallel (codebase, docs, git)
+│   ├── research/SKILL.md              # 3 agents in parallel (codebase, docs, git) + conditional repo clone
 │   ├── brainstorm/SKILL.md            # Socratic brainstorming
+│   ├── clone-analyze/SKILL.md         # Clone and analyze external repos
 │   ├── review/SKILL.md                # Evaluate feedback technically
 │   ├── security/SKILL.md              # On-demand security review
 │   ├── verify/SKILL.md                # Evidence before claims (behavioral)

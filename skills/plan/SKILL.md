@@ -206,7 +206,7 @@ Read CLAUDE.md (if it exists), directory structure, and key config files to unde
 
 ## Step 3: Parallel Research
 
-Run the `ops:research` process (Steps 2-3: dispatch 3 agents in parallel — researcher-code, researcher-doc, git-historian — and synthesize findings). Scope the research to the task area identified during brainstorming.
+Run the `ops:research` process (Steps 2-6: dispatch 3 agents in parallel — researcher-code, researcher-doc, git-historian — synthesize findings, and conditionally dispatch one or more researcher-repo agents in parallel for targets where researcher-doc signals `Source Verification Needed: high`). Scope the research to the task area identified during brainstorming.
 
 ---
 
@@ -337,7 +337,7 @@ Wait for the user's response. If they request changes, make them, re-run the spe
 Based on the chosen approach and research results, write a detailed plan with:
 
 1. **Summary**: What we're doing and why (2-3 sentences)
-2. **Research findings**: Key insights from the 3 research agents
+2. **Research findings**: Key insights from the research agents (including researcher-repo if dispatched)
 3. **Approach**: The chosen approach and why
 4. **Task breakdown**: See task decomposition rules below
 5. **Risks**: What could go wrong

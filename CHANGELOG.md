@@ -1,5 +1,48 @@
 # Changelog
 
+## 2.1.0 (2026-03-23)
+
+### New agent: researcher-repo
+
+- feat: new `researcher-repo` agent (Opus) — clones and analyzes external repositories (libraries, frameworks, applications, tools) when documentation and web research are insufficient
+- Protocol: locate repo → detect version → shallow clone (version used) → analyze → optionally clone HEAD for comparison → structured report → cleanup
+- Version-aware: clones the tag matching the project's dependency version, then optionally compares with HEAD/main
+- Mandatory cleanup of cloned directories on completion (success or failure)
+
+### New skill: /ops:clone-analyze
+
+- feat: standalone skill for direct repository analysis — user invokes `/ops:clone-analyze <target>` to analyze an external repo
+- 3-step workflow: Clarify → Dispatch researcher-repo → Present findings
+
+### Conditional dispatch in /ops:research
+
+- feat: `researcher-doc` now returns a `Source Verification Needed` list (per target: `high | low | none`) — signals which libraries/tools need source code analysis
+- feat: `/ops:research` conditionally dispatches one or more `researcher-repo` agents in parallel for targets with `Needed: high`
+- Workflow expanded from 4 steps to 6: Clarify → Parallel Research → Synthesize → Conditional Clone → Final Synthesize → Present
+
+### Security
+
+- fix: `--config core.hooksPath=/dev/null` on all `git clone` commands in researcher-repo — prevents execution of hooks from cloned repositories
+- fix: `--config core.fsmonitor=false` on all `git clone` commands — prevents fsmonitor hook execution (CVE-2022-24765 vector)
+- feat: post-clone `.gitattributes` filter audit — flags unknown filter drivers in the report
+
+### Robustness
+
+- feat: tag resolution via single `git ls-remote --tags --refs` call instead of 6 sequential clone attempts
+- feat: pre-clone size guard via GitHub/GitLab API — abandons clone if repo exceeds 500 MB
+- feat: added `pkg/v<version>` to tag resolution order for Go module repos
+
+### Cross-cutting updates
+
+- hooks/session-start: added `/ops:clone-analyze` to routing table
+- skills/plan/SKILL.md: updated research delegation to mention parallel multi-target researcher-repo dispatch
+- README.md: added researcher-repo agent, clone-analyze skill, updated counts (11 agents, 16 skills), added clone-analyze to Mermaid diagram
+- agents/researcher-doc.md: documented that `Source Verification Needed` is consumed by `/ops:research` only
+
+### Stats
+- Agents: 10 → 11 (+researcher-repo)
+- Skills: 15 → 16 user-facing (+clone-analyze)
+
 ## 2.0.1 (2026-03-21)
 
 ### Fixes from session 615af0fa analysis
