@@ -7,7 +7,25 @@
 - fix: removed `Piebald-AI/claude-code-lsps` third-party marketplace and all associated plugins (HTML/CSS, Vue, Scala, PowerShell, Julia, LaTeX, Ada, Solidity)
 - Marketplace count reduced from 3 to 2 (`claude-plugins-official` + `boostvolt/claude-code-lsps`)
 - Glob file extension list trimmed to match remaining marketplace coverage
-- .claude-plugin/plugin.json: version bump 2.2.0 → 2.2.1
+
+### /ops:setup — MCP Servers diagnostic (Category 4)
+
+- feat: new Category 4 "MCP Servers" in `/ops:setup` — checks `context7` and `chrome-devtools-mcp` plugin availability
+- Verifies `enabledPlugins` and `extraKnownMarketplaces` in `~/.claude/settings.json`
+- Grouped installation prompt (marketplace + plugin) with A/B/C options
+- All "Categories 2-3" references updated to "Categories 2-4" across setup, plan, README
+
+### /ops:debug — Browser Bug Triage (Step 0)
+
+- feat: new Step 0 "Browser Bug Triage" in `/ops:debug` — routes to `chrome-devtools-mcp` skills for browser/frontend bugs
+
+### /ops:plan — Spec no longer auto-committed
+
+- fix: `/ops:plan` no longer commits the spec automatically — the user decides when to commit (via `/ops:ship` or manually)
+
+### Cross-cutting updates
+
+- README.md: updated setup description, requirements (added chrome-devtools-mcp), setup detail table, mermaid diagram
 
 ## 2.2.0 (2026-03-23)
 

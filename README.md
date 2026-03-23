@@ -165,7 +165,7 @@ flowchart LR
 | `/ops:brainstorm` | Clarify needs via Socratic dialogue | Explore intent and requirements before planning |
 | `/ops:review` | Technically evaluate code review feedback | Receiving comments on code (human or CI) |
 | `/ops:security` | On-demand security audit | Security review of changes or specific files |
-| `/ops:setup` | Diagnose environment: languages, LSP, code quality tools, security analysis tools | First use, new environment, missing tools |
+| `/ops:setup` | Diagnose environment: languages, LSP, code quality tools, security analysis tools, MCP servers | First use, new environment, missing tools |
 | `/ops:verify` | Behavioral rule: evidence before any claim | Always active — applies in all contexts |
 
 ### Internal phases (`user-invocable: false`)
@@ -229,14 +229,15 @@ Run the environment diagnostic to check your tooling:
 /ops:setup
 ```
 
-This detects languages, LSP availability, code quality tools (qlty), and security analysis tools (semgrep). It proposes installation for anything missing.
+This detects languages, LSP availability, code quality tools (qlty), security analysis tools (semgrep), and MCP servers (context7, chrome-devtools-mcp). It proposes installation for anything missing.
 
 ## Requirements
 
 - **Claude Code** — required
 - **Node.js** — only needed for the visual brainstorm companion (optional)
 - **Git** — needed by the git-historian agent (optional, skipped if unavailable)
-- **Context7 MCP** — needed by researcher-doc (optional, falls back to web search)
+- **Context7 MCP** — needed by researcher-doc (optional, falls back to web search). Install: `/plugin install context7@claude-plugins-official`
+- **chrome-devtools-mcp** — needed by ops:debug for browser debugging, accessibility audits, LCP optimization (optional). Install: `/plugin install chrome-devtools-mcp@chrome-devtools-plugins`
 - **qlty** — optional, used by code-quality for unified formatting and linting (install: `curl https://qlty.sh | bash`)
 - **semgrep** — optional, used by security-gate for SAST scanning (install: `pip install semgrep`)
 
@@ -647,20 +648,23 @@ Diagnose environment and propose tool installation.
 | Languages & LSP | Detect languages, 4-level LSP diagnostic (test → marketplace → plugin → binary) |
 | Code quality tools | Check qlty availability, detect project formatters/linters |
 | Security analysis | Check semgrep availability |
+| MCP servers | Check context7 and chrome-devtools-mcp plugin availability |
 | Recommendations | Propose installation for missing tools (user-invoked mode only) |
 
-Also called by `/ops:plan` Step 0 (Categories 2-3 informational only).
+Also called by `/ops:plan` Step 0 (Categories 2-4 informational only).
 
 ```mermaid
 graph LR
     S["/ops:setup"] --> L["Languages & LSP (4-level diagnostic)"]
     S --> Q["Code quality tools (qlty, project tools)"]
     S --> SG["Security analysis (semgrep)"]
+    S --> MCP["MCP servers (context7, chrome-devtools-mcp)"]
     L --> D{"Issues found?"}
     D -->|Yes| O["Fix options (A/B/C/D)"]
     D -->|No| R["Report"]
     Q --> R
     SG --> R
+    MCP --> R
     O --> R
 ```
 

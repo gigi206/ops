@@ -20,15 +20,23 @@ Do NOT guess. Investigate systematically. Understand the root cause before writi
 ## Workflow
 
 ```
-1. Investigate → 1.5. Instrument (if multi-component) → 2. Hypothesize (max 3) → 3. Test hypotheses → 4. Fix → 5. Code Review → 6. Discovery Check → 7. Verify
+0. Browser Bug Triage → 1. Investigate → 1.5. Instrument (if multi-component) → 2. Hypothesize (max 3) → 3. Test hypotheses → 4. Fix → 5. Code Review → 6. Discovery Check → 7. Verify
 ```
+
+---
+
+## Step 0: Browser Bug Triage
+
+If the bug involves browser/frontend behavior (console errors, UI rendering, network from frontend, performance, accessibility): use `chrome-devtools-mcp` skills (`chrome-devtools`, `debug-optimize-lcp`, `a11y-debugging`, `troubleshooting`) for evidence gathering (Step 1), hypothesis testing (Step 3), and verification (Step 7).
+
+If chrome-devtools-mcp is not installed, skip — investigate with standard tools.
 
 ---
 
 ## Step 1: Investigate
 
 1. **Read the error**: Full error message, stack trace, logs. Not just the last line.
-2. **Reproduce**: Run the failing command. Confirm you see the same error.
+2. **Reproduce**: Run the failing command. Confirm you see the same error. For browser bugs, also reproduce in the browser using chrome-devtools-mcp (navigate to the page, read console messages, inspect network requests).
 3. **Gather context** — dispatch **git-historian** in Investigation Mode:
    - Scope: files mentioned in the error/stack trace
    - Window: 30 days

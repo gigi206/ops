@@ -8,7 +8,7 @@ description: "Brainstorm, research, and plan before writing code."
 <HARD-GATE-0>
 STOP. Your VERY FIRST action must be Step 0: Environment Setup. Do NOT ask design questions yet.
 
-Follow the `ops:setup` process. It starts with Glob for language detection (file extensions), then LSP diagnostics, then tool availability checks. When called from /ops:plan, Categories 2-3 are informational only (no installation proposals).
+Follow the `ops:setup` process. It starts with Glob for language detection (file extensions), then LSP diagnostics, then tool availability checks. When called from /ops:plan, Categories 2-4 are informational only (no installation proposals).
 
 Your first tool call MUST be Glob for language detection — this is how ops:setup begins.
 </HARD-GATE-0>
@@ -322,7 +322,7 @@ Present the design in sections scaled to their complexity:
 
 ### 6b. Write spec document
 
-Write the spec to `docs/specs/YYYY-MM-DD-<topic>-design.md`. Do NOT commit yet — the spec review loop may modify it.
+Write the spec to `docs/specs/YYYY-MM-DD-<topic>-design.md`. Do NOT commit — the user decides when to commit.
 
 The spec captures the **what** and **why** — the plan (Step 7) captures the **how** (task breakdown).
 
@@ -339,16 +339,15 @@ Dispatch the **spec-reviewer** agent to verify the spec is complete and ready fo
 2. Repeat until **Approved** (max 3 iterations).
 3. If still not approved after 3 iterations, surface the remaining issues to the user for guidance.
 
-### 6d. Commit and present to user
+### 6d. Present to user
 
-After the spec review loop passes:
+After the spec review loop passes, ask the user to review:
 
-1. Stage and commit the spec with git (`git add <path> && git commit -m "<descriptive message>"`). Do NOT say "committed" unless `git commit` succeeded — writing a file to disk is not a commit.
-2. Ask the user to review:
+> "Spec written to `<path>`. Please review it and let me know if you want to make any changes before we start writing the implementation plan."
 
-> "Spec written and committed to `<path>`. Please review it and let me know if you want to make any changes before we start writing the implementation plan."
+Do NOT commit the spec. The user decides when to commit (via `/ops:ship` or manually).
 
-Wait for the user's response. If they request changes, make them, re-run the spec review loop, and commit again. Only proceed once the user approves.
+Wait for the user's response. If they request changes, make them and re-run the spec review loop. Only proceed once the user approves.
 
 ---
 

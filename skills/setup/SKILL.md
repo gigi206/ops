@@ -1,6 +1,6 @@
 ---
 name: ops:setup
-description: "Diagnose environment: languages, LSP, code quality tools (qlty), security analysis (semgrep). Propose installation for missing tools."
+description: "Diagnose environment: languages, LSP, code quality tools (qlty), security analysis (semgrep), MCP servers (context7). Propose installation for missing tools."
 ---
 
 # /ops:setup — Environment Diagnostic & Tool Setup
@@ -8,7 +8,7 @@ description: "Diagnose environment: languages, LSP, code quality tools (qlty), s
 ## Two entry modes
 
 1. **User-invoked** (`/ops:setup`): full diagnostic with installation proposals for all categories
-2. **Called by `/ops:plan`** (Step 0): full diagnostic, but Categories 2-3 are **informational only** — report status without proposing installation. Category 1 retains full interactive behavior (A/B/C/D options).
+2. **Called by `/ops:plan`** (Step 0): full diagnostic, but Categories 2-4 are **informational only** — report status without proposing installation. Category 1 retains full interactive behavior (A/B/C/D options).
 
 ## Step 0: Detect Package Managers
 
@@ -223,6 +223,90 @@ Check if `semgrep` is available: `which semgrep`
 - If found: report version (`semgrep --version`), check for local config (`.semgrep/` or `.semgrep.yml`), note as available
 - If not found: note as missing
 
+## Category 4: MCP Servers
+
+Check plugins that provide MCP servers used by ops skills/agents.
+
+| Plugin | Marketplace | Used by | Impact if missing |
+|--------|-------------|---------|-------------------|
+| `context7` | `claude-plugins-official` (`anthropics/claude-plugins-official`) | `ops:researcher-doc` (dispatched by `plan`, `do`, `research`, `test`, `perf`, `refactor`) | researcher-doc falls back to WebSearch/WebFetch (slower, less precise) |
+| `chrome-devtools-mcp` | `chrome-devtools-plugins` (`ChromeDevTools/chrome-devtools-mcp`) | `ops:debug` (web debugging), accessibility audits, LCP optimization | No browser debugging or DevTools integration |
+
+### Check availability
+
+For each plugin, read `~/.claude/settings.json` → `enabledPlugins`:
+
+| Plugin key in `enabledPlugins` | Marketplace to check in `extraKnownMarketplaces` |
+|--------------------------------|---------------------------------------------------|
+| `context7@claude-plugins-official` | `claude-plugins-official` |
+| `chrome-devtools-mcp@chrome-devtools-plugins` | `chrome-devtools-plugins` |
+
+For each plugin:
+- If value is `true` → note as "enabled"
+- If value is `false` → note as "disabled"
+- If key absent → note as "not installed"
+
+Also check that the required marketplace is present in `extraKnownMarketplaces`. If the marketplace itself is missing, note it — the plugin cannot be installed without it.
+
+### Mandatory output
+
+```
+| Plugin              | Marketplace                | Status                      | Impact if missing                          |
+|---------------------|----------------------------|-----------------------------|--------------------------------------------|
+| context7            | claude-plugins-official     | <enabled / disabled / not installed> | researcher-doc falls back to WebSearch |
+| chrome-devtools-mcp | chrome-devtools-plugins     | <enabled / disabled / not installed> | No browser debugging via DevTools     |
+```
+
+### After the diagnostic
+
+For each plugin that is **not installed**:
+
+1. Check if its marketplace is configured. If missing, include the marketplace add command.
+2. Present the installation commands **in the user's language**.
+
+Group all missing plugins into a single prompt:
+
+> The following MCP plugins are not installed:
+>
+> | Plugin | Needed for | Marketplace |
+> |--------|-----------|-------------|
+> | context7 | Documentation research (`researcher-doc`) | `claude-plugins-official` |
+> | chrome-devtools-mcp | Browser debugging (`ops:debug`) | `chrome-devtools-plugins` |
+>
+> Installation commands:
+> ```
+> # Marketplaces (if missing)
+> /plugin marketplace add anthropics/claude-plugins-official
+> /plugin marketplace add ChromeDevTools/chrome-devtools-mcp
+>
+> # Plugins
+> /plugin install context7@claude-plugins-official
+> /plugin install chrome-devtools-mcp@chrome-devtools-plugins
+> ```
+>
+> **A)** Install everything (I run all commands for you)
+> **B)** I'll handle it myself — here are the commands above
+> **C)** Skip — continue without these plugins
+
+Only show the commands relevant to what is actually missing. If only one plugin is missing, show only that one.
+
+**Wait for the user's answer.** Do NOT proceed until the user has responded.
+- **A** → list the exact commands you are about to run, then execute them via Bash. After execution, ask the user to type `/reload-plugins`. Wait for confirmation, then proceed.
+- **B** → stop here, the user will fix and relaunch.
+- **C** → proceed without the missing plugins. Note degraded capabilities.
+
+For each plugin that is **disabled** (installed but `false` in `enabledPlugins`):
+
+> The following plugins are installed but disabled:
+> ```
+> /plugin enable context7@claude-plugins-official
+> /plugin enable chrome-devtools-mcp@chrome-devtools-plugins
+> ```
+> **A)** Enable them (I run the commands for you)
+> **B)** Skip — continue without these plugins
+
+Always show the user what you will run BEFORE running it. Transparency is mandatory.
+
 ## Output format
 
 Present the diagnostic results:
@@ -244,6 +328,10 @@ Present the diagnostic results:
 
 ### Security Analysis Tools
 - semgrep: installed (vX.Y) + local config / installed (vX.Y) — no local config / not found
+
+### MCP Servers
+- context7: enabled / disabled / not installed — Impact: researcher-doc falls back to WebSearch
+- chrome-devtools-mcp: enabled / disabled / not installed — Impact: no browser debugging via DevTools
 ```
 
 ## Recommendations (user-invoked mode only)
@@ -263,6 +351,17 @@ When called directly by the user (not from `/ops:plan`), propose installation fo
 | semgrep | pipx            | `pipx install semgrep`                             |
 | semgrep | brew            | `brew install semgrep`                             |
 | semgrep | mise            | `mise install pipx && mise install pipx:semgrep`   |
+| context7 | plugin | `/plugin install context7@claude-plugins-official` |
+| chrome-devtools-mcp | plugin | `/plugin install chrome-devtools-mcp@chrome-devtools-plugins` |
+
+### MCP plugin marketplaces
+
+If a plugin's marketplace is missing from `extraKnownMarketplaces`, it must be added before installing the plugin:
+
+| Marketplace | Add command |
+|-------------|-------------|
+| `claude-plugins-official` | `/plugin marketplace add anthropics/claude-plugins-official` |
+| `chrome-devtools-plugins` | `/plugin marketplace add ChromeDevTools/chrome-devtools-mcp` |
 
 ### Project initialization
 
@@ -284,11 +383,11 @@ For qlty init: inform the user that `qlty init` scans the project and generates 
 
 Present only the relevant commands and wait for the user's decision. Do NOT auto-install without consent.
 
-When called from `/ops:plan` Step 0, Categories 2-3 are informational only — report status without proposing installation. The goal of plan Step 0 is to catch LSP issues that require a restart, not to onboard the full toolchain.
+When called from `/ops:plan` Step 0, Categories 2-4 are informational only — report status without proposing installation. The goal of plan Step 0 is to catch LSP issues that require a restart, not to onboard the full toolchain.
 
 ## Rules
 
 - Only check languages actually found in the project (Category 1). Do NOT list the entire table.
-- Categories 2-3 are quick checks (`which` commands) — they do not need the 4-level depth of LSP diagnostics.
+- Categories 2-4 are quick checks (`which` commands + settings.json reads) — they do not need the 4-level depth of LSP diagnostics.
 - Tools detected here are reported to the user but NOT passed to downstream skills. `ops:code-quality` and `ops:security-gate` re-detect independently — each skill must work standalone without prior setup.
 - If nothing is missing, report "all tools available" and proceed.
