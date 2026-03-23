@@ -36,43 +36,73 @@ ops enforces a staged workflow with explicit gates, parallel research, adversari
 
 ```mermaid
 flowchart TD
-    %% Pre-work
+    %% ─── Pre-work ───
     brainstorm["/ops:brainstorm"] -.->|clarifies intent| plan
     research["/ops:research"] -.->|gathers context| plan
 
-    %% Main pipeline
+    %% ─── Main pipeline ───
     plan["/ops:plan"] -->|approved plan| implement["/ops:implement"]
     implement -->|code ready| ship["/ops:ship"]
 
-    %% Full chains the main pipeline
+    %% ─── Full chains the main pipeline ───
     full["/ops:full"] ==>|"= plan → implement → ship"| plan
 
-    %% Lightweight alternative
+    %% ─── Alternatives ───
     do["/ops:do"] -->|code ready| ship
-
-    %% Bug fixing
     debug["/ops:debug"] -->|fix ready| ship
     debug -.->|bugs during| implement
 
-    %% Testing & refactoring
+    %% ─── Testing, refactoring, perf ───
     test["/ops:test"] -->|tests added| ship
     test -.->|coverage gate| refactor
     refactor["/ops:refactor"] -->|restructured| ship
-
-    %% Performance
     perf["/ops:perf"] -->|optimized| ship
 
-    %% Reviews & audits
+    %% ─── Reviews & audits ───
     review-pr["/ops:review-pr"] -.->|comments on PR| ship
     security["/ops:security"] -.->|audits| ship
 
-    %% Always active or standalone (no edges — behavioral or independent)
+    %% ─── Standalone (no workflow edges) ───
     clone-analyze["/ops:clone-analyze"]
     review["/ops:review"]
     verify["/ops:verify"]
+
+    %% ─── Agents ───
+    subgraph agents[" Agents "]
+        direction LR
+        rc{{"researcher-code"}}
+        rd{{"researcher-doc"}}
+        gh{{"git-historian"}}
+        rr{{"researcher-repo"}}
+        sr{{"spec-reviewer"}}
+        cr{{"critic"}}
+        imp{{"implementer ×N"}}
+        codrev{{"code-reviewer"}}
+        secrev{{"security-reviewer"}}
+        tw{{"test-writer"}}
+        prrev{{"pr-reviewer"}}
+    end
+
+    %% ─── Agent dispatch ───
+    research -.-> rc & rd & gh
+    research -.->|conditional| rr
+    plan -.-> sr & cr
+    implement -.-> imp & codrev
+    implement -.->|if triggers| secrev
+    do -.-> rc & rd & codrev
+    do -.->|if triggers| secrev
+    debug -.-> gh & codrev
+    debug -.->|if triggers| secrev
+    test -.-> rc & rd & tw & codrev
+    refactor -.-> rc & rd & codrev
+    perf -.-> rc & rd & codrev
+    review-pr -.-> prrev
+    review-pr -.->|if triggers| secrev
+    security -.-> secrev
+    clone-analyze -.-> rr
 ```
 
-**Legend:** solid arrow = produces output for the next skill, dashed arrow = optional/contextual relationship, thick arrow = chains the full pipeline, isolated nodes = behavioral (always active).
+**Legend:** solid arrow = workflow output, dashed arrow = optional/contextual, thick arrow = chains full pipeline, hexagons = agents, `if triggers` = dispatched conditionally (security-gate), `conditional` = dispatched when confidence is insufficient. Isolated nodes = behavioral/standalone.
 
 ### Pipeline skills
 
