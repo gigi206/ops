@@ -1,5 +1,21 @@
 # Changelog
 
+## 2.1.1 (2026-03-23)
+
+### Documentation
+
+- docs: workflow and agent dispatch diagrams in README — global workflow diagram, per-skill agent dispatch map (LR layout with agents grouped by role), and individual mermaid diagrams for each skill showing the complete pipeline with agents as hexagonal nodes
+
+### Skill hardening
+
+- fix(implement): add hard gate for validation ownership — orchestrator must run validation commands, not rely on implementer's report
+- fix(implement): add hard gate for code-quality ordering — must run before dispatching reviewers
+- fix(implement): require structured security triage output (14-trigger checklist) before dispatch decision
+- fix(implement): add hard gate for final validation — all commands from all tasks, explicit gap reporting
+- fix(implement): strengthen TaskList consistency check — flag anomalies instead of silently proceeding
+- fix(plan): require YAGNI assessment block in output before proceeding to research
+- fix(plan): add hard gate for research dispatch — enforce exactly 3 typed agents in a single message
+
 ## 2.1.0 (2026-03-23)
 
 ### New agent: researcher-repo
