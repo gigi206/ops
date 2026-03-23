@@ -36,73 +36,104 @@ ops enforces a staged workflow with explicit gates, parallel research, adversari
 
 ```mermaid
 flowchart TD
-    %% ─── Pre-work ───
+    %% Pre-work
     brainstorm["/ops:brainstorm"] -.->|clarifies intent| plan
     research["/ops:research"] -.->|gathers context| plan
 
-    %% ─── Main pipeline ───
+    %% Main pipeline
     plan["/ops:plan"] -->|approved plan| implement["/ops:implement"]
     implement -->|code ready| ship["/ops:ship"]
 
-    %% ─── Full chains the main pipeline ───
+    %% Full chains the main pipeline
     full["/ops:full"] ==>|"= plan → implement → ship"| plan
 
-    %% ─── Alternatives ───
+    %% Lightweight alternative
     do["/ops:do"] -->|code ready| ship
+
+    %% Bug fixing
     debug["/ops:debug"] -->|fix ready| ship
     debug -.->|bugs during| implement
 
-    %% ─── Testing, refactoring, perf ───
+    %% Testing & refactoring
     test["/ops:test"] -->|tests added| ship
     test -.->|coverage gate| refactor
     refactor["/ops:refactor"] -->|restructured| ship
+
+    %% Performance
     perf["/ops:perf"] -->|optimized| ship
 
-    %% ─── Reviews & audits ───
+    %% Reviews & audits
     review-pr["/ops:review-pr"] -.->|comments on PR| ship
     security["/ops:security"] -.->|audits| ship
 
-    %% ─── Standalone (no workflow edges) ───
+    %% Always active or standalone (no edges — behavioral or independent)
     clone-analyze["/ops:clone-analyze"]
     review["/ops:review"]
     verify["/ops:verify"]
+```
 
-    %% ─── Agents ───
-    subgraph agents[" Agents "]
-        direction LR
+**Legend:** solid arrow = produces output for the next skill, dashed arrow = optional/contextual relationship, thick arrow = chains the full pipeline, isolated nodes = behavioral (always active).
+
+### Agent dispatch
+
+```mermaid
+flowchart LR
+    %% ─── Skills ───
+    research["/ops:research"]
+    plan["/ops:plan"]
+    implement["/ops:implement"]
+    do["/ops:do"]
+    debug["/ops:debug"]
+    test["/ops:test"]
+    refactor["/ops:refactor"]
+    perf["/ops:perf"]
+    review-pr["/ops:review-pr"]
+    security["/ops:security"]
+    clone-analyze["/ops:clone-analyze"]
+
+    %% ─── Research agents ───
+    subgraph research_agents["Research"]
         rc{{"researcher-code"}}
         rd{{"researcher-doc"}}
         gh{{"git-historian"}}
         rr{{"researcher-repo"}}
+    end
+
+    %% ─── Review agents ───
+    subgraph review_agents["Review"]
         sr{{"spec-reviewer"}}
         cr{{"critic"}}
-        imp{{"implementer ×N"}}
         codrev{{"code-reviewer"}}
         secrev{{"security-reviewer"}}
-        tw{{"test-writer"}}
         prrev{{"pr-reviewer"}}
     end
 
-    %% ─── Agent dispatch ───
-    research -.-> rc & rd & gh
+    %% ─── Build agents ───
+    subgraph build_agents["Build"]
+        imp{{"implementer ×N"}}
+        tw{{"test-writer"}}
+    end
+
+    %% ─── Dispatch ───
+    research --> rc & rd & gh
     research -.->|conditional| rr
-    plan -.-> sr & cr
-    implement -.-> imp & codrev
+    plan --> sr & cr
+    implement --> imp & codrev
     implement -.->|if triggers| secrev
-    do -.-> rc & rd & codrev
+    do --> rc & rd & codrev
     do -.->|if triggers| secrev
-    debug -.-> gh & codrev
+    debug --> gh & codrev
     debug -.->|if triggers| secrev
-    test -.-> rc & rd & tw & codrev
-    refactor -.-> rc & rd & codrev
-    perf -.-> rc & rd & codrev
-    review-pr -.-> prrev
+    test --> rc & rd & tw & codrev
+    refactor --> rc & rd & codrev
+    perf --> rc & rd & codrev
+    review-pr --> prrev
     review-pr -.->|if triggers| secrev
-    security -.-> secrev
-    clone-analyze -.-> rr
+    security --> secrev
+    clone-analyze --> rr
 ```
 
-**Legend:** solid arrow = workflow output, dashed arrow = optional/contextual, thick arrow = chains full pipeline, hexagons = agents, `if triggers` = dispatched conditionally (security-gate), `conditional` = dispatched when confidence is insufficient. Isolated nodes = behavioral/standalone.
+**Legend:** solid arrow = always dispatched, dashed arrow = conditional (`if triggers` = security-gate, `conditional` = insufficient confidence). Agents grouped by role: Research (read-only exploration), Review (adversarial analysis), Build (code generation).
 
 ### Pipeline skills
 
@@ -239,6 +270,20 @@ Brainstorm, research, and plan before writing code.
 | Critic review      | Adversarial review (4 lenses, 3 perspectives, self-audit)            |
 | User approval      | Plan presented for final approval before implementation              |
 
+```mermaid
+flowchart TD
+    B["Brainstorm"] --> C["Context detection"]
+    C --> R{{"researcher-code + researcher-doc + git-historian"}}
+    R -.->|confidence insufficient| RR{{"researcher-repo"}}
+    R --> RA["Research adequacy"]
+    RA --> D["Design approaches"]
+    D --> S["Spec writing"]
+    S --> SR{{"spec-reviewer"}}
+    SR --> T["Task decomposition"]
+    T --> CR{{"critic"}}
+    CR --> A["User approval"]
+```
+
 Agents used: via **`/ops:research`** (researcher-code, researcher-doc, git-historian, **researcher-repo** conditional), **spec-reviewer**, **critic**
 
 ---
@@ -252,6 +297,11 @@ Full pipeline: plan, implement, and ship in a single session.
 ```
 
 Chains `/ops:plan` → user approval → `/ops:implement` → `/ops:ship`. Each sub-skill runs in full with all gates preserved.
+
+```mermaid
+flowchart LR
+    plan["/ops:plan"] --> approval{"User approval"} --> implement["/ops:implement"] --> ship["/ops:ship"]
+```
 
 ---
 
@@ -273,6 +323,18 @@ Lightweight structured workflow for well-understood tasks.
 | Verify + Code quality        | Build/compile check + format/lint (`ops:code-quality`)               |
 | Security gate + Code review  | Security triage + light code review (1 cycle max)                    |
 | Tests + Docs + CLAUDE.md     | Run tests, update docs, verify project rules                        |
+
+```mermaid
+flowchart TD
+    RS["Restatement"] --> R{{"researcher-code + researcher-doc"}}
+    R --> SG["Scope guard"]
+    SG --> E["Execute"]
+    E --> V["Verify + Code quality"]
+    V --> ST["Security triage"]
+    ST --> CODREV{{"code-reviewer"}}
+    ST -.->|if triggers| SECREV{{"security-reviewer"}}
+    CODREV --> T["Tests + Docs"]
+```
 
 Agents used: **researcher-code**, **researcher-doc**, **code-reviewer**, **security-reviewer** (if triggers)
 
@@ -318,6 +380,20 @@ After all tasks: code quality (`ops:code-quality`) → security triage → final
 
 **Circuit breaker**: 3+ consecutive failures triggers diagnostic agents (researcher-code + git-historian) and presents options to the user.
 
+```mermaid
+flowchart TD
+    subgraph task_loop["Per task (×N)"]
+        IMP{{"implementer"}} --> V["Validation gate"]
+        V --> CC["Conformity check"]
+        CC --> DC["Discovery check"]
+    end
+    DC --> CQ["Code quality"]
+    CQ --> ST["Security triage"]
+    ST --> CODREV{{"code-reviewer"}}
+    ST -.->|if triggers| SECREV{{"security-reviewer"}}
+    CODREV --> FV["Final validation"]
+```
+
 Agents used: **implementer**, **code-reviewer**, **security-reviewer** (when applicable)
 
 ---
@@ -343,6 +419,19 @@ Systematic debugging: investigate, hypothesize, fix.
 
 **Circuit breaker**: 5+ failed fix attempts triggers diagnostic agents and presents options.
 
+```mermaid
+flowchart TD
+    I["Investigate"] --> GH{{"git-historian"}}
+    GH --> INS["Instrument"]
+    INS --> H["Hypothesize"]
+    H --> T["Test hypotheses"]
+    T --> F["Fix"]
+    F --> CODREV{{"code-reviewer"}}
+    F -.->|if triggers| SECREV{{"security-reviewer"}}
+    CODREV --> DC["Discovery check"]
+    DC --> V["Verify"]
+```
+
 Agents used: **git-historian**, **code-reviewer**, **security-reviewer** (when applicable), **researcher-code** (circuit breaker)
 
 ---
@@ -363,6 +452,15 @@ Add tests to existing untested code.
 | Validate | Run full test suite — new + existing tests must pass |
 | Code quality | Format + lint (`ops:code-quality`) |
 | Code review | Light review focused on test quality (1 cycle max) |
+
+```mermaid
+flowchart TD
+    S["Scope"] --> R{{"researcher-code + researcher-doc"}}
+    R --> TW{{"test-writer"}}
+    TW --> V["Validate"]
+    V --> CQ["Code quality"]
+    CQ --> CODREV{{"code-reviewer"}}
+```
 
 Agents used: **researcher-code**, **researcher-doc**, **test-writer**, **code-reviewer**
 
@@ -386,6 +484,17 @@ Restructure code without changing behavior.
 | Verify | Full test suite passes, behavior unchanged |
 | Code quality | Format + lint (`ops:code-quality`) |
 | Code review | Review focused on behavior preservation (1 cycle max) |
+
+```mermaid
+flowchart TD
+    S["Scope"] --> R{{"researcher-code + researcher-doc"}}
+    R --> CG["Coverage gate"]
+    CG --> P["Plan steps"]
+    P --> E["Execute + test each step"]
+    E --> V["Verify"]
+    V --> CQ["Code quality"]
+    CQ --> CODREV{{"code-reviewer"}}
+```
 
 Agents used: **researcher-code**, **researcher-doc**, **code-reviewer**
 
@@ -411,6 +520,18 @@ Performance investigation and optimization.
 | Code quality | Format + lint (`ops:code-quality`) |
 | Code review | Review focused on correctness preservation and optimization soundness (1 cycle max) |
 
+```mermaid
+flowchart TD
+    D["Define"] --> BL["Baseline"]
+    BL --> R{{"researcher-code + researcher-doc"}}
+    R --> H["Hypothesize"]
+    H --> O["Optimize"]
+    O --> M["Measure"]
+    M --> V["Verify"]
+    V --> CQ["Code quality"]
+    CQ --> CODREV{{"code-reviewer"}}
+```
+
 Agents used: **researcher-code**, **researcher-doc**, **code-reviewer**
 
 ---
@@ -431,6 +552,15 @@ Review an external pull request.
 | Security gate | Triage diff against security triggers, dispatch security-reviewer if needed |
 | Present | Structured review (Critical / Important / Nits). Offer to post on PR |
 
+```mermaid
+flowchart TD
+    L["Load PR"] --> C["Context"]
+    C --> PR{{"pr-reviewer"}}
+    PR --> SG["Security gate"]
+    SG -.->|if triggers| SECREV{{"security-reviewer"}}
+    SG --> P["Present review"]
+```
+
 Agents used: **pr-reviewer**, **security-reviewer** (if triggers)
 
 ---
@@ -445,6 +575,14 @@ Autonomous codebase and documentation exploration.
 
 Dispatches 3 agents in parallel (researcher-code, researcher-doc, git-historian), synthesizes findings, and conditionally dispatches researcher-repo when confidence is insufficient. Read-only — no changes made.
 
+```mermaid
+flowchart TD
+    D["Dispatch"] --> RC{{"researcher-code"}} & RD{{"researcher-doc"}} & GH{{"git-historian"}}
+    RC & RD & GH --> S["Synthesize"]
+    S -.->|confidence insufficient| RR{{"researcher-repo"}}
+    S --> R["Results"]
+```
+
 ---
 
 ### `/ops:clone-analyze`
@@ -456,6 +594,11 @@ Clone and analyze an external repository.
 ```
 
 Clones the repository (version-matched when possible), analyzes it, and presents structured findings. Use when documentation is insufficient or you need to understand internals.
+
+```mermaid
+flowchart LR
+    C["Clone"] --> RR{{"researcher-repo"}} --> R["Results"]
+```
 
 Agents used: **researcher-repo**
 
@@ -493,6 +636,15 @@ On-demand security review of code, infrastructure, or pipeline changes.
 | Fix (optional) | Apply fixes if requested, re-verify with security-reviewer     |
 
 If no security-sensitive areas are found, reports that and offers to run anyway.
+
+```mermaid
+flowchart TD
+    S["Scope"] --> T["Triage"]
+    T --> SECREV{{"security-reviewer"}}
+    SECREV --> R["Report"]
+    R -.->|if requested| F["Fix + re-verify"]
+    F -.-> SECREV
+```
 
 Agents used: **security-reviewer**
 

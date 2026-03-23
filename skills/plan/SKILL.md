@@ -159,11 +159,21 @@ This prevents building the wrong thing. A 10-second check saves hours of wasted 
 - If a topic needs more exploration, break it into multiple questions
 - If you catch yourself writing "Question 4:", "Question 5:", "Question 6:" in the same message — STOP. Pick the most important one, send it alone, wait for the answer.
 
-**Challenging scope with YAGNI:**
+**Challenging scope with YAGNI (MANDATORY output):**
 - Is every part of the request actually needed right now?
 - Can a simpler version achieve the same goal?
 - Are there features that "might be useful later" but aren't required? Remove them.
 - Say explicitly what you're excluding and why. Let the user push back if they disagree.
+
+You MUST present a YAGNI assessment to the user before proceeding, even if the scope seems clean:
+
+```
+## YAGNI Check
+- Kept: [features retained and why they're needed now]
+- Removed/Deferred: [features excluded and why] (or "None — scope is already minimal")
+```
+
+If this block does not appear in your output before moving to Step 2, you have skipped a required step.
 
 **Working in existing codebases:**
 - Explore the current structure before proposing changes. Follow existing patterns.
@@ -205,6 +215,19 @@ Read CLAUDE.md (if it exists), directory structure, and key config files to unde
 ---
 
 ## Step 3: Parallel Research
+
+<HARD-GATE-RESEARCH>
+You MUST dispatch exactly 3 agents in a SINGLE message, using the exact subagent types specified below. Do NOT substitute with `Explore` or `general-purpose` agents. Do NOT dispatch only 1 or 2 agents. If you dispatch anything other than these 3 typed agents, you have FAILED this skill.
+
+The 3 agents MUST be:
+1. `subagent_type: "ops:researcher-code"` — codebase patterns, conventions, risks
+2. `subagent_type: "ops:researcher-doc"` — library/tool documentation via Context7 MCP
+3. `subagent_type: "ops:git-historian"` — git history analysis (Research Mode, 6 months)
+
+All 3 dispatched in a single assistant message. No exceptions.
+
+Degraded case: if an agent fails or times out, record "Agent <type> failed: <reason>" in the research synthesis and proceed. The gate requires dispatching all 3, not that all 3 succeed.
+</HARD-GATE-RESEARCH>
 
 Run the `ops:research` process (Steps 2-6: dispatch 3 agents in parallel — researcher-code, researcher-doc, git-historian — synthesize findings, and conditionally dispatch one or more researcher-repo agents in parallel for targets where researcher-doc signals `Source Verification Needed: high`). Scope the research to the task area identified during brainstorming.
 

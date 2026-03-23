@@ -122,6 +122,8 @@ Run the appropriate validation commands depending on file types:
 
 **CRITICAL**: Do NOT mark a task as complete without running validation. No "it should work" — show the output.
 
+**WHO runs validation**: YOU (the orchestrator) must run the validation command yourself — do NOT rely on the implementer's report that "tests pass." The implementer may have run a subset, hit a cached result, or misread the output. Run the command fresh, read the output, and verify it yourself before marking the task complete. If the command cannot be run (e.g., requires Docker), state this explicitly as a validation gap — do NOT silently accept the implementer's claim.
+
 ### 2c. Conformity Check (MANDATORY)
 
 **Do NOT skip this step.** After validation passes, verify each of these explicitly — not as a mental note, but by checking the actual diff:
@@ -195,13 +197,32 @@ Before dispatching the final review, output this audit summary by counting from 
 
 **If fewer implementers were dispatched than tasks in the plan**, you bundled tasks — STOP and re-run the bundled tasks individually before proceeding.
 
-### Code Quality (MANDATORY)
+### Code Quality (MANDATORY — runs BEFORE reviewers)
+
+<HARD-GATE-CODE-QUALITY>
+You MUST run the `ops:code-quality` process BEFORE dispatching any reviewer agent. If you dispatch code-reviewer or security-reviewer without having run formatting and linting first, you have FAILED this skill.
+
+Sequence: Pre-review Audit → Code Quality → Security Triage → Dispatch Reviews. Skipping Code Quality is not allowed even if the code "looks clean."
+
+Degraded case: if no formatter or linter is detected in the project, running `ops:code-quality` will report "No formatter or linter detected — Skipped." This counts as having run the process. The gate requires running the process, not that tools exist.
+</HARD-GATE-CODE-QUALITY>
 
 Run the `ops:code-quality` process on all modified files (format + lint). Fix any issues before dispatching reviewers.
 
-### Security Triage (MANDATORY)
+### Security Triage (MANDATORY — structured output required)
 
 Run the `ops:security-gate` process on the **complete diff** to determine whether the security-reviewer is needed, and handle re-verification if critical issues are found. If you write "NO" when the diff clearly contains security-sensitive changes, you have FAILED this skill.
+
+You MUST output the structured triage block defined in `ops:security-gate` Step 1:
+
+```
+## Security Triage
+- Security-sensitive areas in diff: YES / NO
+- Triggers matched: <list which triggers and which files>
+- Security-reviewer dispatch: YES / NOT NEEDED
+```
+
+This block must appear in your output BEFORE dispatching the security-reviewer (or deciding not to). An informal assessment like "the diff touches permissions so let's dispatch" is NOT sufficient — go through the 14 triggers explicitly.
 
 ### Dispatch Reviews
 
@@ -244,8 +265,17 @@ The security-reviewer checks:
 ## Step 5: Completion
 
 After the final review passes:
+
+<HARD-GATE-FINAL-VALIDATION>
+You MUST re-run ALL validation commands from ALL tasks. Not some — ALL. If a validation command cannot be run (e.g., Docker not available for pytest), you MUST:
+1. Explicitly state which command could not be run and why
+2. Present this as a gap to the user: "Warning: Validation gap: `<command>` could not be run because <reason>. This must be verified manually before shipping."
+
+Silently skipping a validation command — or running only some of them — is a FAILURE of this skill.
+</HARD-GATE-FINAL-VALIDATION>
+
 1. **Run a final full validation (MANDATORY)**: re-run all validation commands from all tasks. Do NOT skip this — it catches cross-task regressions that per-task validation misses.
-2. **Verify task tracking is consistent**: run `TaskList` and confirm all tasks are either `completed` or `cancelled` — no tasks left `in_progress` or `pending`. This is a MANDATORY call, not a mental check. You MUST call `TaskList` and show the result.
+2. **Verify task tracking is consistent**: run `TaskList` and confirm all tasks are either `completed` or `cancelled` — no tasks left `in_progress` or `pending`. This is a MANDATORY call, not a mental check. You MUST call `TaskList` and show the result. If `TaskList` returns empty or unexpected results (e.g., "No tasks found" when you created tasks earlier), flag this anomaly explicitly to the user — do NOT silently proceed with your own count. The tool result is the source of truth; if it contradicts your records, investigate or explain the discrepancy.
 3. Present a summary:
    - Tasks completed: N/N (from `TaskList`)
    - Files created/modified: list
