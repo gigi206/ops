@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.2.1 (2026-03-23)
+
+### /ops:setup — Piebald-AI marketplace removal
+
+- fix: removed `Piebald-AI/claude-code-lsps` third-party marketplace and all associated plugins (HTML/CSS, Vue, Scala, PowerShell, Julia, LaTeX, Ada, Solidity)
+- Marketplace count reduced from 3 to 2 (`claude-plugins-official` + `boostvolt/claude-code-lsps`)
+- Glob file extension list trimmed to match remaining marketplace coverage
+- .claude-plugin/plugin.json: version bump 2.2.0 → 2.2.1
+
 ## 2.2.0 (2026-03-23)
 
 ### New skill: /ops:setup

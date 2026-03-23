@@ -5,6 +5,11 @@ A structured development workflow plugin for Claude Code. Plan, implement, debug
 ## Quick use
 
 ```
+# First time? Diagnose your environment
+/ops:setup
+```
+
+```
 # Main pipeline
 /ops:plan add rate limiting to the API     →  /ops:implement  →  /ops:ship
                                                       ↑
@@ -26,7 +31,6 @@ A structured development workflow plugin for Claude Code. Plan, implement, debug
 /ops:clone-analyze how does express handle middleware error propagation
 /ops:brainstorm I need some kind of caching layer
 /ops:security
-/ops:setup
 ```
 
 ## What it does
