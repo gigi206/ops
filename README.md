@@ -26,6 +26,7 @@ A structured development workflow plugin for Claude Code. Plan, implement, debug
 /ops:clone-analyze how does express handle middleware error propagation
 /ops:brainstorm I need some kind of caching layer
 /ops:security
+/ops:setup
 ```
 
 ## What it does
@@ -70,6 +71,7 @@ flowchart TD
     clone-analyze["/ops:clone-analyze"]
     review["/ops:review"]
     verify["/ops:verify"]
+    setup["/ops:setup"]
 ```
 
 **Legend:** solid arrow = produces output for the next skill, dashed arrow = optional/contextual relationship, thick arrow = chains the full pipeline, isolated nodes = behavioral (always active).
@@ -159,6 +161,7 @@ flowchart LR
 | `/ops:brainstorm` | Clarify needs via Socratic dialogue | Explore intent and requirements before planning |
 | `/ops:review` | Technically evaluate code review feedback | Receiving comments on code (human or CI) |
 | `/ops:security` | On-demand security audit | Security review of changes or specific files |
+| `/ops:setup` | Diagnose environment: languages, LSP, code quality tools, security analysis tools | First use, new environment, missing tools |
 | `/ops:verify` | Behavioral rule: evidence before any claim | Always active — applies in all contexts |
 
 ### Internal phases (`user-invocable: false`)
@@ -169,11 +172,10 @@ Shared logic extracted from skills. Not callable by the user — invoked program
 |---|---|---|
 | `ops:instruction-priority` | Instruction hierarchy (user > CLAUDE.md > ops skill > system prompt) | all skills |
 | `ops:subagent-rules` | Context rules for dispatching subagents (inline content, scoping, labeling) | plan, implement, do, debug, research, clone-analyze, test, refactor, perf, review-pr |
-| `ops:environment-setup` | Detect languages/frameworks + 4-level LSP diagnostic | plan |
-| `ops:code-quality` | Format + lint modified files before code review | implement, do, test, refactor, perf |
+| `ops:code-quality` | Format + lint modified files (qlty or project tools) before code review | implement, do, test, refactor, perf |
 | `ops:discovery-checks` | Categorize unexpected discoveries (Minor / Significant / Major) | implement, debug |
 | `ops:circuit-breaker` | Diagnose repeated failures (researcher-code + git-historian) | implement (3+ failures), debug (5+ failures) |
-| `ops:security-gate` | Triage (14 triggers) + dispatch security-reviewer + re-verification loop (cap 3) | implement, do, security, review-pr |
+| `ops:security-gate` | Triage (14 triggers) + SAST scan (semgrep) + dispatch security-reviewer + re-verification loop (cap 3) | implement, do, security, review-pr |
 | `ops:redispatch-optimization` | Generic re-dispatch prompt optimization for review agents | plan (spec-reviewer, critic), implement (code-reviewer), security (security-reviewer) |
 
 ### Agents
@@ -188,7 +190,7 @@ Shared logic extracted from skills. Not callable by the user — invoked program
 | **critic** | Adversarial plan review: completeness, coherence, security, CLAUDE.md compliance | plan | Verdict: APPROVE / REJECT with confidence levels. Pre-engagement prediction to avoid confirmation bias |
 | **implementer** | Execute one plan task (TDD, code generation, validation) | implement | 1 agent per plan task. Pipeline: implement, validation gate, conformity check |
 | **code-reviewer** | Code review: spec compliance, quality, TDD adherence, anti-patterns | implement (final review), do, test, refactor, perf | Review on complete diff after all tasks. Verdict: Approved / Issues (Important/Suggestions) / Critical |
-| **security-reviewer** | Deep security analysis: code, infra, CI/CD, containers, supply chain | via security-gate: implement, do, security, review-pr | Dispatched only if security-gate detects sensitive domains. Re-dispatch loop (max 3) after fixes |
+| **security-reviewer** | Deep security analysis: code, infra, CI/CD, containers, supply chain | via security-gate: implement, do, security, review-pr | Dispatched only if security-gate detects sensitive domains or semgrep reports findings. Re-dispatch loop (max 3) after fixes |
 | **test-writer** | Analyze existing code and write tests: behavior analysis, edge cases, coverage | test, refactor (pre-refactor coverage) | Writes tests only, does not modify production code |
 | **pr-reviewer** | Review external PRs: quality, security, conventions, actionable comments | review-pr | Structured review with severity levels (Critical / Important / Nits) |
 
@@ -215,12 +217,24 @@ If you have a local clone of the repository:
 
 After install, restart Claude Code and type `/ops:plan`. If the skill loads, you're set.
 
+### Setup (recommended)
+
+Run the environment diagnostic to check your tooling:
+
+```
+/ops:setup
+```
+
+This detects languages, LSP availability, code quality tools (qlty), and security analysis tools (semgrep). It proposes installation for anything missing.
+
 ## Requirements
 
 - **Claude Code** — required
 - **Node.js** — only needed for the visual brainstorm companion (optional)
 - **Git** — needed by the git-historian agent (optional, skipped if unavailable)
 - **Context7 MCP** — needed by researcher-doc (optional, falls back to web search)
+- **qlty** — optional, used by code-quality for unified formatting and linting (install: `curl https://qlty.sh | bash`)
+- **semgrep** — optional, used by security-gate for SAST scanning (install: `pip install semgrep`)
 
 No npm dependencies. No database. No compiled binaries.
 
@@ -320,7 +334,7 @@ Lightweight structured workflow for well-understood tasks.
 | Scope guard                  | If too complex, suggest escalating to `/ops:plan`                    |
 | Tasks (optional)             | Light task breakdown based on decision complexity                    |
 | Execute                      | Implement changes directly                                           |
-| Verify + Code quality        | Build/compile check + format/lint (`ops:code-quality`)               |
+| Verify + Code quality        | Build/compile check + format/lint (`ops:code-quality`, qlty or project tools) |
 | Security gate + Code review  | Security triage + light code review (1 cycle max)                    |
 | Tests + Docs + CLAUDE.md     | Run tests, update docs, verify project rules                        |
 
@@ -359,7 +373,7 @@ Each task goes through the full pipeline:
 | Conformity check | Diff vs. plan — no drift, no secrets, conventions preserved            |
 | Discovery check  | Pause on significant findings, stop on major discoveries               |
 
-After all tasks: code quality (`ops:code-quality`) → security triage → final review (code-reviewer + security-reviewer if applicable).
+After all tasks: code quality (`ops:code-quality`, qlty or project tools) → security triage → final review (code-reviewer + security-reviewer if applicable).
 
 **Security escalation triggers** — the security-reviewer is dispatched when the task touches:
 
@@ -450,7 +464,7 @@ Add tests to existing untested code.
 | Research | 2 agents in parallel: researcher-code (code analysis), researcher-doc (test framework docs) |
 | Test-writer | Dispatch test-writer agent: analyze behavior, identify edge cases, write tests |
 | Validate | Run full test suite — new + existing tests must pass |
-| Code quality | Format + lint (`ops:code-quality`) |
+| Code quality | Format + lint (`ops:code-quality`, qlty or project tools) |
 | Code review | Light review focused on test quality (1 cycle max) |
 
 ```mermaid
@@ -482,7 +496,7 @@ Restructure code without changing behavior.
 | Plan steps | Break into small, independently verifiable transformations |
 | Execute | One step at a time, run tests after each step |
 | Verify | Full test suite passes, behavior unchanged |
-| Code quality | Format + lint (`ops:code-quality`) |
+| Code quality | Format + lint (`ops:code-quality`, qlty or project tools) |
 | Code review | Review focused on behavior preservation (1 cycle max) |
 
 ```mermaid
@@ -517,7 +531,7 @@ Performance investigation and optimization.
 | Optimize | One change at a time, preserve correctness |
 | Measure | Re-measure with same method — show before/after delta. No improvement → revert |
 | Verify | Full test suite passes, behavior unchanged |
-| Code quality | Format + lint (`ops:code-quality`) |
+| Code quality | Format + lint (`ops:code-quality`, qlty or project tools) |
 | Code review | Review focused on correctness preservation and optimization soundness (1 cycle max) |
 
 ```mermaid
@@ -616,6 +630,38 @@ Socratic-style dialogue: clarity check, context exploration, scope assessment, Y
 
 ---
 
+### `/ops:setup`
+
+Diagnose environment and propose tool installation.
+
+```
+/ops:setup
+```
+
+| Step | What happens |
+|------|-------------|
+| Languages & LSP | Detect languages, 4-level LSP diagnostic (test → marketplace → plugin → binary) |
+| Code quality tools | Check qlty availability, detect project formatters/linters |
+| Security analysis | Check semgrep availability |
+| Recommendations | Propose installation for missing tools (user-invoked mode only) |
+
+Also called by `/ops:plan` Step 0 (Categories 2-3 informational only).
+
+```mermaid
+graph LR
+    S["/ops:setup"] --> L["Languages & LSP (4-level diagnostic)"]
+    S --> Q["Code quality tools (qlty, project tools)"]
+    S --> SG["Security analysis (semgrep)"]
+    L --> D{"Issues found?"}
+    D -->|Yes| O["Fix options (A/B/C/D)"]
+    D -->|No| R["Report"]
+    Q --> R
+    SG --> R
+    O --> R
+```
+
+---
+
 ### `/ops:security`
 
 On-demand security review of code, infrastructure, or pipeline changes.
@@ -640,7 +686,8 @@ If no security-sensitive areas are found, reports that and offers to run anyway.
 ```mermaid
 flowchart TD
     S["Scope"] --> T["Triage"]
-    T --> SECREV{{"security-reviewer"}}
+    T --> SAST["SAST scan (semgrep)"]
+    SAST --> SECREV{{"security-reviewer"}}
     SECREV --> R["Report"]
     R -.->|if requested| F["Fix + re-verify"]
     F -.-> SECREV
@@ -762,16 +809,16 @@ ops/
 │   ├── clone-analyze/SKILL.md         # Clone and analyze external repos
 │   ├── review/SKILL.md                # Evaluate feedback technically
 │   ├── security/SKILL.md              # On-demand security review
+│   ├── setup/SKILL.md                 # Environment diagnostic + tool setup
 │   ├── verify/SKILL.md                # Evidence before claims (behavioral)
 │   │
 │   │── # ─── INTERNAL PHASES (user-invocable: false) ───
 │   ├── instruction-priority/SKILL.md  # Instruction hierarchy when conflicts arise
 │   ├── subagent-rules/SKILL.md        # Agent dispatch rules
-│   ├── environment-setup/SKILL.md     # Language detection + LSP diagnostic
-│   ├── code-quality/SKILL.md          # Format + lint before review
+│   ├── code-quality/SKILL.md          # Format + lint (qlty or project tools) before review
 │   ├── discovery-checks/SKILL.md      # Minor/Significant/Major
 │   ├── circuit-breaker/SKILL.md       # Repeated failure diagnostic
-│   ├── security-gate/SKILL.md         # Triage + dispatch + re-verification loop
+│   ├── security-gate/SKILL.md         # Triage + SAST (semgrep) + dispatch + re-verification loop
 │   ├── redispatch-optimization/SKILL.md # Re-dispatch prompt optimization
 │   │
 │   │── # ─── ANNEXES ───
@@ -781,7 +828,8 @@ ops/
 │
 ├── CHANGELOG.md
 ├── COMPARISON-vs-SUPERPOWERS.md
-└── LICENSE
+├── LICENSE
+└── mise.toml
 ```
 
 ## License

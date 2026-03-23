@@ -1,5 +1,47 @@
 # Changelog
 
+## 2.2.0 (2026-03-23)
+
+### New skill: /ops:setup
+
+- feat: new `/ops:setup` skill — diagnose environment (languages, LSP, code quality tools, security analysis tools) and propose installation for missing tools
+- Absorbs `ops:environment-setup` internal phase — all language detection, 4-level LSP diagnostic, marketplace/plugin/binary tables migrated
+- Two entry modes: user-invoked (full diagnostic + install proposals) or called by `/ops:plan` Step 0 (Categories 2-3 informational only)
+- Detects qlty (unified code quality), semgrep (SAST), and project-specific formatters/linters
+
+### qlty integration in code-quality
+
+- feat: `ops:code-quality` now detects qlty as a priority unified tool — if `qlty` is in PATH and `.qlty/qlty.toml` exists, uses `qlty fmt` and `qlty check` instead of individual formatters/linters
+- Two-stage detection: qlty in PATH + `.qlty/qlty.toml` present → use qlty; otherwise → fallback to individual tools
+- Crash/timeout resilience: if qlty fails, logs error and continues with fallback
+- Report now mentions `/ops:setup` when no tools are detected
+
+### Semgrep integration in security-gate
+
+- feat: new Step 1b in `ops:security-gate` — optional SAST scan with `semgrep scan --config auto --json` on modified files
+- Gate-level triage of semgrep findings: LLM evaluates each finding in context of the diff before dispatching — obvious false positives are dismissed without consuming a security-reviewer cycle
+- Security Triage output now includes SAST line (findings count / clean / not found / error)
+- Crash/timeout/network resilience: if semgrep fails, logs error and continues with LLM triage only
+
+### New file: mise.toml
+
+- feat: `mise.toml` at repo root declares pipx, qlty (`github:qltysh/qlty`), and semgrep (`pipx:semgrep`) as development dependencies for ops contributors
+
+### Cross-cutting updates
+
+- skills/plan/SKILL.md: HARD-GATE-0 updated to reference `ops:setup` instead of prescriptive Glob/ToolSearch/LSP sequence; Step 0a reference changed from `ops:environment-setup` to `ops:setup`
+- hooks/session-start: added `/ops:setup` to routing table and routing hints
+- README.md: added `/ops:setup` to quick use, workflow diagram, standalone skills table, skills reference; updated code-quality and security-gate descriptions; added qlty and semgrep to requirements; updated structure tree
+- .claude-plugin/plugin.json: version bump 2.1.1 → 2.2.0, added setup to description
+
+### Removed
+
+- `ops:environment-setup` internal phase — absorbed into `/ops:setup`
+
+### Stats
+- Skills: 17 user-facing + 7 internal phases = 24 total (was 16 + 8 = 24)
+- Agents: 11 (unchanged)
+
 ## 2.1.1 (2026-03-23)
 
 ### Documentation

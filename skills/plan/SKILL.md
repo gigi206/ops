@@ -6,14 +6,11 @@ description: "Brainstorm, research, and plan before writing code."
 # /ops:plan — Brainstorm, research, and plan
 
 <HARD-GATE-0>
-STOP. Your VERY FIRST action must be Step 0: Environment Setup. Do NOT ask design questions yet. Do NOT explore the project beyond language detection.
+STOP. Your VERY FIRST action must be Step 0: Environment Setup. Do NOT ask design questions yet.
 
-Your first tool calls must be exactly:
-1. `Glob` to detect file extensions (e.g., `**/*.py`, `**/*.ts`, `**/*.go`)
-2. `ToolSearch` to fetch the LSP tool
-3. `LSP documentSymbol` on one representative file per detected language
+Follow the `ops:setup` process. It starts with Glob for language detection (file extensions), then LSP diagnostics, then tool availability checks. When called from /ops:plan, Categories 2-3 are informational only (no installation proposals).
 
-If your first tool call is anything other than Glob for language detection, you have FAILED this skill.
+Your first tool call MUST be Glob for language detection — this is how ops:setup begins.
 </HARD-GATE-0>
 
 <HARD-GATE-1>
@@ -63,7 +60,7 @@ This step runs BEFORE any brainstorming. If LSP needs fixing, the user may need 
 
 ### 0a. Detect languages
 
-Run the `ops:environment-setup` process (detect languages + LSP diagnostic). Wait for the user's decision before proceeding to Step 1.
+Run the `ops:setup` process (detect languages + LSP diagnostic + tool availability check). Wait for the user's decision before proceeding to Step 1.
 
 ---
 

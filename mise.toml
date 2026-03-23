@@ -1,0 +1,6 @@
+# Tools for ops development/contribution.
+# These are NOT required in user projects — ops detects them opportunistically at runtime.
+[tools]
+pipx = "latest"
+"github:qltysh/qlty" = "latest"
+"pipx:semgrep" = "latest"
