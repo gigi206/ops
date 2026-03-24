@@ -23,9 +23,9 @@ Before dispatching any agent in this skill, follow the `ops:subagent-rules` proc
 
 ## Step 1: Restatement
 
-Reformulate the user's intent in one sentence to confirm understanding. No Socratic questions, no brainstorming, no YAGNI filter.
+Reformulate the user's intent in one sentence to confirm understanding. No Socratic questions, no YAGNI filter.
 
-This is NOT a gate — no user approval required. State what you understood and proceed to Step 2. If the user corrects the restatement, acknowledge the correction, restate again, and continue.
+This IS a gate — wait for user approval before proceeding. Ask the user to confirm and offer the option to launch `/ops:brainstorm` if they want to explore the intent further. If the user corrects the restatement, acknowledge the correction, restate again, and wait for confirmation.
 
 ---
 
@@ -59,7 +59,7 @@ This is a safety valve, not a gate. The user can override.
 Based on the complexity of the **decision**, not the volume of files:
 
 - **No tasks**: mechanical/evident change — proceed directly to Step 5.
-- **Grouped tasks**: few logically distinct steps. Format: `description → validation command`.
+- **Grouped tasks**: few logically distinct steps. Format: `description → shell validation command` (e.g., "Add permission class → `python3 -m py_compile permissions.py`"). The validation command must be an executable shell command when possible, not a description like "validation visuelle".
 
 ---
 
@@ -72,7 +72,7 @@ Implement the changes directly (no implementer agent). If tasks were defined in 
 ## Step 6: Verify + Code Quality
 
 1. **Verify**: run build/compile commands, validation commands, dry-runs. `/ops:verify` behavioral rule applies — never claim a result without showing the evidence.
-2. **Code quality**: run the `ops:code-quality` process on all modified files. Fix any issues before proceeding.
+2. **Code quality**: read the `ops:code-quality` skill file, then follow its Steps 1–6 in order on all modified files. You MUST produce the structured report format defined in its Step 6. If no tools are detected, output the "no tools detected" report variant — do NOT brute-force tool execution (e.g., retrying a missing linter multiple times). Fix any issues before proceeding.
 
 ---
 
@@ -80,7 +80,7 @@ Implement the changes directly (no implementer agent). If tasks were defined in 
 
 ### Security Gate
 
-Run the `ops:security-gate` process on the complete diff. If triggers match, dispatch the security-reviewer in the **same message** as the code-reviewer (see `ops:subagent-rules`).
+Read the `ops:security-gate` skill file, then follow its process on the complete diff. Specifically: use `ops-semgrep-scan.sh` (NOT raw `semgrep`) and parse its key=value output format. If triggers match, dispatch the security-reviewer in the **same message** as the code-reviewer (see `ops:subagent-rules`).
 
 ### Code Review (light)
 
@@ -94,7 +94,7 @@ Dispatch the **code-reviewer** agent with:
 
 Scope: LSP diagnostics, code quality, CLAUDE.md conventions. No spec compliance.
 
-**One cycle maximum**: fix issues, re-run review once. If still failing → escalate to user.
+**One cycle maximum**: fix issues, then re-dispatch every reviewer that found issues (code-reviewer AND security-reviewer if it was dispatched). Wait for their verdicts and verify approval before proceeding. If still failing after one cycle → escalate to user.
 
 ---
 
@@ -102,4 +102,4 @@ Scope: LSP diagnostics, code quality, CLAUDE.md conventions. No spec compliance.
 
 1. **Run tests**: if the project has a test suite, run it. Max 2 fix attempts if tests fail, then escalate to user. Skip if no test infrastructure.
 2. **Update documentation**: if the project has documentation affected by the change, update it. Skip if none exists or none is affected.
-3. **Check CLAUDE.md** (always last): read `CLAUDE.md` and `.claude/CLAUDE.md`. Verify all applicable rules were followed. Fix violations before completing.
+3. **Check CLAUDE.md** (always last): read the project's `CLAUDE.md`, `.claude/CLAUDE.md`, AND the user's global `~/.claude/CLAUDE.md`. Verify all applicable rules were followed. Fix violations before completing.

@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.2.4 (2026-03-24)
+
+### ops:do — Workflow hardening
+
+- fix: Step 1 restatement is now a gate (waits for user approval), with option to escalate to `/ops:brainstorm`
+- fix: Step 4 task format requires executable shell validation commands, not prose descriptions
+- fix: Step 6 code-quality now explicitly references skill file Steps 1–6 and handles missing tools gracefully (no brute-force retries)
+- fix: Step 7 security-gate references `ops-semgrep-scan.sh` and its key=value output format (aligns with v2.2.3 script extraction)
+- fix: Step 7 re-dispatch now includes both code-reviewer and security-reviewer when both found issues
+
 ## 2.2.3 (2026-03-24)
 
 ### Architecture — Script extraction
