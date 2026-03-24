@@ -4,6 +4,18 @@
 
 set -euo pipefail
 
+# Derive plugin root from hook location if not set by plugin system.
+# Resolve symlinks so this works even if hooks/ is symlinked.
+if [[ -z "${CLAUDE_PLUGIN_ROOT:-}" ]]; then
+    _source="${BASH_SOURCE[0]}"
+    if command -v realpath &>/dev/null; then
+        _source="$(realpath "$_source")"
+    fi
+    CLAUDE_PLUGIN_ROOT="$(cd "$(dirname "$_source")/.." && pwd)"
+    unset _source
+fi
+export PATH="${CLAUDE_PLUGIN_ROOT}/scripts:${PATH}"
+
 escape_for_json() {
     local s="$1"
     s="${s//\\/\\\\}"

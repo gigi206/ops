@@ -208,12 +208,7 @@ Check if `qlty` is available: `which qlty`
 
 ### Project-specific tools
 
-Check the project for formatter/linter configuration (same detection as `ops:code-quality` Step 1):
-- **Formatter**: `.prettierrc`, `pyproject.toml` (`[tool.black]` or `[tool.ruff.format]`), `rustfmt.toml`, `.clang-format`, `gofmt`/`goimports` (built-in), `.editorconfig`, `biome.json`, etc.
-- **Linter**: `.eslintrc*`, `pyproject.toml` (`[tool.ruff]`, `[tool.pylint]`), `clippy` (Rust), `golangci-lint`, `.rubocop.yml`, etc.
-- **Combined**: `deno fmt`/`deno lint`, `biome check`, `ruff format`/`ruff check`
-
-Also check `package.json` scripts, `Makefile` targets, or CLAUDE.md for project-specific commands.
+Examine the project root for formatter and linter configuration files, `package.json` scripts, `Makefile` targets, and CLAUDE.md for project-specific commands. Report what is detected.
 
 ## Category 3: Security Analysis Tools
 
@@ -222,6 +217,12 @@ Also check `package.json` scripts, `Makefile` targets, or CLAUDE.md for project-
 Check if `semgrep` is available: `which semgrep`
 - If found: report version (`semgrep --version`), check for local config (`.semgrep/` or `.semgrep.yml`), note as available
 - If not found: note as missing
+
+### JSON parser (for semgrep result counting)
+
+`ops-semgrep-scan.sh` uses jq or python3 to count findings. Without either, the script returns `status=findings_unknown` and the LLM parses the raw JSON directly (functional but less efficient).
+
+Check: `which jq` or `which python3`. Report whichever is found. If neither, note it (not a blocker).
 
 ## Category 4: MCP Servers
 
@@ -328,6 +329,7 @@ Present the diagnostic results:
 
 ### Security Analysis Tools
 - semgrep: installed (vX.Y) + local config / installed (vX.Y) — no local config / not found
+- JSON parser: jq (vX.Y) / python3 (vX.Y) / none (script returns findings_unknown)
 
 ### MCP Servers
 - context7: enabled / disabled / not installed — Impact: researcher-doc falls back to WebSearch
@@ -351,6 +353,7 @@ When called directly by the user (not from `/ops:plan`), propose installation fo
 | semgrep | pipx            | `pipx install semgrep`                             |
 | semgrep | brew            | `brew install semgrep`                             |
 | semgrep | mise            | `mise install pipx && mise install pipx:semgrep`   |
+| jq      | system          | `apt/dnf/brew/pacman install jq`                   |
 | context7 | plugin | `/plugin install context7@claude-plugins-official` |
 | chrome-devtools-mcp | plugin | `/plugin install chrome-devtools-mcp@chrome-devtools-plugins` |
 

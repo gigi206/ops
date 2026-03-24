@@ -107,9 +107,7 @@ The implementer reports one of:
 
 ### 2b. Validation Gate
 
-After the implementer reports DONE, **verify with evidence**.
-
-Run the appropriate validation commands depending on file types:
+After the implementer reports DONE, **verify with evidence**. YOU run validation commands fresh — do NOT trust the implementer's report that "tests pass."
 
 | Type          | Example Commands                                                          |
 |---------------|---------------------------------------------------------------------------|
@@ -120,49 +118,40 @@ Run the appropriate validation commands depending on file types:
 | Shell scripts | `bash -n <file>`, `shellcheck <file>`                                     |
 | Custom        | Whatever the task's validation command specifies                          |
 
-**CRITICAL**: Do NOT mark a task as complete without running validation. No "it should work" — show the output.
+Do NOT mark a task as complete without running validation. No "it should work" — show the output. If a command cannot be run (e.g., requires Docker), state this as a validation gap explicitly.
 
-**WHO runs validation**: YOU (the orchestrator) must run the validation command yourself — do NOT rely on the implementer's report that "tests pass." The implementer may have run a subset, hit a cached result, or misread the output. Run the command fresh, read the output, and verify it yourself before marking the task complete. If the command cannot be run (e.g., requires Docker), state this explicitly as a validation gap — do NOT silently accept the implementer's claim.
+### 2c. Conformity Check
 
-### 2c. Conformity Check (MANDATORY)
+After validation passes, verify by checking the actual diff — not as a mental note:
 
-**Do NOT skip this step.** After validation passes, verify each of these explicitly — not as a mental note, but by checking the actual diff:
-
-- [ ] The change matches what the plan specified (compare plan task description against the diff)
-- [ ] No unrelated changes were introduced (no drift — files touched should match the plan's "Files" list)
+- [ ] Change matches the plan's task description
+- [ ] No unrelated changes (files touched match the plan's "Files" list)
 - [ ] No security anti-patterns: hardcoded secrets, `--insecure`, `skip_tls_verify`, disabled TLS
-- [ ] Existing code conventions are preserved (indentation, naming, structure)
+- [ ] Existing code conventions preserved (indentation, naming, structure)
 
-If conformity fails, have the implementer correct the specific issue before proceeding.
+If conformity fails, have the implementer correct the issue before proceeding.
 
-If you mark a task as completed without checking the diff against the plan, you have skipped this step.
-
-**If conformity passes**, mark the task as complete:
-```
-TaskUpdate(id: <task_id>, status: "completed")
-```
+**If conformity passes**: `TaskUpdate(id: <task_id>, status: "completed")`
 
 ### 2d. Discovery Check
 
-After each task completes, check if the implementer reported discoveries. The scope is "the current plan" and the pause target is "implementation". Categorize each discovery using the `ops:discovery-checks` process.
+If the implementer reported discoveries, categorize each using the `ops:discovery-checks` process (scope: "the current plan", pause target: "implementation").
 
-### 2e. Task Completion Record (MANDATORY)
+### 2e. Task Completion Record
 
-**You MUST output this record for every task before moving to the next one.** This is not optional — it forces explicit verification of each pipeline step and prevents silent skipping.
+Output this record for every task before moving to the next. It feeds the final validation in Step 5 — omitting a command here means it gets silently skipped at the end.
 
 ```
-### Task N: <name> — COMPLETED ✅ / BLOCKED ❌
+### Task N: <name> — COMPLETED / BLOCKED
 - Implementer: dispatched (agent), status: DONE/DONE_WITH_CONCERNS/BLOCKED/FAILED
 - Validation commands:
   - `<command 1>` → exit code: N
   - `<command 2>` → exit code: N
-- Conformity: diff matches plan ✅ | no drift ✅ | no security anti-patterns ✅ | conventions ✅
+- Conformity: diff matches plan | no drift | no security anti-patterns | conventions
 - Discovery: NONE / MINOR(<detail>) / SIGNIFICANT(<detail>) / MAJOR(<detail>)
 ```
 
-**List every validation command you ran for this task** (tests, type checks, build, lint, dry-run, etc.). These commands are aggregated and re-run during the final validation (Step 5) — if you omit a command here, it will be silently skipped at the end.
-
-If you skip this record for a task, you have skipped mandatory pipeline steps.
+**Gate**: Do NOT proceed to the next task until this record is output.
 
 ---
 
@@ -273,21 +262,14 @@ The security-reviewer checks:
 After the final review passes:
 
 <HARD-GATE-FINAL-VALIDATION>
-You MUST re-run ALL validation commands from ALL tasks. Not some — ALL. If a validation command cannot be run (e.g., Docker not available for pytest), you MUST:
-1. Explicitly state which command could not be run and why
-2. Present this as a gap to the user: "Warning: Validation gap: `<command>` could not be run because <reason>. This must be verified manually before shipping."
+You MUST re-run ALL validation commands from ALL tasks. Not some — ALL. If a command cannot be run, you MUST:
+1. State which command and why
+2. Present as a gap: "Warning: Validation gap: `<command>` could not be run because <reason>. Must be verified manually before shipping."
 
-Silently skipping a validation command — or running only some of them — is a FAILURE of this skill.
+Silently skipping a validation command is a FAILURE of this skill.
 </HARD-GATE-FINAL-VALIDATION>
 
-1. **Run a final full validation (MANDATORY)**: Collect every validation command from every Task Completion Record (Step 2e), deduplicate, and re-run all of them.
-
-**Process:**
-1. Scan ALL Task Completion Records from Step 2e and extract every validation command.
-2. Deduplicate: if the same command appears in multiple tasks, list it once and note which tasks it covers.
-3. Expand scope: if multiple tasks ran the same tool on different files (e.g., tests on different modules), combine into a single broader invocation (e.g., run the full relevant test suite rather than individual files).
-4. Execute every command in the checklist.
-5. Output the completed checklist — any failed command MUST be investigated before proceeding.
+1. **Run final validation**: Collect every validation command from all Task Completion Records (Step 2e), deduplicate (same command across tasks → list once, note which tasks), expand scope (same tool on different files → single broader invocation), and re-run all of them.
 
 ```
 ## Final Validation Checklist
@@ -296,8 +278,8 @@ Silently skipping a validation command — or running only some of them — is a
 - [ ] `<command C>` (Task 6) → FAIL (exit code 1) — investigating
 ```
 
-This catches cross-task regressions that per-task validation misses.
-2. **Verify task tracking is consistent**: run `TaskList` and confirm all tasks are either `completed` or `cancelled` — no tasks left `in_progress` or `pending`. This is a MANDATORY call, not a mental check. You MUST call `TaskList` and show the result. If `TaskList` returns empty or unexpected results (e.g., "No tasks found" when you created tasks earlier), flag this anomaly explicitly to the user — do NOT silently proceed with your own count. The tool result is the source of truth; if it contradicts your records, investigate or explain the discrepancy.
+2. **Verify task tracking**: run `TaskList` and confirm all tasks are `completed` or `cancelled` — none left `in_progress` or `pending`. This is a mandatory tool call, not a mental check. If `TaskList` returns unexpected results, flag the anomaly to the user.
+
 3. Present a summary:
    - Tasks completed: N/N (from `TaskList`)
    - Files created/modified: list

@@ -27,31 +27,20 @@ Evaluate the changes against these security domain triggers:
 
 ## Step 1b: SAST Scan
 
-Check if `semgrep` is available (`which semgrep`).
+Run `ops-semgrep-scan.sh [--config <path>] <modified files>` (the script is on PATH via the session-start hook). If you already know the semgrep config path (e.g., `.semgrep/` or `.semgrep.yml` in project root), pass it via `--config`. Otherwise, omit `--config` and the script auto-detects. The script handles diff-aware baseline selection and error handling.
 
-If available:
-1. Scope the file list to the same files evaluated in Step 1. Use `git diff --name-only` to obtain the modified file list in the current context.
-2. Determine config: **prefer local config** — check for `.semgrep/` directory or `.semgrep.yml` in project root. If local config exists but has no rules (empty `rules: []`), treat it as absent and fall back. Use local config if present and non-empty (`semgrep scan --config .semgrep/ --json` or `--config .semgrep.yml`), fall back to `--config auto` otherwise (downloads generic rules from network — slower, requires connectivity, less project-tuned).
-3. **Diff-aware scanning**: determine the baseline commit to report only **new** findings (not pre-existing ones):
-   - If on a feature branch: use the merge-base with the main branch (`git merge-base HEAD main` or `master`).
-   - If on the main branch: use `HEAD~1` (last commit).
-   - Add `--baseline-commit=<ref>` to the scan command. This makes semgrep report only findings introduced since that commit.
-   - If the baseline commit cannot be determined (e.g., shallow clone, detached HEAD), omit `--baseline-commit` and note in the report: "baseline unavailable — showing all findings".
-4. Run: `semgrep scan <config flag> --json --baseline-commit=<ref> <modified files>`
-5. Parse JSON output for findings. Classify each finding by severity (ERROR, WARNING, INFO).
-6. If findings with severity WARNING or ERROR exist, **evaluate each finding in context of the diff** before deciding to dispatch:
-   - If at least one finding is plausible (not an obvious false positive given the code context), force security-reviewer dispatch (regardless of Step 1 triage result). Include Semgrep findings summary in the security-reviewer context with the instruction: "Evaluate each semgrep finding for relevance. Semgrep `--config auto` uses generic rules — treat findings as signals to investigate, not as confirmed vulnerabilities. Dismiss false positives with a brief justification."
-   - If ALL findings are clearly false positives (e.g., `hashlib.md5()` in non-crypto hashing, `eval()` in a template engine), do NOT force dispatch. Note in triage output: "SAST: N findings, all dismissed as false positives" with a one-line justification per finding.
-7. If findings are INFO-only: note in triage output but do NOT force dispatch (INFO findings alone are insufficient to trigger a review cycle).
-8. If no findings: note as clean.
+The script outputs key=value metadata lines, followed by raw semgrep JSON (separated by a blank line) when findings are present. Parse the metadata lines first:
 
-If not available: continue with Step 1 triage result only.
-
-> **Note:** `--config auto` requires network access to download rule packs. In air-gapped environments, provide a local config (`.semgrep/` or `.semgrep.yml`).
-
-If semgrep crashes, times out, or fails (network error for --config auto):
-- Inform the user: "Semgrep SAST skipped: <reason>. Continuing with LLM triage only."
-- Do not block the pipeline.
+- `status=not_installed` → semgrep not available. Continue with Step 1 triage result only.
+- `status=error` → semgrep failed. Read the `error=` line. Inform the user: "Semgrep SAST skipped: `<error>`. Continuing with LLM triage only." Do not block the pipeline.
+- `status=no_files` → no modified files to scan. Note as clean.
+- `status=no_findings` → semgrep ran, no findings. Note as clean. Raw JSON follows but contains no results.
+- `status=findings_unknown` → semgrep ran, but no JSON parser (jq/python3) was available to count results. Parse the raw semgrep JSON yourself to determine findings. Treat as `status=findings` for dispatch purposes.
+- `status=findings` → findings present. Parse the raw semgrep JSON that follows the blank line. Extract `results[]` entries and check each finding's `extra.severity`:
+  - **WARNING or ERROR**: evaluate each finding in context of the diff before deciding to dispatch:
+    - If at least one finding is plausible (not an obvious false positive), force security-reviewer dispatch (regardless of Step 1 triage result). Include findings summary in the security-reviewer context with: "Evaluate each semgrep finding for relevance. Treat findings as signals to investigate, not confirmed vulnerabilities. Dismiss false positives with a brief justification."
+    - If ALL findings are clearly false positives (e.g., `hashlib.md5()` in non-crypto hashing), do NOT force dispatch. Note: "SAST: N findings, all dismissed as false positives" with a one-line justification per finding.
+  - **INFO-only**: note in triage output but do NOT force dispatch.
 
 ## Step 1c: Incorporate qlty security findings
 

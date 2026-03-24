@@ -19,15 +19,9 @@ Check if `qlty` is available (`which qlty`) AND the project has a `.qlty/qlty.to
 
 ### Individual tools (fallback)
 
-Check the project for formatter/linter configuration:
+Examine the project root for formatter and linter configuration files, `package.json` scripts, `Makefile` targets, and CLAUDE.md for project-specific commands.
 
-- **Formatter**: `.prettierrc`, `pyproject.toml` (`[tool.black]` or `[tool.ruff.format]`), `rustfmt.toml`, `.clang-format`, `gofmt`/`goimports` (built-in), `.editorconfig`, `biome.json`, etc.
-- **Linter**: `.eslintrc*`, `pyproject.toml` (`[tool.ruff]`, `[tool.pylint]`), `clippy` (Rust), `golangci-lint`, `.rubocop.yml`, etc.
-- **Combined**: `deno fmt`/`deno lint`, `biome check`, `ruff format`/`ruff check`
-
-Also check `package.json` scripts, `Makefile` targets, or CLAUDE.md for project-specific commands (e.g., `make lint`, `npm run format`).
-
-If no tools are detected (neither qlty nor individual), skip and note it for the reviewer.
+If no tools are detected, skip and note it for the reviewer.
 
 ## Step 2: Format
 
@@ -99,8 +93,8 @@ If individual tools were used:
 ## Code Quality
 - Formatter: <tool> — <N files formatted / no changes>
 - Linter: <tool> — <N errors fixed, N warnings remaining / clean>
-- Smells: skipped (qlty not available)
-- Metrics: skipped (qlty not available)
+- Smells: skipped (requires qlty — run `/ops:setup` to install)
+- Metrics: skipped (requires qlty — run `/ops:setup` to install)
 ```
 
 If no tools were detected:

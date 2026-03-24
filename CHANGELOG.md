@@ -1,5 +1,37 @@
 # Changelog
 
+## 2.2.3 (2026-03-24)
+
+### Architecture — Script extraction
+
+- feat: new `scripts/ops-semgrep-scan.sh` — encapsulates SAST scanning logic (config detection, diff-aware baseline, JSON parsing, error handling) previously described as LLM prompt prose
+- feat: `hooks/session-start` derives `CLAUDE_PLUGIN_ROOT` and adds `scripts/` to PATH for direct script access (scripts prefixed `ops-` to avoid namespace collisions)
+- dropped: `scripts/detect-tools.sh` concept — formatter/linter detection delegated to the LLM instead of a finite script; qlty/semgrep binary checks remain in respective skills
+
+### ops:implement — Prose tightening
+
+- chore: tightened implement skill prose (no semantic change)
+- fix: `PROJECT_ROOT` in `ops-semgrep-scan.sh` now uses `git rev-parse --show-toplevel` instead of defaulting to CWD
+- fix: file list detection in `ops-semgrep-scan.sh` now includes untracked files via `git ls-files --others --exclude-standard`
+
+### ops:code-quality — Simplified tool detection
+
+- refactor: tool detection (Step 1) now relies on LLM examination of project config files instead of a hardcoded tool list
+
+### ops:security-gate — Script-based SAST
+
+- refactor: semgrep invocation delegated to `ops-semgrep-scan.sh`, called directly from PATH
+- feat: new `status=findings_unknown` when no JSON parser available — LLM parses raw JSON instead of relying on lossy grep fallback
+
+### ops:setup — JSON parser diagnostic
+
+- feat: Category 3 now detects `jq` / `python3` availability for semgrep result parsing
+
+### Bug fixes (ops-semgrep-scan.sh)
+
+- fix: paths with spaces handled correctly (array-based command construction)
+- fix: semgrep stderr captured to temp file for diagnostics instead of being silently suppressed
+
 ## 2.2.2 (2026-03-23)
 
 ### ops:code-quality — Structural analysis (smells + metrics)

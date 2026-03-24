@@ -46,6 +46,7 @@ ops enforces a staged workflow with explicit gates, parallel research, adversari
 flowchart TD
     %% Pre-work
     brainstorm["/ops:brainstorm"] -.->|clarifies intent| plan
+    brainstorm -.->|clarifies intent| do
     research["/ops:research"] -.->|gathers context| plan
 
     %% Main pipeline
@@ -652,7 +653,7 @@ Diagnose environment and propose tool installation.
 |------|-------------|
 | Languages & LSP | Detect languages, 4-level LSP diagnostic (test → marketplace → plugin → binary) |
 | Code quality tools | Check qlty availability, detect project formatters/linters |
-| Security analysis | Check semgrep availability |
+| Security analysis | Check semgrep and JSON parser (jq/python3) availability |
 | MCP servers | Check context7 and chrome-devtools-mcp plugin availability |
 | Recommendations | Propose installation for missing tools (user-invoked mode only) |
 
@@ -778,7 +779,7 @@ Red flags: "should", "probably", "seems to", "I believe" — if these appear ins
 - **TDD enforced** — the implementer follows Red-Green-Refactor with anti-rationalization gates and a deletion rule for code written before tests.
 - **Minimal hooks** — one SessionStart hook injects skill awareness. No keyword detection, no prompt interception, no hidden automation.
 - **Composable phases** — shared content extracted into reusable internal phases. Skills reference phases instead of duplicating content.
-- **Lightweight** — pure documentation + a small brainstorm server. No npm deps, no database, no compiled code.
+- **Lightweight** — documentation, a small brainstorm server, and a shell script for SAST scanning. No npm deps, no database, no compiled code.
 
 ## Structure
 
@@ -801,7 +802,9 @@ ops/
 │   └── test-writer.md
 ├── hooks/
 │   ├── hooks.json                     # SessionStart hook config
-│   └── session-start                  # Injects skill routing context
+│   └── session-start                  # Injects skill routing context + plugin root path
+├── scripts/
+│   └── ops-semgrep-scan.sh            # SAST scan wrapper (config, baseline, error handling)
 ├── skills/
 │   │
 │   │── # ─── PIPELINES (user-facing) ───
@@ -837,7 +840,8 @@ ops/
 │   │── # ─── ANNEXES ───
 │   ├── implement/tdd-reference.md
 │   ├── implement/testing-anti-patterns.md
-│   └── plan/visual-companion.md
+│   ├── plan/visual-companion.md
+│   └── plan/scripts/                  # Visual brainstorm companion (server + UI)
 │
 ├── CHANGELOG.md
 ├── COMPARISON-vs-SUPERPOWERS.md
