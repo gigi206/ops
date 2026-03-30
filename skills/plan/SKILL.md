@@ -1,9 +1,9 @@
 ---
 name: ops:plan
-description: "Brainstorm, research, and plan before writing code."
+description: "Clarify intent, research, and plan before writing code."
 ---
 
-# /ops:plan — Brainstorm, research, and plan
+# /ops:plan — Clarify intent, research, and plan
 
 <HARD-GATE-0>
 STOP. Your VERY FIRST action must be Step 0: Environment Setup. Do NOT ask design questions yet.
@@ -14,11 +14,11 @@ Your first tool call MUST be Glob for language detection — this is how ops:set
 </HARD-GATE-0>
 
 <HARD-GATE-1>
-After Step 0 is complete, your NEXT message must be a clarity check or clarifying question to the user. NOT a research result. NOT a plan. NOT an agent dispatch.
+After Step 0 is complete, your NEXT message must be a clarity check with the user. NOT a research result. NOT a plan. NOT an agent dispatch.
 
 If your first action after Step 0 is spawning ANY agent (Agent tool) — regardless of type (Explore, researcher-code, researcher-doc, general-purpose, or any other) — you have FAILED this skill. Step 1 is a conversation with the user, not a delegation.
 
-The steps are: 0. Environment Setup → 1. Brainstorm WITH the user → 2. Context → 3. Research → ... You cannot skip steps 0 or 1.
+The steps are: 0. Environment Setup → 1. Clarify intent WITH the user → 2. Context → 3. Research → ... You cannot skip steps 0 or 1.
 </HARD-GATE-1>
 
 ## When to use which skill
@@ -44,19 +44,19 @@ Before dispatching any agent in this skill, follow the `ops:subagent-rules` proc
 
 ## Overview
 
-This skill runs before any implementation. It brainstorms the design with the user, gathers intelligence via parallel research agents, writes a detailed plan decomposed into tasks, and validates it through an adversarial critic.
+This skill runs before any implementation. It clarifies the user's intent, gathers intelligence via parallel research agents, writes a detailed plan decomposed into tasks, and validates it through an adversarial critic.
 
 ## Workflow
 
 ```
-0. Environment Setup → 1. Brainstorm → 2. Context Detection → 3. Parallel Research → 4. Research Adequacy Check → 5. Design Approaches → 6. Write & Review Spec → 7. Write Plan → 8. Critic Review → 9. User Approval
+0. Environment Setup → 1. Clarify Intent → 2. Context Detection → 3. Parallel Research → 4. Research Adequacy Check → 5. Design Approaches → 6. Write & Review Spec → 7. Write Plan → 8. Critic Review → 9. User Approval
 ```
 
 ---
 
 ## Step 0: Environment Setup (MANDATORY — runs FIRST)
 
-This step runs BEFORE any brainstorming. If LSP needs fixing, the user may need to restart Claude Code — better to catch this before investing time in design.
+This step runs BEFORE intent clarification. If LSP needs fixing, the user may need to restart Claude Code — better to catch this before investing time in design.
 
 ### 0a. Detect languages
 
@@ -80,7 +80,7 @@ If this block does not appear in your output before Step 1, you have skipped a r
 
 ---
 
-## Step 1: Brainstorm (MANDATORY — cannot be skipped)
+## Step 1: Clarify Intent (MANDATORY — cannot be skipped)
 
 ### If `/ops:brainstorm` was already run
 
@@ -91,118 +91,38 @@ If the user ran `/ops:brainstorm` before invoking `/ops:plan`, the brainstorming
 
 The user already validated the approach.
 
-### Anti-Pattern: "This Is Too Simple To Need A Design"
-
-Every project goes through this process. A config change, a single-function utility, a bug fix — all of them. "Simple" projects are where unexamined assumptions cause the most wasted work. The design can be short (a few sentences for truly simple projects), but you MUST present it and get approval.
-
-### Checklist
-
-You MUST complete these steps in order:
-
-- [ ] 1. **Clarity check** — verify you understand the intent before exploring
-- [ ] 2. **Explore project context** — check files, docs, recent commits
-- [ ] 3. **Offer visual companion** — if topic will involve visual questions (see Visual Companion section below)
-- [ ] 4. **Assess scope** — decompose if too large for a single spec
-- [ ] 5. **Ask clarifying questions** — one at a time, Socratic style
-- [ ] 6. **Propose 2-3 approaches** — with trade-offs and recommendation, wait for user choice
-- [ ] 7. **Present design by sections** — each section validated by user before moving to next
-- [ ] 8. **Challenge scope with YAGNI** — remove unnecessary complexity
-- [ ] 9. **Gate** — objective clear, approach chosen, design validated section by section
-
 ### The Process
 
-**Clarity check (before anything else):**
-Verify you can restate what is asked, why, and what success looks like. If you can't answer all 3 confidently, ask the user to clarify before exploring the project.
+**Clarity check:**
+Verify you can restate what is asked, why, and what success looks like. If you can't answer all 3 confidently, ask the user to clarify.
 
 > Example: "Before I dive in — I want to make sure I understand. You want [restatement]. The goal is [why]. Is that right, or am I missing something?"
 
-**Exploring the project:**
-- Check out the current project state first (files, docs, recent commits)
-- Understand existing structure and conventions before asking questions
-- This informs your questions — ask smart questions, not generic ones
+**Scope check:**
+- If the request describes multiple independent subsystems, flag this and help the user decompose into sub-projects.
+- Each sub-project gets its own spec → plan → implementation cycle.
 
-**Offering the visual companion:**
-- If upcoming questions will involve visual content (mockups, layouts, diagrams, architecture), offer the visual companion once for consent. See the Visual Companion section below.
-- **This offer MUST be its own message.** Do not combine with clarifying questions.
-- If the user declines, proceed with text-only brainstorming.
+**Offer deeper brainstorming:**
+If the problem space is ambiguous, has multiple viable approaches, or would benefit from deeper exploration, suggest the user invoke `/ops:brainstorm` before continuing. Do NOT run a full brainstorming process yourself — that is the role of `/ops:brainstorm`.
 
-**Assessing scope:**
-- If the request describes multiple independent subsystems, flag this immediately
-- Do NOT spend questions refining details of a project that needs to be decomposed first
-- Help the user decompose into sub-projects: what are the independent pieces, how do they relate, what order should they be built?
-- Each sub-project gets its own spec → plan → implementation cycle
-
-**Asking clarifying questions:**
-- **One question at a time** — ONE question per message, not 2-3 grouped together. If you catch yourself writing "Question 4:", "Question 5:", "Question 6:" — STOP. Pick the most important one, send it alone, wait for the answer.
-- **Multiple choice preferred** — easier to answer than open-ended when possible
-- Focus on understanding: purpose, constraints, success criteria
-
-**Proposing 2-3 approaches:**
-- Once the problem is understood, propose 2-3 approaches with trade-offs. Lead with your recommendation and always include at least one alternative.
-- Wait for the user to choose before proceeding — do not skip even if one approach seems obviously better.
-
-**Presenting design by sections:**
-- Present the design section by section, not as a wall of text. Ask after each section if it looks right — wait for validation before the next.
-- If the user requests changes, revise and re-present before moving on.
-
-**Challenging scope with YAGNI (MANDATORY output):**
-- Is every part of the request actually needed right now?
-- Can a simpler version achieve the same goal?
-- Are there features that "might be useful later" but aren't required? Remove them.
-- Say explicitly what you're excluding and why. Let the user push back if they disagree.
-
-You MUST present a YAGNI assessment to the user before proceeding, even if the scope seems clean:
-
-```
-## YAGNI Check
-- Kept: [features retained and why they're needed now]
-- Removed/Deferred: [features excluded and why] (or "None — scope is already minimal")
-```
-
-If this block does not appear in your output before moving to Step 2, you have skipped a required step.
-
-**Working in existing codebases:**
-- Follow existing patterns. Include targeted improvements only when they directly affect the current work — do not propose unrelated refactoring.
+> Example: "This has several possible approaches and some open questions. Want me to run `/ops:brainstorm` first to explore the options in depth, or is the direction clear enough to plan directly?"
 
 ### Gate
 
 **Do NOT proceed to context detection until:**
-- The objective is clear and the scope is agreed.
-- The user has chosen an approach from the 2-3 proposed.
-- The design has been presented section by section and each section validated by the user.
-- You have evaluated whether the topic involves visual questions (UI, layouts, mockups, diagrams).
-- If visual: you must have offered the visual companion before proceeding. If you skipped the offer, go back and make it now — as its own message.
+- The objective is clear and confirmed by the user.
+- The scope is agreed (single project or decomposed into sub-projects).
 
 You MUST output this block before proceeding to Step 2:
 
 ```
-## Brainstorm Complete
-- Clarity check: done (user confirmed intent)
-- Project explored: [N files/commits checked]
-- Visual companion: offered (accepted/declined) / not applicable (no UI/visual elements)
+## Intent Confirmed
+- Objective: [one sentence]
 - Scope: [one sentence]
-- Clarifying questions asked: N
-- Approaches proposed: N (user chose: [approach name])
-- Design sections validated: N/N
-- YAGNI: presented (kept: X, removed: Y)
+- Brainstorm: not needed / already done / suggested to user
 ```
 
 If this block does not appear in your output before Step 2, you have skipped a required step.
-
-### Visual Companion
-
-A browser-based companion for showing mockups, diagrams, and visual options during brainstorming. Available as a tool — not a mode. Accepting the companion means it's available for questions that benefit from visual treatment; it does NOT mean every question goes through the browser.
-
-**Offering the companion:** When you anticipate that upcoming questions will involve visual content (mockups, layouts, diagrams), offer it once for consent:
-> "Some of what we're working on might be easier to explain if I can show it to you in a web browser. I can put together mockups, diagrams, comparisons, and other visuals as we go. This feature is still new and can be token-intensive. Want to try it? (Requires opening a local URL)"
-
-**Per-question decision:** Even after the user accepts, decide FOR EACH QUESTION whether to use the browser or the terminal. The test: **would the user understand this better by seeing it than reading it?**
-
-- **Use the browser** for content that IS visual — mockups, wireframes, layout comparisons, architecture diagrams, side-by-side visual designs
-- **Use the terminal** for content that is text — requirements questions, conceptual choices, tradeoff lists, scope decisions
-
-If they agree to the companion, read the detailed guide before proceeding:
-`skills/plan/visual-companion.md`
 
 ---
 
@@ -231,7 +151,7 @@ All 3 dispatched in a single assistant message. No exceptions.
 Degraded case: if an agent fails or times out, record "Agent <type> failed: <reason>" in the research synthesis and proceed. The gate requires dispatching all 3, not that all 3 succeed.
 </HARD-GATE-RESEARCH>
 
-Run the `ops:research` process (Steps 2-6: dispatch 3 agents in parallel — researcher-code, researcher-doc, git-historian — synthesize findings, and conditionally dispatch one or more researcher-repo agents in parallel for targets where researcher-doc signals `Source Verification Needed: high`). Scope the research to the task area identified during brainstorming.
+Run the `ops:research` process (Steps 2-6: dispatch 3 agents in parallel — researcher-code, researcher-doc, git-historian — synthesize findings, and conditionally dispatch one or more researcher-repo agents in parallel for targets where researcher-doc signals `Source Verification Needed: high`). Scope the research to the task area identified during intent clarification.
 
 ---
 
@@ -298,7 +218,7 @@ For each agent-chosen dependency, present to the user:
 
 Do not proceed to spec writing until the user has chosen an approach and validated all external dependencies. If you chose a dependency, the user must approve it — "Implement X" does not mean the user validated every sub-component.
 
-If a dependency was already validated conversationally during brainstorming, you do not need to re-ask — but you must still present its risk profile (maintenance status, last release, community size) if not covered during the conversation.
+If a dependency was already validated conversationally during intent clarification or brainstorming, you do not need to re-ask — but you must still present its risk profile (maintenance status, last release, community size) if not covered during the conversation.
 
 If the spec contains an agent-chosen dependency that was never presented to the user, you have FAILED this skill.
 

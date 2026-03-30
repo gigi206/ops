@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.3.3 (2026-03-30)
+
+### ops:plan — Lightweight intent clarification replaces built-in brainstorm
+
+- refactor: replaced Step 1 full brainstorm process (~120 lines, 9 sub-steps) with lightweight intent clarification (~40 lines, 3 sub-steps: clarity check, scope check, offer `/ops:brainstorm`)
+- removed: embedded brainstorm checklist, visual companion offer, YAGNI filter, design-by-sections, approach proposals — all now exclusive to `/ops:brainstorm`
+- added: explicit suggestion to invoke `/ops:brainstorm` when the problem space is ambiguous
+- renamed: gate block from "Brainstorm Complete" to "Intent Confirmed"
+- updated: all internal references (workflow summary, hard gates, overview, research scoping) from "brainstorm" to "clarify intent"
+
 ## 2.3.2 (2026-03-30)
 
 ### ops:plan — Prompt consolidation (545 → 473 lines, -13%)
