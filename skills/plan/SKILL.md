@@ -16,7 +16,7 @@ Your first tool call MUST be Glob for language detection — this is how ops:set
 <HARD-GATE-1>
 After Step 0 is complete, your NEXT message must be a clarity check or clarifying question to the user. NOT a research result. NOT a plan. NOT an agent dispatch.
 
-If your first action after Step 0 is spawning a research agent, you have FAILED this skill. Go back and ask the user a question first.
+If your first action after Step 0 is spawning ANY agent (Agent tool) — regardless of type (Explore, researcher-code, researcher-doc, general-purpose, or any other) — you have FAILED this skill. Step 1 is a conversation with the user, not a delegation.
 
 The steps are: 0. Environment Setup → 1. Brainstorm WITH the user → 2. Context → 3. Research → ... You cannot skip steps 0 or 1.
 </HARD-GATE-1>
@@ -61,6 +61,22 @@ This step runs BEFORE any brainstorming. If LSP needs fixing, the user may need 
 ### 0a. Detect languages
 
 Run the `ops:setup` process (detect languages + LSP diagnostic + tool availability check). Wait for the user's decision before proceeding to Step 1.
+
+### 0b. Discover project test/build commands
+
+After setup, discover the project's actual test/build/lint commands by checking: `Makefile` targets, `bin/` scripts, `package.json` scripts, `docker-compose` services, `tox.ini`, `noxfile.py`, or similar. Use these discovered commands — not generic ones (`python -m pytest`, `npm test`) — in task validation commands throughout the plan.
+
+You MUST output this block before proceeding to Step 1:
+
+```
+## Discovered Commands
+- Test: `<command>` (source: Makefile / package.json / tox.ini / ...)
+- Build: `<command>`
+- Lint: `<command>`
+- Not found: [list what was checked but not found]
+```
+
+If this block does not appear in your output before Step 1, you have skipped a required step.
 
 ---
 
@@ -183,6 +199,20 @@ If this block does not appear in your output before moving to Step 2, you have s
 - The objective is clear and the scope is agreed.
 - You have evaluated whether the topic involves visual questions (UI, layouts, mockups, diagrams).
 - If visual: you MUST have offered the visual companion before proceeding. If you skipped the offer, go back and make it now — it MUST be its own message, not combined with other questions.
+
+You MUST output this block before proceeding to Step 2:
+
+```
+## Brainstorm Complete
+- Clarity check: done (user confirmed intent)
+- Project explored: [N files/commits checked]
+- Visual companion: offered (accepted/declined) / not applicable (no UI/visual elements)
+- Scope: [one sentence]
+- Clarifying questions asked: N
+- YAGNI: presented (kept: X, removed: Y)
+```
+
+If this block does not appear in your output before Step 2, you have skipped a required step.
 
 ### Visual Companion
 
@@ -307,12 +337,10 @@ After the user has chosen an approach, flesh it out into a full design and persi
 
 ### 6a. Present the design
 
-Present the design in sections scaled to their complexity:
-- A few sentences if straightforward
-- Up to 200-300 words if nuanced
-- Ask after each section whether it looks right so far
+Present a brief design summary before writing the spec:
+- A few sentences if straightforward, up to 200-300 words if nuanced
 - Cover: architecture, components, data flow, error handling, testing strategy
-- Be ready to go back and clarify if something doesn't make sense
+- The spec-reviewer (Step 6c) will validate completeness — keep this conversational, not exhaustive
 
 **Design for isolation and clarity:**
 - Break the system into smaller units that each have one clear purpose
@@ -416,15 +444,40 @@ The critic:
 
 If you fix the critic's concerns but do not re-dispatch the critic, you have FAILED this skill. The whole point of the critic is adversarial validation — bypassing the re-check defeats the purpose.
 
+After fixing critic concerns, you MUST output this block BEFORE proceeding:
+
+```
+## Critic Re-verification
+- Critic verdict: REJECT
+- Issues addressed: [list each issue and how it was fixed]
+- Re-dispatch: YES — dispatching now
+- Iteration: N/3
+```
+
+If this block does not appear in your output followed by an actual critic agent dispatch, you have FAILED this skill.
+
 **If APPROVE**: Proceed to Step 9.
 
 ---
 
 ## Step 9: User Approval
 
+<HARD-GATE-HANDOFF>
+/ops:plan NEVER implements code. If the user asks to implement during this skill (e.g., "implemente", "go ahead and build it", "lance", "do it"), you MUST:
+
+1. Complete ALL remaining ops:plan steps first (critic re-dispatch if REJECT, user approval)
+2. Then present the plan and ask for approval
+3. Once approved, invoke `/ops:implement` as a separate skill — do NOT implement inline
+
+Implementing code without invoking `/ops:implement` is a FAILURE of this skill, regardless of what the user says. The user's "implemente" is approval of the plan, not authorization to bypass the implementation pipeline.
+</HARD-GATE-HANDOFF>
+
 Present the validated plan to the user with an explicit question:
 
-> "The plan has been validated by the critic. Do you want to launch it as-is, modify something, or review a specific point?"
+> "The plan has been validated by the critic. Ready to implement? Options:
+> 1. I launch `/ops:implement` now
+> 2. You want to review the spec or plan first
+> 3. You'll implement later"
 
 Do NOT proceed to `/ops:implement` until the user explicitly approves. The user invoking `/ops:implement` counts as approval, but you should still ask before they need to invoke it.
 

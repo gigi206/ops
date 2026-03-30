@@ -1,5 +1,17 @@
 # Changelog
 
+## 2.2.5 (2026-03-30)
+
+### ops:plan — Hardened workflow gates (7 improvements)
+
+- fix: new `HARD-GATE-HANDOFF` at Step 9 — `/ops:plan` NEVER implements code inline; user's "implemente" triggers `/ops:implement` as a separate skill invocation
+- fix: critic REJECT now requires structured `## Critic Re-verification` output block before re-dispatch — prevents silent bypass of mandatory re-dispatch
+- fix: `HARD-GATE-1` now forbids ALL agent types after Step 0 (was "research agent" only — Explore agents slipped through)
+- feat: new Step 0b with mandatory `## Discovered Commands` output — task validation commands must use real project commands, not generic ones
+- feat: mandatory `## Brainstorm Complete` exit summary before Step 2 — enforces visual companion evaluation and YAGNI check completion
+- fix: Step 6a simplified — removed section-by-section approval requirement (redundant with spec-reviewer loop), keeps design presentation conversational
+- fix: Step 9 now presents 3 explicit options (launch implement / review first / implement later) instead of open-ended question
+
 ## 2.2.4 (2026-03-24)
 
 ### ops:do — Workflow hardening
