@@ -1,14 +1,14 @@
 {
   "name": "ops",
-  "description": "Structured dev workflow plugin for Claude Code — plan, implement, do, debug, test, refactor, perf, review-pr, research, brainstorm, clone-analyze, setup, full, review, security, ship, verify.",
+  "description": "Structured dev workflow plugin for Claude Code — plan, implement, do, debug, test, refactor, perf, review-pr, research, brainstorm, clone-analyze, init, full, review, security, audit, ship, verify.",
   "owner": {
     "name": "Ghislain LE MEUR"
   },
   "plugins": [
     {
       "name": "ops",
-      "description": "Structured dev workflow: 17 skills (composable phases), 11 specialized agents, TDD enforcement, adversarial review.",
-      "version": "2.3.4",
+      "description": "Structured dev workflow: 18 skills (composable phases), 11 specialized agents, TDD enforcement, adversarial review.",
+      "version": "3.0.0",
       "source": "./",
       "author": {
         "name": "Ghislain LE MEUR"

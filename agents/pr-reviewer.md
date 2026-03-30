@@ -1,7 +1,7 @@
 ---
 model: opus
 effort: high
-description: "Reviews external PRs: analyzes diff, checks quality/security/conventions, produces structured review with actionable comments. Dispatched by /ops:review-pr."
+description: "Reviews external PRs: analyzes diff, checks quality/security/conventions, produces structured review with actionable comments. Dispatched by /ops-review-pr."
 ---
 
 # pr-reviewer — PR Review Agent
@@ -17,7 +17,7 @@ You review pull requests from other contributors. Unlike the code-reviewer (whic
 Read the inputs provided:
 1. The **PR diff** — what changed
 2. The **PR description** — what the author intended
-3. The **CLAUDE.md** rules — project conventions (if the project has one)
+3. The **project instruction rules** — `CLAUDE.md`, `AGENTS.md`, or `GEMINI.md` (if the project has one)
 4. The **related issue or ticket** — if referenced in the PR
 
 ### Step 2: Understand Intent

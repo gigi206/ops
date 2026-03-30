@@ -1,13 +1,13 @@
 ---
-name: ops:review
+name: ops-review
 description: "Receive and evaluate code review feedback."
 ---
 
-# /ops:review — Receiving code review feedback
+# /ops-review — Receiving code review feedback
 
 ## Instruction Priority
 
-Follow the `ops:instruction-priority` rules when instructions conflict.
+Follow the `ops-instruction-priority` rules when instructions conflict.
 
 ## Purpose
 

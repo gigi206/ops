@@ -1,21 +1,21 @@
 ---
-name: ops:review-pr
+name: ops-review-pr
 description: "Review an external PR: checkout, analyze, produce structured review with actionable comments."
 ---
 
-# /ops:review-pr — Review a pull request
+# /ops-review-pr — Review a pull request
 
 ## Instruction Priority
 
-Follow the `ops:instruction-priority` rules when instructions conflict.
+Follow the `ops-instruction-priority` rules when instructions conflict.
 
 ## Subagent Rules
 
-Before dispatching any agent in this skill, follow the `ops:subagent-rules` process.
+Before dispatching any agent in this skill, follow the `ops-subagent-rules` process.
 
 ## Purpose
 
-Review someone else's pull request. Produce a structured, actionable review that helps the author improve their code. This is NOT `/ops:review` (receiving feedback) — this is giving feedback.
+Review someone else's pull request. Produce a structured, actionable review that helps the author improve their code. This is NOT `/ops-review` (receiving feedback) — this is giving feedback.
 
 ---
 
@@ -43,7 +43,7 @@ Collect:
 ## Step 2: Understand Context
 
 Before dispatching the reviewer:
-- Read the project's `CLAUDE.md` and `.claude/CLAUDE.md` for conventions
+- Read the project instruction files (`CLAUDE.md`, `AGENTS.md`, or `GEMINI.md` — whichever exist at the project root) and their subdirectory variants for conventions
 - Quickly scan the files touched to understand the area of the codebase
 - Note the size of the PR (files changed, lines added/removed)
 
@@ -57,7 +57,7 @@ If the PR is very large (>500 lines changed across >10 files), warn the user:
 Dispatch the **pr-reviewer** agent with:
 - The full diff
 - The PR description (if available)
-- The CLAUDE.md rules (if applicable)
+- The project instruction rules — `CLAUDE.md`, `AGENTS.md`, or `GEMINI.md` (if applicable)
 - The related issue/ticket context (if available)
 - Any specific user instructions (e.g., "focus on the auth changes", "check backward compatibility")
 
@@ -67,7 +67,7 @@ Dispatch the **pr-reviewer** agent with:
 
 ## Step 4: Security Gate
 
-Run the `ops:security-gate` process on the PR diff. If security triggers match, dispatch the **security-reviewer** in the **same message** as the pr-reviewer (see `ops:subagent-rules`) — merge its findings into the final review.
+Run the `ops-security-gate` process on the PR diff. If security triggers match, dispatch the **security-reviewer** in the **same message** as the pr-reviewer (see `ops-subagent-rules`) — merge its findings into the final review.
 
 ---
 

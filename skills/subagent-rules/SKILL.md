@@ -1,5 +1,5 @@
 ---
-name: ops:subagent-rules
+name: ops-subagent-rules
 description: "Internal: dispatch rules for subagents (parallelism, context). Activated when any ops skill dispatches research, review, or implementation agents."
 user-invocable: false
 ---
@@ -14,3 +14,4 @@ When dispatching any subagent:
 - **Name what you provide.** Always label pasted content with its source: `[From src/auth/middleware.ts:15-42]`. The agent needs to know where the content comes from to cite it.
 - **Let the agent explore beyond.** Providing context doesn't mean restricting the agent. It can and should read additional files it discovers during exploration — the goal is to avoid redundant reads, not to limit scope.
 - **Respect effort baselines.** Each agent defines a default `effort` level in its frontmatter. Do not override it unless the task clearly warrants a different level. When overriding, prefer lowering effort for mechanical subtasks (e.g., a researcher-code doing a single targeted lookup) rather than raising it.
+- **Use LSP tools when available.** Prefer LSP operations (`goToDefinition`, `findReferences`, `documentSymbol`, `hover`) over grep for navigating code. LSP is more precise — it resolves types, follows imports, and understands scope. Use `findReferences` before changing a function signature, `goToDefinition` to locate implementations, and `documentSymbol` to understand file structure.

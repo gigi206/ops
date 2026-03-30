@@ -1,17 +1,17 @@
 ---
-name: ops:test
+name: ops-test
 description: "Add tests to existing untested code. Analyzes behavior, identifies gaps, writes meaningful tests."
 ---
 
-# /ops:test — Add tests to existing code
+# /ops-test — Add tests to existing code
 
 ## Instruction Priority
 
-Follow the `ops:instruction-priority` rules when instructions conflict.
+Follow the `ops-instruction-priority` rules when instructions conflict.
 
 ## Subagent Rules
 
-Before dispatching any agent in this skill, follow the `ops:subagent-rules` process.
+Before dispatching any agent in this skill, follow the `ops-subagent-rules` process.
 
 ## Purpose
 
@@ -22,7 +22,7 @@ Write tests for existing code that lacks coverage. This is NOT TDD (where tests 
 ## Workflow
 
 ```
-1. Scope → 2. Research → 3. Dispatch test-writer → 4. Validate → 5. Code Quality → 6. Code Review → 7. Check CLAUDE.md
+1. Scope → 2. Research → 3. Dispatch test-writer → 4. Validate → 5. Review Pipeline
 ```
 
 ---
@@ -42,7 +42,7 @@ This is a soft gate — proceed if the user confirms or doesn't object.
 
 ## Step 2: Research (2 agents in parallel)
 
-Dispatch two agents **in parallel** — both Agent tool_use blocks in a **single message** (see `ops:subagent-rules`):
+Dispatch two agents **in parallel** — both Agent tool_use blocks in a **single message** (see `ops-subagent-rules`):
 
 ### researcher-code
 - Explore the target code: behavior, dependencies, integration points
@@ -60,7 +60,7 @@ Dispatch two agents **in parallel** — both Agent tool_use blocks in a **single
 ## Step 3: Dispatch test-writer
 
 Dispatch the **test-writer** agent with:
-- The target files to test (with their content — follow `ops:subagent-rules`)
+- The target files to test (with their content — follow `ops-subagent-rules`)
 - The existing test conventions found by researcher-code
 - The testing framework documentation from researcher-doc
 - Any specific user instructions (e.g., "focus on edge cases", "integration tests only")
@@ -74,7 +74,7 @@ The test-writer will:
 **Handle the test-writer's report:**
 - **DONE**: proceed to Step 4
 - **DONE_WITH_CONCERNS**: evaluate the concerns, then proceed
-- **BLOCKED**: present the blocker to the user (e.g., "code is untestable without refactoring — suggest `/ops:refactor` first")
+- **BLOCKED**: present the blocker to the user (e.g., "code is untestable without refactoring — suggest `/ops-refactor` first")
 - **FAILED**: the test-writer found a bug in existing code. Present it to the user — this is valuable.
 
 ---
@@ -86,29 +86,14 @@ Run the full test suite to confirm:
 2. All existing tests still pass
 3. No regressions introduced
 
-`/ops:verify` behavioral rule applies — show the evidence.
+`/ops-verify` behavioral rule applies — show the evidence.
 
 If coverage tools are available, show the before/after delta.
 
 ---
 
-## Step 5: Code Quality
+## Step 5: Review Pipeline
 
-Run the `ops:code-quality` process on all modified/created files. Fix any issues.
-
----
-
-## Step 6: Code Review (light)
-
-Dispatch the **code-reviewer** agent with:
-- The complete diff (`git diff`)
+Run the `ops-review-pipeline` process with the following code-reviewer context:
 - Explicit instruction: **focus on test quality** — are tests meaningful, do they test behavior not implementation, do they follow conventions?
 - Skip spec compliance (no spec exists)
-
-**One cycle maximum**: fix issues, re-run review once. If still failing → escalate to user.
-
----
-
-## Step 7: Check CLAUDE.md
-
-Read `CLAUDE.md` and `.claude/CLAUDE.md`. Verify all applicable rules were followed. Fix violations before completing.

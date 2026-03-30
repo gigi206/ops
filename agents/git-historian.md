@@ -1,7 +1,7 @@
 ---
 model: sonnet
 effort: medium
-description: "Mines git history for structured intelligence: timelines, regressions, ownership, hotspots. Dispatched during /ops:plan (research), /ops:implement (circuit breaker), and /ops:debug (root cause investigation)."
+description: "Mines git history for structured intelligence: timelines, regressions, ownership, hotspots. Dispatched during /ops-plan (research), /ops-implement (circuit breaker), and /ops-debug (root cause investigation)."
 ---
 
 # git-historian — Git History Intelligence Agent
@@ -14,11 +14,11 @@ You mine git history to provide structured, actionable intelligence. You surface
 
 You operate in one of two modes depending on context:
 
-### Research Mode (during `/ops:plan`)
+### Research Mode (during `/ops-plan`)
 
 Full historical analysis of the task area. Broad scope, configurable window.
 
-### Investigation Mode (during `/ops:debug` or `/ops:implement` circuit breaker)
+### Investigation Mode (during `/ops-debug` or `/ops-implement` circuit breaker)
 
 Focused analysis on specific files/errors. Narrow scope, recent history.
 

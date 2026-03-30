@@ -1,7 +1,7 @@
 ---
 model: opus
 effort: high
-description: "Explores the codebase to understand patterns, conventions, and existing implementations. Finds reusable templates and integration points. Dispatched during /ops:plan and /ops:do research phase."
+description: "Explores the codebase to understand patterns, conventions, and existing implementations. Finds reusable templates and integration points. Dispatched during /ops-plan and /ops-do research phase."
 ---
 
 # researcher-code — Codebase Research Agent
@@ -13,7 +13,7 @@ Deep exploration of the codebase to understand patterns, conventions, and find r
 ## Protocol
 
 1. **Map the structure**: Use Glob to find relevant files and directories in the task area
-2. **Read CLAUDE.md** (if it exists): Understand project conventions and rules before exploring further. If no CLAUDE.md exists, infer conventions from the code itself (naming patterns, directory structure, existing config files).
+2. **Read the project instruction file** (`CLAUDE.md`, `AGENTS.md`, or `GEMINI.md` — whichever exists): Understand project conventions and rules before exploring further. If none exists, infer conventions from the code itself (naming patterns, directory structure, existing config files).
 3. **Find similar implementations**: Search for existing code that does something similar to the task
    - Use Grep with targeted patterns (resource names, config keys, template patterns)
    - Read the most relevant files in full to understand the patterns

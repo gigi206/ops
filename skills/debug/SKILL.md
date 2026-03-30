@@ -1,17 +1,17 @@
 ---
-name: ops:debug
+name: ops-debug
 description: "Systematic debugging: investigate, hypothesize, fix."
 ---
 
-# /ops:debug — Systematic debugging
+# /ops-debug — Systematic debugging
 
 ## Instruction Priority
 
-Follow the `ops:instruction-priority` rules when instructions conflict.
+Follow the `ops-instruction-priority` rules when instructions conflict.
 
 ## Subagent Rules
 
-Before dispatching any agent in this skill, follow the `ops:subagent-rules` process.
+Before dispatching any agent in this skill, follow the `ops-subagent-rules` process.
 
 ## Philosophy
 
@@ -111,7 +111,7 @@ If all 3 hypotheses are refuted:
 
 Once root cause is confirmed:
 1. Write the minimal fix that addresses the root cause
-2. Run validation (same commands as `/ops:implement` validation gate)
+2. Run validation (same commands as `/ops-implement` validation gate)
 3. Confirm the original error is gone
 
 Do NOT fix symptoms. Fix the root cause.
@@ -122,18 +122,18 @@ Do NOT fix symptoms. Fix the root cause.
 
 ### Code Quality
 
-Run the `ops:code-quality` process on all modified files. Fix any issues before dispatching reviewers.
+Run the `ops-code-quality` process on all modified files. Fix any issues before dispatching reviewers.
 
 ### Security Gate
 
-Run the `ops:security-gate` process on the diff of the fix. If triggers match, dispatch the security-reviewer in the **same message** as the code-reviewer (see `ops:subagent-rules`).
+Run the `ops-security-gate` process on the diff of the fix. If triggers match, dispatch the security-reviewer in the **same message** as the code-reviewer (see `ops-subagent-rules`).
 
 ### Code Review
 
 Dispatch the **code-reviewer** agent with:
 - The root cause hypothesis that was confirmed
 - The diff of the fix
-- The project's CLAUDE.md rules (if the project has one)
+- The project instruction rules — `CLAUDE.md`, `AGENTS.md`, or `GEMINI.md` (if the project has one)
 
 The code-reviewer checks: LSP diagnostics, code quality, conventions.
 
@@ -148,7 +148,7 @@ The code-reviewer checks: LSP diagnostics, code quality, conventions.
 
 ## Step 6: Discovery Check
 
-After the fix and code review, check if anything unexpected was revealed — by the fix itself, by the code-reviewer, or by the validation output. Categorize each discovery using the `ops:discovery-checks` process. The scope is "the current fix" and the pause target is "debugging".
+After the fix and code review, check if anything unexpected was revealed — by the fix itself, by the code-reviewer, or by the validation output. Categorize each discovery using the `ops-discovery-checks` process. The scope is "the current fix" and the pause target is "debugging".
 
 ---
 
@@ -164,4 +164,4 @@ Only declare fixed after showing proof.
 
 ## Circuit Breaker
 
-**5+ failed fix attempts** triggers the `ops:circuit-breaker` process (threshold: 5+, window: 60 days for git-historian). This is likely an architectural problem, not a simple bug.
+**5+ failed fix attempts** triggers the `ops-circuit-breaker` process (threshold: 5+, window: 60 days for git-historian). This is likely an architectural problem, not a simple bug.

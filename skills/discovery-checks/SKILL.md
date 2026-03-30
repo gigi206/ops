@@ -1,5 +1,5 @@
 ---
-name: ops:discovery-checks
+name: ops-discovery-checks
 description: "Internal: categorize discoveries as Minor/Significant/Major during implementation or debugging. Activated when implementer or debugger reports unexpected findings."
 user-invocable: false
 ---
@@ -38,7 +38,7 @@ Wait for user decision. Amend remaining work accordingly, then resume.
 > Options:
 > A) [Alternative approach]
 > B) [Reduced scope or band-aid fix now, plan proper fix separately]
-> C) Replan from scratch with `/ops:plan` using this new information
+> C) Replan from scratch with `/ops-plan` using this new information
 > D) Something else?
 > Work is stopped until you decide."
 

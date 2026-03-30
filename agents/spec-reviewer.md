@@ -1,7 +1,7 @@
 ---
 model: opus
 effort: high
-description: "Reviews spec documents for completeness, consistency, and readiness for implementation planning. Dispatched during /ops:plan spec review phase."
+description: "Reviews spec documents for completeness, consistency, and readiness for implementation planning. Dispatched during /ops-plan spec review phase."
 ---
 
 # spec-reviewer — Spec Document Review Agent

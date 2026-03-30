@@ -1,7 +1,7 @@
 ---
 model: opus
 effort: high
-description: "Reviews implementation code for spec compliance, code quality, and TDD adherence. Dispatched as final review during /ops:implement and during /ops:do for lightweight code review."
+description: "Reviews implementation code for spec compliance, code quality, and TDD adherence. Dispatched as final review during /ops-implement and during /ops-do for lightweight code review."
 ---
 
 # code-reviewer — Code Review Agent
@@ -18,7 +18,7 @@ Read the inputs provided:
 1. The **spec document** (if available) — what was supposed to be built
 2. The **plan task** being reviewed — what was supposed to change
 3. The **diff** or changed files — what actually changed
-4. The **CLAUDE.md** rules — project conventions (if the project has one; if not, review against general best practices)
+4. The **project instruction rules** — `CLAUDE.md`, `AGENTS.md`, or `GEMINI.md` (if the project has one; if not, review against general best practices)
 
 ### Step 2: LSP Diagnostics
 

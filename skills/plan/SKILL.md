@@ -1,16 +1,12 @@
 ---
-name: ops:plan
+name: ops-plan
 description: "Clarify intent, research, and plan before writing code."
 ---
 
-# /ops:plan — Clarify intent, research, and plan
+# /ops-plan — Clarify intent, research, and plan
 
 <HARD-GATE-0>
-STOP. Your VERY FIRST action must be Step 0: Environment Setup. Do NOT ask design questions yet.
-
-Follow the `ops:setup` process. It starts with Glob for language detection (file extensions), then LSP diagnostics, then tool availability checks. When called from /ops:plan, Categories 2-4 are informational only (no installation proposals).
-
-Your first tool call MUST be Glob for language detection — this is how ops:setup begins.
+STOP. Your VERY FIRST action must be Step 0: Discover project test/build commands. Do NOT ask design questions yet.
 </HARD-GATE-0>
 
 <HARD-GATE-1>
@@ -18,29 +14,29 @@ After Step 0 is complete, your NEXT message must be a clarity check with the use
 
 If your first action after Step 0 is spawning ANY agent (Agent tool) — regardless of type (Explore, researcher-code, researcher-doc, general-purpose, or any other) — you have FAILED this skill. Step 1 is a conversation with the user, not a delegation.
 
-The steps are: 0. Environment Setup → 1. Clarify intent WITH the user → 2. Context → 3. Research → ... You cannot skip steps 0 or 1.
+The steps are: 0. Discover commands → 1. Clarify intent WITH the user → 2. Context → 3. Research → ... You cannot skip steps 0 or 1.
 </HARD-GATE-1>
 
 ## When to use which skill
 
 | Situation                          | Skill            | Why                                       |
 |------------------------------------|------------------|-------------------------------------------|
-| New feature, change, or task       | `/ops:plan`      | Design before coding                      |
-| Plan approved, ready to build      | `/ops:implement` | Execute with validation gates             |
-| Bug, error, or unexpected behavior | `/ops:debug`     | Investigate before fixing                 |
-| Work is done, ready to commit      | `/ops:ship`      | Commit, PR, capture learnings             |
-| Claiming something works           | `/ops:verify`    | Evidence before claims (always active)    |
-| Received code review feedback      | `/ops:review`    | Evaluate technically, don't agree blindly |
-| Small task, already understood     | `/ops:do`        | Research + execute + verify + review      |
+| New feature, change, or task       | `/ops-plan`      | Design before coding                      |
+| Plan approved, ready to build      | `/ops-implement` | Execute with validation gates             |
+| Bug, error, or unexpected behavior | `/ops-debug`     | Investigate before fixing                 |
+| Work is done, ready to commit      | `/ops-ship`      | Commit, PR, capture learnings             |
+| Claiming something works           | `/ops-verify`    | Evidence before claims (always active)    |
+| Received code review feedback      | `/ops-review`    | Evaluate technically, don't agree blindly |
+| Small task, already understood     | `/ops-do`        | Research + execute + verify + review      |
 | Trivial fix (typo, rename)         | No skill needed  | Just do it                                |
 
 ## Instruction Priority
 
-Follow the `ops:instruction-priority` rules when instructions conflict.
+Follow the `ops-instruction-priority` rules when instructions conflict.
 
 ## Subagent Rules
 
-Before dispatching any agent in this skill, follow the `ops:subagent-rules` process.
+Before dispatching any agent in this skill, follow the `ops-subagent-rules` process.
 
 ## Overview
 
@@ -49,22 +45,14 @@ This skill runs before any implementation. It clarifies the user's intent, gathe
 ## Workflow
 
 ```
-0. Environment Setup → 1. Clarify Intent → 2. Context Detection → 3. Parallel Research → 4. Research Adequacy Check → 5. Design Approaches → 6. Write & Review Spec → 7. Write Plan → 8. Critic Review → 9. User Approval
+0. Discover Commands → 1. Clarify Intent → 2. Context Detection → 3. Parallel Research → 4. Research Adequacy Check → 5. Design Approaches → 6. Write & Review Spec → 7. Write Plan → 8. Critic Review → 9. User Approval
 ```
 
 ---
 
-## Step 0: Environment Setup (MANDATORY — runs FIRST)
+## Step 0: Discover Project Commands (MANDATORY — runs FIRST)
 
-This step runs BEFORE intent clarification. If LSP needs fixing, the user may need to restart Claude Code — better to catch this before investing time in design.
-
-### 0a. Detect languages
-
-Run the `ops:setup` process (detect languages + LSP diagnostic + tool availability check). Wait for the user's decision before proceeding to Step 1.
-
-### 0b. Discover project test/build commands
-
-After setup, discover the project's actual test/build/lint commands by checking: `Makefile` targets, `bin/` scripts, `package.json` scripts, `docker-compose` services, `tox.ini`, `noxfile.py`, or similar. Use these discovered commands — not generic ones (`python -m pytest`, `npm test`) — in task validation commands throughout the plan.
+Discover the project's actual test/build/lint commands by checking: `Makefile` targets, `bin/` scripts, `package.json` scripts, `docker-compose` services, `tox.ini`, `noxfile.py`, or similar. Use these discovered commands — not generic ones (`python -m pytest`, `npm test`) — in task validation commands throughout the plan.
 
 You MUST output this block before proceeding to Step 1:
 
@@ -78,13 +66,21 @@ You MUST output this block before proceeding to Step 1:
 
 If this block does not appear in your output before Step 1, you have skipped a required step.
 
+### Environment Health Check
+
+If during command discovery you notice signs of a misconfigured environment (e.g., no `node_modules` but `package.json` exists, broken `Makefile`, missing `.venv`), propose to the user:
+
+> "Your environment may not be fully set up. Want to run `/ops-init` first to diagnose LSP, tools, and dependencies? Or should we continue as-is?"
+
+Wait for the user's decision before proceeding to Step 1. If they want to run init, let them invoke `/ops-init` and resume planning afterward.
+
 ---
 
 ## Step 1: Clarify Intent (MANDATORY — cannot be skipped)
 
-### If `/ops:brainstorm` was already run
+### If `/ops-brainstorm` was already run
 
-If the user ran `/ops:brainstorm` before invoking `/ops:plan`, the brainstorming is already done. In this case:
+If the user ran `/ops-brainstorm` before invoking `/ops-plan`, the brainstorming is already done. In this case:
 1. Read the brainstorm summary from the conversation
 2. Output a short recap: chosen approach, scope, key decisions
 3. Skip to Step 2 (Context Detection)
@@ -103,9 +99,9 @@ Verify you can restate what is asked, why, and what success looks like. If you c
 - Each sub-project gets its own spec → plan → implementation cycle.
 
 **Offer deeper brainstorming:**
-If the problem space is ambiguous, has multiple viable approaches, or would benefit from deeper exploration, suggest the user invoke `/ops:brainstorm` before continuing. Do NOT run a full brainstorming process yourself — that is the role of `/ops:brainstorm`.
+If the problem space is ambiguous, has multiple viable approaches, or would benefit from deeper exploration, suggest the user invoke `/ops-brainstorm` before continuing. Do NOT run a full brainstorming process yourself — that is the role of `/ops-brainstorm`.
 
-> Example: "This has several possible approaches and some open questions. Want me to run `/ops:brainstorm` first to explore the options in depth, or is the direction clear enough to plan directly?"
+> Example: "This has several possible approaches and some open questions. Want me to run `/ops-brainstorm` first to explore the options in depth, or is the direction clear enough to plan directly?"
 
 ### Gate
 
@@ -132,7 +128,7 @@ If this block does not appear in your output before Step 2, you have skipped a r
 
 ### Explore project structure
 
-Read CLAUDE.md (if it exists), directory structure, and key config files to understand conventions. If no CLAUDE.md exists, infer conventions from the codebase.
+Read the project instruction file (`CLAUDE.md`, `AGENTS.md`, or `GEMINI.md` — whichever exists at the project root), directory structure, and key config files to understand conventions. If none exists, infer conventions from the codebase.
 
 ---
 
@@ -142,16 +138,16 @@ Read CLAUDE.md (if it exists), directory structure, and key config files to unde
 You MUST dispatch exactly 3 agents in a SINGLE message, using the exact subagent types specified below. Do NOT substitute with `Explore` or `general-purpose` agents. Do NOT dispatch only 1 or 2 agents. If you dispatch anything other than these 3 typed agents, you have FAILED this skill.
 
 The 3 agents MUST be:
-1. `subagent_type: "ops:researcher-code"` — codebase patterns, conventions, risks
-2. `subagent_type: "ops:researcher-doc"` — library/tool documentation via Context7 MCP
-3. `subagent_type: "ops:git-historian"` — git history analysis (Research Mode, 6 months)
+1. `subagent_type: "ops-researcher-code"` — codebase patterns, conventions, risks
+2. `subagent_type: "ops-researcher-doc"` — library/tool documentation via Context7 MCP
+3. `subagent_type: "ops-git-historian"` — git history analysis (Research Mode, 6 months)
 
 All 3 dispatched in a single assistant message. No exceptions.
 
 Degraded case: if an agent fails or times out, record "Agent <type> failed: <reason>" in the research synthesis and proceed. The gate requires dispatching all 3, not that all 3 succeed.
 </HARD-GATE-RESEARCH>
 
-Run the `ops:research` process (Steps 2-6: dispatch 3 agents in parallel — researcher-code, researcher-doc, git-historian — synthesize findings, and conditionally dispatch one or more researcher-repo agents in parallel for targets where researcher-doc signals `Source Verification Needed: high`). Scope the research to the task area identified during intent clarification.
+Run the `ops-research` process (Steps 2-6: dispatch 3 agents in parallel — researcher-code, researcher-doc, git-historian — synthesize findings, and conditionally dispatch one or more researcher-repo agents in parallel for targets where researcher-doc signals `Source Verification Needed: high`). Scope the research to the task area identified during intent clarification.
 
 ---
 
@@ -191,6 +187,7 @@ Based on research results, propose **2-3 approaches** to the user.
 - **Pros**: Why this approach is good
 - **Cons**: What are the tradeoffs
 - **Fits conventions**: Does it match existing patterns found by researcher-code?
+- **Reuse**: Does existing code already solve part of this? Could we extend it instead of building from scratch?
 
 ### Presentation rules:
 - **Lead with your recommendation** — present the recommended option first, explain why it's best, then present alternatives
@@ -250,6 +247,8 @@ Write the spec to `docs/specs/YYYY-MM-DD-<topic>-design.md`. Do NOT commit — t
 
 The spec captures the **what** and **why** — the plan (Step 7) captures the **how** (task breakdown).
 
+Set `**Status**: Draft` in the spec header.
+
 User preferences for spec location override the default path.
 
 ### 6c. Spec review loop
@@ -259,7 +258,7 @@ Dispatch the **spec-reviewer** agent to verify the spec is complete and ready fo
 1. If **Issues Found**:
    - If the reviewer found **security-related issues** (permissions too broad, missing access checks, data exposure), present them to the user and wait for direction before fixing — security decisions should be transparent, not silently resolved.
    - Fix the issues (for security issues, follow the user's direction).
-   - **Re-dispatch the spec-reviewer** following the `ops:redispatch-optimization` process. This re-dispatch is MANDATORY — the reviewer must confirm the fixes are adequate.
+   - **Re-dispatch the spec-reviewer** following the `ops-redispatch-optimization` process. This re-dispatch is MANDATORY — the reviewer must confirm the fixes are adequate.
 2. Repeat until **Approved** (max 3 iterations).
 3. If still not approved after 3 iterations, surface the remaining issues to the user for guidance.
 
@@ -269,9 +268,11 @@ After the spec review loop passes, ask the user to review:
 
 > "Spec written to `<path>`. Please review it and let me know if you want to make any changes before we start writing the implementation plan."
 
-Do NOT commit the spec. The user decides when to commit (via `/ops:ship` or manually).
+Do NOT commit the spec. The user decides when to commit (via `/ops-ship` or manually).
 
 Wait for the user's response. If they request changes, make them and re-run the spec review loop. Only proceed once the user approves.
+
+Once the user approves, update the spec status to `**Status**: Approved`.
 
 ---
 
@@ -314,23 +315,23 @@ Every task must contain the actual content an implementer needs. These are **pla
 
 If you find yourself writing any of these, stop and fill in the actual content. A plan with placeholders is not a plan — it's a sketch.
 
-### CLAUDE.md-Driven Tasks (when CLAUDE.md exists)
+### Project Instruction-Driven Tasks (when project instructions exist)
 
-Read `CLAUDE.md` (and `.claude/CLAUDE.md` if it exists). If neither exists, skip this section — there are no project-specific rules to generate tasks from.
+Read the project instruction files (`CLAUDE.md`, `AGENTS.md`, or `GEMINI.md` — whichever exist at the project root) and their subdirectory variants. If none exists, skip this section — there are no project-specific rules to generate tasks from.
 
-If CLAUDE.md exists, scan the project rules for any action that is required for the type of change being made. If a rule applies, **generate an explicit task for it in the plan**.
+If project instructions exist, scan the rules for any action that is required for the type of change being made. If a rule applies, **generate an explicit task for it in the plan**.
 
-CLAUDE.md rules are not just conventions to follow — they are **task generators**. Any rule that says "when doing X, also do Y" means Y must be a task in the plan, not a mental note.
+Project instruction rules are not just conventions to follow — they are **task generators**. Any rule that says "when doing X, also do Y" means Y must be a task in the plan, not a mental note.
 
 How to apply:
-1. Read all CLAUDE.md rules
+1. Read all project instruction rules
 2. For each rule, ask: "does this apply to the current change?"
 3. If yes, add a dedicated task with files, change description, and validation command
 4. If unsure whether a rule applies, include it — the critic or the user can remove it
 
-**Do NOT treat CLAUDE.md rules as "nice to have".** If a rule applies to this change, it MUST have a corresponding task in the plan.
+**Do NOT treat project instruction rules as "nice to have".** If a rule applies to this change, it MUST have a corresponding task in the plan.
 
-**Gate**: Do NOT proceed to critic review if the plan has no task breakdown or if any task is missing files/change/validation. If CLAUDE.md exists and applicable rules have no corresponding tasks, do not proceed either.
+**Gate**: Do NOT proceed to critic review if the plan has no task breakdown or if any task is missing files/change/validation. If project instructions exist and applicable rules have no corresponding tasks, do not proceed either.
 
 **Present the plan in sections** short enough to read and digest — not a wall of text. Let the user absorb each section before the next.
 
@@ -342,14 +343,14 @@ Spawn the **critic** agent to review the plan.
 
 The critic:
 1. **Pre-engagement**: Predicts 3 potential problems BEFORE reading the plan details (prevents confirmation bias)
-2. **Reviews against 4 lenses**: Missing steps, Contradictions, Security vulnerabilities, CLAUDE.md compliance
+2. **Reviews against 4 lenses**: Missing steps, Contradictions, Security vulnerabilities, project instruction compliance
 3. **Multi-perspective review**: Executor, Stakeholder, Skeptic viewpoints
 4. **Gap analysis**: What's missing that nobody asked about?
 5. **Self-Audit + Realist Check**: Low-confidence findings become Open Questions, severity ratings are pressure-tested
 6. **Escalation**: If CRITICAL found or 3+ IMPORTANT → adversarial mode (expand scope, challenge every decision)
 7. **Verdict**: APPROVE or REJECT with confidence levels and perspective attribution
 
-**If REJECT**: Revise the plan addressing the critic's concerns, then **re-dispatch the critic** following the `ops:redispatch-optimization` process. This re-dispatch is MANDATORY. Maximum 3 iterations. If still rejected after 3 rounds, present both the plan and the critic's concerns to the user for decision.
+**If REJECT**: Revise the plan addressing the critic's concerns, then **re-dispatch the critic** following the `ops-redispatch-optimization` process. This re-dispatch is MANDATORY. Maximum 3 iterations. If still rejected after 3 rounds, present both the plan and the critic's concerns to the user for decision.
 
 If you fix the critic's concerns but do not re-dispatch the critic, you have FAILED this skill. The whole point of the critic is adversarial validation — bypassing the re-check defeats the purpose.
 
@@ -372,22 +373,22 @@ If this block does not appear in your output followed by an actual critic agent 
 ## Step 9: User Approval
 
 <HARD-GATE-HANDOFF>
-/ops:plan NEVER implements code. If the user asks to implement during this skill (e.g., "implemente", "go ahead and build it", "lance", "do it"), you MUST:
+/ops-plan NEVER implements code. If the user asks to implement during this skill (e.g., "implemente", "go ahead and build it", "lance", "do it"), you MUST:
 
-1. Complete ALL remaining ops:plan steps first (critic re-dispatch if REJECT, user approval)
+1. Complete ALL remaining ops-plan steps first (critic re-dispatch if REJECT, user approval)
 2. Then present the plan and ask for approval
-3. Once approved, invoke `/ops:implement` as a separate skill — do NOT implement inline
+3. Once approved, invoke `/ops-implement` as a separate skill — do NOT implement inline
 
-Implementing code without invoking `/ops:implement` is a FAILURE of this skill, regardless of what the user says. The user's "implemente" is approval of the plan, not authorization to bypass the implementation pipeline.
+Implementing code without invoking `/ops-implement` is a FAILURE of this skill, regardless of what the user says. The user's "implemente" is approval of the plan, not authorization to bypass the implementation pipeline.
 </HARD-GATE-HANDOFF>
 
 Present the validated plan to the user with an explicit question:
 
 > "The plan has been validated by the critic. Ready to implement? Options:
-> 1. I launch `/ops:implement` now
+> 1. I launch `/ops-implement` now
 > 2. You want to review the spec or plan first
 > 3. You'll implement later"
 
-Do NOT proceed to `/ops:implement` until the user explicitly approves. The user invoking `/ops:implement` counts as approval, but you should still ask before they need to invoke it.
+Do NOT proceed to `/ops-implement` until the user explicitly approves. The user invoking `/ops-implement` counts as approval, but you should still ask before they need to invoke it.
 
-The plan remains in conversation context for `/ops:implement` to consume.
+The plan remains in conversation context for `/ops-implement` to consume.

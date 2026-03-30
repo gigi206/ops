@@ -1,24 +1,24 @@
 ---
-name: ops:ship
+name: ops-ship
 description: "Commit, PR, and capture learnings."
 ---
 
-# /ops:ship — Ship the work
+# /ops-ship — Ship the work
 
 ## Instruction Priority
 
-Follow the `ops:instruction-priority` rules when instructions conflict.
+Follow the `ops-instruction-priority` rules when instructions conflict.
 
 ## Purpose
 
-This skill wraps up completed work: verifies everything is clean, commits, optionally creates a PR, and captures learnings. Use after `/ops:implement` or any significant code change.
+This skill wraps up completed work: verifies everything is clean, commits, optionally creates a PR, and captures learnings. Use after `/ops-implement` or any significant code change.
 
 ---
 
 ## Workflow
 
 ```
-1. Verify → 2. Summarize → 3. Commit → 4. PR (optional) → 5. Learnings → 6. Rule Proposals
+1. Verify → 2. Summarize → 3. Commit → 4. PR (optional) → 5. Learnings
 ```
 
 ---
@@ -34,7 +34,7 @@ Before shipping anything, run full validation:
 
 **Gate**: Do NOT proceed to commit if validation fails. Fix first.
 
-This step invokes the `/ops:verify` behavioral rule — every claim needs evidence.
+This step invokes the `/ops-verify` behavioral rule — every claim needs evidence.
 
 ---
 
@@ -66,7 +66,7 @@ Present a concise summary of what was done:
 2. **Propose a commit message** to the user:
    - Concise summary line (imperative mood, <72 chars)
    - Body explaining **why**, not what (the diff shows the what)
-   - Follow the project's commit conventions if documented in CLAUDE.md
+   - Follow the project's commit conventions if documented in the project instruction files (`CLAUDE.md`, `AGENTS.md`, or `GEMINI.md`)
 3. **Wait for user approval** before committing
 4. **Commit** and show the result
 
@@ -113,51 +113,6 @@ Capture what was learned during this work:
 ```
 
 Present this to the user.
-
----
-
-## Step 6: Rule Proposals
-
-After presenting the learnings, evaluate each one: **is this a recurring lesson tied to a specific type of file or area?**
-
-### When to propose a rule
-
-A learning should become a rule when it meets **both** criteria:
-- **Recurring**: it will apply again the next time someone touches this kind of file (not a one-time fix)
-- **Targetable**: it can be scoped to a glob pattern (e.g., `**/migrations/**`, `**/*.sh`, `src/api/routes/*.ts`)
-
-If a learning is one-off or too vague to target, don't propose it — it stays in the session summary and that's fine.
-
-### How to propose
-
-For each learning that qualifies, present a concrete rule proposal:
-
-```
-I suggest creating a rule from this learning:
-
-File: .claude/rules/api-error-handling.md
-Glob: src/api/routes/*.ts
-
----
-description: API route error handling conventions
-globs: ["src/api/routes/*.ts"]
----
-
-- Always return structured error responses with `code` and `message` fields
-- Never expose stack traces or internal paths in non-development environments
-- Validate request body before any business logic — fail fast with 400
-
-Create this rule? [yes / modify / skip]
-```
-
-### Rules
-
-- **Never write a rule without user approval.** Always propose, wait, then write.
-- **One proposal at a time.** Don't dump 5 rules at once — present each, get a decision, move on.
-- **Keep rules short.** A rule is 3-8 bullet points. If it's longer, it's documentation, not a rule.
-- **Check for existing rules first.** Read `.claude/rules/` before proposing — if a relevant rule already exists, propose an update instead of a new file.
-- **If the user says "modify"**, ask what they want to change, apply the edits, show the updated version, and confirm again.
-- **If the user says "skip"**, move on. Don't argue.
 
 ---
 

@@ -1,17 +1,17 @@
 ---
-name: ops:clone-analyze
+name: ops-clone-analyze
 description: "Clone and analyze an external repository. Use when you need to understand a library, framework, application, or tool by reading its source code."
 ---
 
-# /ops:clone-analyze — Repository analysis
+# /ops-clone-analyze — Repository analysis
 
 ## Instruction Priority
 
-Follow the `ops:instruction-priority` rules when instructions conflict.
+Follow the `ops-instruction-priority` rules when instructions conflict.
 
 ## Subagent Rules
 
-Before dispatching any agent in this skill, follow the `ops:subagent-rules` process.
+Before dispatching any agent in this skill, follow the `ops-subagent-rules` process.
 
 ## Purpose
 
@@ -64,6 +64,6 @@ Ask: "Want to dig deeper into any section, or is this sufficient?"
 ## Constraints
 
 - **Do NOT make changes.** This skill is read-only — no edits, no commits.
-- **Do NOT plan.** If the user wants to plan based on findings, suggest `/ops:plan`.
+- **Do NOT plan.** If the user wants to plan based on findings, suggest `/ops-plan`.
 - **No confidence gate** — this is an explicit user request, not a conditional trigger.
 - **Cite sources.** Every finding must reference its source (file:line from the cloned repo, commit hash).

@@ -1,17 +1,17 @@
 ---
-name: ops:verify
+name: ops-verify
 description: "Evidence before claims. Always."
 ---
 
-# /ops:verify — Verification before completion
+# /ops-verify — Verification before completion
 
 ## Instruction Priority
 
-Follow the `ops:instruction-priority` rules when instructions conflict.
+Follow the `ops-instruction-priority` rules when instructions conflict.
 
 ## Purpose
 
-This is a behavioral skill, not a workflow. It applies **everywhere, all the time** — during `/ops:implement`, `/ops:debug`, or any work outside of ops skills.
+This is a behavioral skill, not a workflow. It applies **everywhere, all the time** — during `/ops-implement`, `/ops-debug`, or any work outside of ops skills.
 
 The rule is simple: **never claim a result without showing the evidence.**
 
@@ -60,8 +60,8 @@ If you catch yourself doing any of these: **STOP. Run the command. Show the outp
 ## Scope
 
 This skill applies to:
-- Every task completion in `/ops:implement`
-- Every fix verification in `/ops:debug`
+- Every task completion in `/ops-implement`
+- Every fix verification in `/ops-debug`
 - Every commit, push, or PR creation
 - Any time you assert something works, passes, succeeds, or is done
 

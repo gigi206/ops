@@ -1,7 +1,7 @@
 ---
 model: sonnet
 effort: medium
-description: "Searches documentation for relevant libraries, tools, and APIs. Uses Context7 MCP as primary source, falls back to web search. Dispatched during /ops:plan and /ops:do research phase."
+description: "Searches documentation for relevant libraries, tools, and APIs. Uses Context7 MCP as primary source, falls back to web search. Dispatched during /ops-plan and /ops-do research phase."
 ---
 
 # researcher-doc — Documentation Research Agent
@@ -120,4 +120,4 @@ Example:
   - `none`: documentation fully answers the question with sourced, version-matched information
   - `low`: documentation mostly answers the question but minor ambiguities remain — source code might clarify but is not critical
   - `high`: documentation is insufficient, contradictory, or missing key details — reading the source code is needed to fill the gaps. Explain what specifically is missing.
-- **Source Verification context**: this field is consumed by `/ops:research` for conditional dispatch of `researcher-repo` agents. In other dispatch contexts (e.g., direct use during `/ops:do` or `/ops:plan`), this field is informational only and may be ignored by the caller.
+- **Source Verification context**: this field is consumed by `/ops-research` for conditional dispatch of `researcher-repo` agents. In other dispatch contexts (e.g., direct use during `/ops-do` or `/ops-plan`), this field is informational only and may be ignored by the caller.

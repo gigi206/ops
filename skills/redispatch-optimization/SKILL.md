@@ -1,5 +1,5 @@
 ---
-name: ops:redispatch-optimization
+name: ops-redispatch-optimization
 description: "Internal: optimize re-dispatch prompts for review agents. Activated when re-dispatching spec-reviewer, critic, code-reviewer, or security-reviewer after fixes."
 user-invocable: false
 ---
@@ -10,7 +10,7 @@ When re-dispatching any review agent (spec-reviewer, critic, code-reviewer, secu
 
 ## Rules
 
-1. **Do NOT re-include full context.** The agent can re-read files at their paths. Do not paste the full spec, plan, diff, or CLAUDE.md into the re-dispatch prompt.
+1. **Do NOT re-include full context.** The agent can re-read files at their paths. Do not paste the full spec, plan, diff, or project instruction files into the re-dispatch prompt.
 
 2. **Include only:**
    - The reviewer's previous findings (the issues list verbatim)

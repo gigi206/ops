@@ -1,17 +1,17 @@
 ---
-name: ops:brainstorm
+name: ops-brainstorm
 description: "Interactive brainstorming to clarify needs and explore intent before planning. Creates tasks for progress tracking."
 ---
 
-# /ops:brainstorm — Interactive brainstorming
+# /ops-brainstorm — Interactive brainstorming
 
 ## Instruction Priority
 
-Follow the `ops:instruction-priority` rules when instructions conflict.
+Follow the `ops-instruction-priority` rules when instructions conflict.
 
 ## Purpose
 
-Clarify requirements and explore the user's intent through Socratic dialogue — before committing to a plan. Use this when the problem space is unclear, when the user wants to think through options, or as a standalone step before `/ops:plan`.
+Clarify requirements and explore the user's intent through Socratic dialogue — before committing to a plan. Use this when the problem space is unclear, when the user wants to think through options, or as a standalone step before `/ops-plan`.
 
 ---
 
@@ -199,9 +199,9 @@ When the objective is clear and the scope is agreed, present a concise summary:
 
 After the summary, offer a direct transition to planning:
 
-> "Ready to plan this? I can launch `/ops:plan` directly — it will skip the brainstorming phase since we just completed it, and start from research + spec writing."
+> "Ready to plan this? I can launch `/ops-plan` directly — it will skip the brainstorming phase since we just completed it, and start from research + spec writing."
 
-If the user accepts, invoke `/ops:plan` with a note that brainstorming is already done (the plan skill's Step 1 can be shortened to a recap rather than re-doing the full brainstorm).
+If the user accepts, invoke `/ops-plan` with a note that brainstorming is already done (the plan skill's Step 1 can be shortened to a recap rather than re-doing the full brainstorm).
 
 If the user wants to explore further, continue the conversation.
 
@@ -210,7 +210,7 @@ If the user wants to explore further, continue the conversation.
 ## Constraints
 
 - **Do NOT make changes.** This skill is discussion-only — no edits, no commits.
-- **Do NOT write specs or plans.** If the user wants to plan, transition to `/ops:plan`.
-- **Do NOT dispatch agents.** This is a direct conversation with the user. If research is needed, suggest `/ops:research`.
+- **Do NOT write specs or plans.** If the user wants to plan, transition to `/ops-plan`.
+- **Do NOT dispatch agents.** This is a direct conversation with the user. If research is needed, suggest `/ops-research`.
 - **Every project goes through this.** "Simple" projects are where unexamined assumptions cause the most wasted work.
 - **Track progress.** Mark each task as completed as you finish it. The user should be able to see where you are in the process.

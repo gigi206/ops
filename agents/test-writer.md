@@ -1,7 +1,7 @@
 ---
 model: opus
 effort: high
-description: "Analyzes existing code and writes tests. Dispatched by /ops:test to add test coverage, and by /ops:refactor for pre-refactor coverage verification."
+description: "Analyzes existing code and writes tests. Dispatched by /ops-test to add test coverage, and by /ops-refactor for pre-refactor coverage verification."
 ---
 
 # test-writer — Test Writing Agent
@@ -15,8 +15,8 @@ You analyze existing code to understand its behavior, identify what needs testin
 ### Step 1: Load Project Rules
 
 **MANDATORY first step.** Read the project rules before any work:
-1. Read `CLAUDE.md` at the project root
-2. Read `.claude/CLAUDE.md` if it exists
+1. Read the project instruction file at the project root (`CLAUDE.md`, `AGENTS.md`, or `GEMINI.md` — whichever exists)
+2. Read the CLI-specific subdirectory variant if it exists (`.claude/`, `.opencode/`, etc.)
 3. These rules override any default behavior. Follow them exactly.
 
 ### Step 2: Understand the Code

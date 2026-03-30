@@ -1,5 +1,5 @@
 ---
-name: ops:security-gate
+name: ops-security-gate
 description: "Internal: triage changes against 14 security triggers + SAST scan (semgrep), dispatch security-reviewer if needed, handle re-verification loop. Activated during final review in implement, do, and security skills."
 user-invocable: false
 ---
@@ -44,7 +44,7 @@ The script outputs key=value metadata lines, followed by raw semgrep JSON (separ
 
 ## Step 1c: Incorporate qlty security findings
 
-If `ops:code-quality` was run before this gate (which is the normal sequence), check its report for a `Security findings from qlty` line. These come from security-focused qlty plugins (trivy, trufflehog, osv-scanner, bandit, checkov) and should be treated as additional signals alongside semgrep findings.
+If `ops-code-quality` was run before this gate (which is the normal sequence), check its report for a `Security findings from qlty` line. These come from security-focused qlty plugins (trivy, trufflehog, osv-scanner, bandit, checkov) and should be treated as additional signals alongside semgrep findings.
 
 - If qlty reported security findings: include them in the triage output and in the security-reviewer context (if dispatched).
 - If qlty reported no security findings or was not run: proceed normally.
@@ -68,7 +68,7 @@ If ANY trigger matches OR semgrep reports plausible WARNING/ERROR findings (afte
 
 ## Step 2: Re-verification loop
 
-If the security-reviewer finds **critical issues** and fixes are applied, re-dispatch to verify. Follow the `ops:redispatch-optimization` process for the re-dispatch prompt.
+If the security-reviewer finds **critical issues** and fixes are applied, re-dispatch to verify. Follow the `ops-redispatch-optimization` process for the re-dispatch prompt.
 
 - **Cap at 3 iterations.** If not approved after 3 rounds, stop and escalate to the user with a summary of all unresolved findings.
 - **Each iteration**: fix issues → re-dispatch with optimized prompt → check verdict.

@@ -1,5 +1,5 @@
 ---
-name: ops:circuit-breaker
+name: ops-circuit-breaker
 description: "Internal: diagnose repeated failures during implementation or debugging. Activated when 3+ consecutive task failures (implement) or 5+ failed fix attempts (debug)."
 user-invocable: false
 ---
@@ -15,7 +15,7 @@ When repeated failures occur, do NOT just stop and report. Diagnose the root cau
 
 ## Diagnostic process
 
-1. **Dispatch researcher-code and git-historian in parallel** — both Agent tool_use blocks in a **single message** (see `ops:subagent-rules`):
+1. **Dispatch researcher-code and git-historian in parallel** — both Agent tool_use blocks in a **single message** (see `ops-subagent-rules`):
 
    **researcher-code**:
    - All error outputs and attempted fixes/implementations
@@ -36,13 +36,13 @@ When repeated failures occur, do NOT just stop and report. Diagnose the root cau
    > Options:
    > A) [Specific fix — e.g., add missing prerequisite, fix root cause]
    > B) [Alternative approach — e.g., switch implementation strategy]
-   > C) Investigate further with `/ops:debug`
-   > D) Replan with `/ops:plan` using these findings
+   > C) Investigate further with `/ops-debug`
+   > D) Replan with `/ops-plan` using these findings
    > E) Abandon
    > Work is stopped until you decide."
 
 3. **Wait for user decision.** Then:
    - If A/B: amend the plan/approach, resume
-   - If C: hand off to `/ops:debug`
-   - If D: hand off to `/ops:plan` with the diagnostic as input
+   - If C: hand off to `/ops-debug`
+   - If D: hand off to `/ops-plan` with the diagnostic as input
    - If E: stop

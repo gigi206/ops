@@ -1,5 +1,37 @@
 # Changelog
 
+## 3.0.0 (2026-03-30)
+
+### OpenCode compatibility + skill renaming + internal refactoring
+
+- **BREAKING**: all skill names renamed from `ops:*` to `ops-*` for cross-platform filename compatibility (e.g., `/ops:plan` → `/ops-plan`)
+- feat: OpenCode support via `.opencode/plugins/ops.js` (plugin ESM) with dynamic slash command registration
+- feat: `package.json` added for OpenCode git-based plugin installation
+- feat: `AGENTS.md` as primary project instructions (OpenCode native), `CLAUDE.md` now points to it via `@AGENTS.md`
+- refactor: CLI-agnostic project instruction references — all skills and agents now reference `CLAUDE.md`, `AGENTS.md`, or `GEMINI.md` (whichever exists) instead of hardcoded `CLAUDE.md`
+- feat: `data/bootstrap-context.md` — shared skill routing table read by both Claude Code and OpenCode adapters
+- feat: `.opencode/INSTALL.md` with installation instructions
+- refactor: `hooks/session-start` reads `data/bootstrap-context.md` instead of hardcoded HEREDOC
+- refactor: all cross-references, hook routing table, agent descriptions, README updated from `ops:*` to `ops-*`
+- deleted: `COMPARISON-vs-SUPERPOWERS.md` (removed)
+- refactor: `ops-init` CLI-agnostic redesign — CLI detection script, shared entry point, per-CLI sub-skills (Claude Code + OpenCode)
+- refactor: extract shared review sequence (code quality → security gate → code review → project instruction check) into `ops-review-pipeline` internal skill — eliminates duplication across `do`, `perf`, `refactor`, and `test`
+- refactor: `ops-plan` Step 0 no longer runs full `ops-init` — limited to project command discovery (build/test/lint), with environment health check that proposes `/ops-init` if issues detected
+- refactor: `ops-init` simplified to single mode (user-invoked only), removed dual plan/user-invoked mode
+- fix: clarify project instruction file locations as "at the project root" in `instruction-priority`, `review-pr`, `security`, and `review-pipeline` — prevents agents from searching user-level directories
+- feat: `/ops-audit` — full codebase audit (qlty + semgrep), unified report with cross-triage and severity classification
+- feat: duplication checks in `ops-plan` Step 5 (Reuse criterion) and critic Lens 1
+- fix: remove dead semgrep baseline scan from `ops-init` (`.semgrep/baseline.json` was generated but never consumed)
+- feat: `ops-init` restructured into 6 phases with stop-and-propose — recap (skills/agents/MCP), ops tools (qlty/semgrep), project linters, linter prerequisites, build tools, LSP
+- feat: language rule in `ops-instruction-priority` — respond in the user's language
+- feat: spec status lifecycle (`Draft` → `Approved` → `Implemented`) across `ops-plan` and `ops-implement`
+- feat: `ops-do` scope guard redirects to `/ops-brainstorm` instead of `/ops-plan`
+- feat: OpenCode agent registration via plugin `config.agent` hook — all 11 ops agents available as subagents
+- feat: build verification step in `ops-review-pipeline` — propose compile/build before code review
+- feat: LSP usage guidance in `ops-subagent-rules` — all agents prefer LSP over grep for code navigation
+- fix: semgrep config — do not create `.semgrep.yml` (`--config auto` provides community rules)
+- feat: English-only rule in `AGENTS.md` for the ops repository
+
 ## 2.3.4 (2026-03-30)
 
 ### Reasoning effort baselines for all agents

@@ -1,17 +1,17 @@
 ---
-name: ops:refactor
+name: ops-refactor
 description: "Restructure code without changing behavior. Verifies test coverage first, then applies incremental changes with validation between each step."
 ---
 
-# /ops:refactor — Refactor code safely
+# /ops-refactor — Refactor code safely
 
 ## Instruction Priority
 
-Follow the `ops:instruction-priority` rules when instructions conflict.
+Follow the `ops-instruction-priority` rules when instructions conflict.
 
 ## Subagent Rules
 
-Before dispatching any agent in this skill, follow the `ops:subagent-rules` process.
+Before dispatching any agent in this skill, follow the `ops-subagent-rules` process.
 
 ## Purpose
 
@@ -22,7 +22,7 @@ Restructure existing code to improve its design without changing external behavi
 ## Workflow
 
 ```
-1. Scope → 2. Research → 3. Coverage gate → 4. Plan incremental steps → 5. Execute → 6. Verify → 7. Code Quality → 8. Code Review → 9. Check CLAUDE.md
+1. Scope → 2. Research → 3. Coverage gate → 4. Plan incremental steps → 5. Execute → 6. Verify → 7. Review Pipeline
 ```
 
 ---
@@ -41,7 +41,7 @@ Present the scope:
 
 ## Step 2: Research (2 agents in parallel)
 
-Dispatch two agents **in parallel** — both Agent tool_use blocks in a **single message** (see `ops:subagent-rules`):
+Dispatch two agents **in parallel** — both Agent tool_use blocks in a **single message** (see `ops-subagent-rules`):
 
 ### researcher-code
 - Map the target code: structure, dependencies, integration points
@@ -70,7 +70,7 @@ Dispatch two agents **in parallel** — both Agent tool_use blocks in a **single
 - **Good coverage** (critical paths tested) → proceed to Step 4
 - **Low coverage** (major behaviors untested) → **STOP.** Present to user:
   > "The code I'm about to refactor has low test coverage. Without tests, I can't guarantee behavior is preserved. Options:
-  > A) Add tests first with `/ops:test`, then refactor
+  > A) Add tests first with `/ops-test`, then refactor
   > B) Proceed anyway (risky — behavior changes may go undetected)
   > C) Narrow the scope to the tested parts only"
 
@@ -115,27 +115,12 @@ For each step:
 After all steps are complete:
 1. Run the full test suite — all tests must pass
 2. Compare the diff to ensure no behavior was changed (only structure)
-3. `/ops:verify` behavioral rule applies — show the evidence
+3. `/ops-verify` behavioral rule applies — show the evidence
 
 ---
 
-## Step 7: Code Quality
+## Step 7: Review Pipeline
 
-Run the `ops:code-quality` process on all modified files. Fix any issues.
-
----
-
-## Step 8: Code Review
-
-Dispatch the **code-reviewer** agent with:
-- The complete diff (`git diff`)
+Run the `ops-review-pipeline` process with the following code-reviewer context:
 - The refactoring goal (from Step 1)
 - Explicit instruction: **verify behavior preservation** — the code should do the same thing in a better way. Flag any behavioral changes.
-
-**One cycle maximum**: fix issues, re-run review once. If still failing → escalate to user.
-
----
-
-## Step 9: Check CLAUDE.md
-
-Read `CLAUDE.md` and `.claude/CLAUDE.md`. Verify all applicable rules were followed. Fix violations before completing.

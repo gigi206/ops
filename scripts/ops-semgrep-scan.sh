@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ops-semgrep-scan.sh — Run semgrep with automatic config and baseline detection.
-# Called by ops:security-gate Step 1b to encapsulate branching logic.
+# Called by ops-security-gate Step 1b to encapsulate branching logic.
 #
 # Usage: ops-semgrep-scan.sh [--config <path|auto>] [file1 file2 ...]
 #   --config: semgrep config to use. Auto-detects if omitted.

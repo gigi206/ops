@@ -1,9 +1,9 @@
 ---
-name: ops:implement
+name: ops-implement
 description: "Execute a validated plan task by task."
 ---
 
-# /ops:implement — Execute a validated plan
+# /ops-implement — Execute a validated plan
 
 <HARD-GATE>
 STOP. Every task in the plan MUST go through the per-task pipeline:
@@ -19,15 +19,15 @@ Code review and security review happen ONCE at the end (Step 4), on the complete
 
 ## Instruction Priority
 
-Follow the `ops:instruction-priority` rules when instructions conflict.
+Follow the `ops-instruction-priority` rules when instructions conflict.
 
 ## Subagent Rules
 
-Before dispatching any agent in this skill, follow the `ops:subagent-rules` process.
+Before dispatching any agent in this skill, follow the `ops-subagent-rules` process.
 
 ## Prerequisite
 
-A plan must exist (from `/ops:plan` or user-provided). Do NOT implement without a plan.
+A plan must exist (from `/ops-plan` or user-provided). Do NOT implement without a plan.
 
 ## Workflow
 
@@ -51,16 +51,11 @@ Read the plan from the conversation context or from the file the user specifies.
 - [ ] Each task has: description, files, change details, and validation command
 - [ ] Tasks are ordered by dependency
 
-**If the plan has no task breakdown or tasks are incomplete**: STOP. Do NOT implement. Tell the user to run `/ops:plan` first or to decompose the plan into tasks before proceeding.
+**If the plan has no task breakdown or tasks are incomplete**: STOP. Do NOT implement. Tell the user to run `/ops-plan` first or to decompose the plan into tasks before proceeding.
 
 ### Register tasks
 
-After verifying the plan, create a Claude Code task for each plan task using `TaskCreate`:
-
-```
-For each task in the plan:
-  TaskCreate(description: "Task N: <description>", status: "pending")
-```
+After verifying the plan, create a task entry for each plan task, set to pending.
 
 This ensures task progress survives context compaction and is visible throughout the session.
 
@@ -70,17 +65,14 @@ This ensures task progress survives context compaction and is visible throughout
 
 For each task in the plan, in order:
 
-**Before starting a task**, set its status to `in_progress`:
-```
-TaskUpdate(id: <task_id>, status: "in_progress")
-```
+**Before starting a task**, mark it as in_progress.
 
 ### 2a. Dispatch Implementer Agent
 
 **One task per agent.** Each implementer agent receives exactly ONE task from the plan. Do NOT bundle multiple tasks into a single agent prompt — even if they seem related or touch similar files.
 
 **Parallelization rules:**
-- Tasks with no dependency between them MAY be dispatched in parallel — all Agent tool_use blocks in a **single message** (see `ops:subagent-rules`).
+- Tasks with no dependency between them MAY be dispatched in parallel — all Agent tool_use blocks in a **single message** (see `ops-subagent-rules`).
 - But each parallel task MUST independently complete steps 2b–2e before being marked completed.
 - If Task B depends on files created/modified by Task A, Task B MUST wait until Task A's full pipeline is complete.
 - Maximum 3 implementer agents running in parallel — more than this makes conformity checks unmanageable.
@@ -145,11 +137,11 @@ After validation passes, verify by checking the actual diff — not as a mental 
 
 If conformity fails, have the implementer correct the issue before proceeding.
 
-**If conformity passes**: `TaskUpdate(id: <task_id>, status: "completed")`
+**If conformity passes**: mark the task as completed.
 
 ### 2d. Discovery Check
 
-If the implementer reported discoveries, categorize each using the `ops:discovery-checks` process (scope: "the current plan", pause target: "implementation").
+If the implementer reported discoveries, categorize each using the `ops-discovery-checks` process (scope: "the current plan", pause target: "implementation").
 
 ### 2e. Task Completion Record
 
@@ -174,14 +166,11 @@ Output this record for every task before moving to the next. It feeds the final 
 **If a task fails validation:**
 1. Send the error output back to the implementer for a retry
 2. If it fails a second time, try a different approach
-3. If it fails a third time, mark as BLOCKED:
-   ```
-   TaskUpdate(id: <task_id>, status: "cancelled", note: "BLOCKED: <reason>")
-   ```
+3. If it fails a third time, mark the task as cancelled (BLOCKED: reason).
 
 **If 3+ consecutive tasks fail (circuit breaker):**
 
-Trigger the `ops:circuit-breaker` process (threshold: 3+, window: 30 days for git-historian).
+Trigger the `ops-circuit-breaker` process (threshold: 3+, window: 30 days for git-historian).
 
 ---
 
@@ -207,20 +196,20 @@ Before dispatching the final review, output this audit summary by counting from 
 ### Code Quality (MANDATORY — runs BEFORE reviewers)
 
 <HARD-GATE-CODE-QUALITY>
-You MUST run the `ops:code-quality` process BEFORE dispatching any reviewer agent. If you dispatch code-reviewer or security-reviewer without having run code quality checks first, you have FAILED this skill.
+You MUST run the `ops-code-quality` process BEFORE dispatching any reviewer agent. If you dispatch code-reviewer or security-reviewer without having run code quality checks first, you have FAILED this skill.
 
 Sequence: Pre-review Audit → Code Quality → Security Triage → Dispatch Reviews. Skipping Code Quality is not allowed even if the code "looks clean."
 
-Degraded case: if no formatter or linter is detected in the project, running `ops:code-quality` will report "No formatter or linter detected — Skipped." This counts as having run the process. The gate requires running the process, not that tools exist.
+Degraded case: if no formatter or linter is detected in the project, running `ops-code-quality` will report "No formatter or linter detected — Skipped." This counts as having run the process. The gate requires running the process, not that tools exist.
 </HARD-GATE-CODE-QUALITY>
 
-Run the `ops:code-quality` process on all modified files. Fix any issues before dispatching reviewers.
+Run the `ops-code-quality` process on all modified files. Fix any issues before dispatching reviewers.
 
 ### Security Triage (MANDATORY — structured output required)
 
-Run the `ops:security-gate` process on the **complete diff** to determine whether the security-reviewer is needed, and handle re-verification if critical issues are found. If you write "NO" when the diff clearly contains security-sensitive changes, you have FAILED this skill.
+Run the `ops-security-gate` process on the **complete diff** to determine whether the security-reviewer is needed, and handle re-verification if critical issues are found. If you write "NO" when the diff clearly contains security-sensitive changes, you have FAILED this skill.
 
-You MUST output the structured triage block defined in `ops:security-gate` Step 1:
+You MUST output the structured triage block defined in `ops-security-gate` Step 1:
 
 ```
 ## Security Triage
@@ -238,13 +227,13 @@ This block must appear in your output BEFORE dispatching the security-reviewer (
 Dispatch the **code-reviewer** agent with:
 - The full spec document
 - The complete diff (all changes across all tasks)
-- The project's CLAUDE.md rules (if the project has one)
+- The project instruction rules — `CLAUDE.md`, `AGENTS.md`, or `GEMINI.md` (if the project has one)
 - Instruction to evaluate the implementation as a whole, not task by task
 
 If security triage is YES, dispatch the **security-reviewer** agent **in parallel** (same message as code-reviewer) with:
 - The complete diff
 - The list of security triggers matched
-- The project's CLAUDE.md rules
+- The project instruction rules — `CLAUDE.md`, `AGENTS.md`, or `GEMINI.md`
 
 The code-reviewer checks:
 - Does the full implementation match the spec?
@@ -263,7 +252,7 @@ The security-reviewer checks:
 
 **If Critical issues found (code-reviewer)**: fix before proceeding to completion.
 
-**If Critical issues found (security-reviewer)**: the `ops:security-gate` re-verification loop handles this (fix → re-dispatch → cap 3 iterations).
+**If Critical issues found (security-reviewer)**: the `ops-security-gate` re-verification loop handles this (fix → re-dispatch → cap 3 iterations).
 
 **If Important issues found**: fix or note for the user.
 **If Suggestions**: note for the user.
@@ -321,4 +310,5 @@ Silently skipping a validation command is a FAILURE of this skill.
 
 Include this section in the completion summary. If the user saves it (e.g., in a project doc or memory), it becomes searchable context for future tasks.
 
-5. Ask the user what to do next (commit, review, continue)
+5. **Update spec status**: if a spec file exists for this work, update its status to `**Status**: Implemented`.
+6. Ask the user what to do next (commit, review, continue)

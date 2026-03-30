@@ -1,17 +1,17 @@
 ---
-name: ops:research
+name: ops-research
 description: "Autonomous codebase and documentation exploration. Dispatches 3 research agents in parallel, with conditional repository cloning when documentation is insufficient."
 ---
 
-# /ops:research — Autonomous exploration
+# /ops-research — Autonomous exploration
 
 ## Instruction Priority
 
-Follow the `ops:instruction-priority` rules when instructions conflict.
+Follow the `ops-instruction-priority` rules when instructions conflict.
 
 ## Subagent Rules
 
-Before dispatching any agent in this skill, follow the `ops:subagent-rules` process.
+Before dispatching any agent in this skill, follow the `ops-subagent-rules` process.
 
 ## Purpose
 
@@ -35,7 +35,7 @@ Restate the user's question or topic in one sentence to confirm understanding. I
 
 ## Step 2: Parallel Research
 
-Spawn 3 agents **in parallel** — all 3 Agent tool_use blocks in a **single message** (see `ops:subagent-rules`):
+Spawn 3 agents **in parallel** — all 3 Agent tool_use blocks in a **single message** (see `ops-subagent-rules`):
 
 ### researcher-code
 - Explore the codebase for patterns, conventions, existing implementations, integration points, and risks relevant to the topic.
@@ -83,7 +83,7 @@ For each target in the high list, dispatch a **researcher-repo** agent with:
 - The rationale from researcher-doc explaining what is missing for this target
 - Any repo name/URL mentioned in the question or in the agents' findings
 
-**Dispatch all researcher-repo agents in parallel** — all Agent tool_use blocks in a **single message** (see `ops:subagent-rules`). If only one target has `high`, dispatch a single agent.
+**Dispatch all researcher-repo agents in parallel** — all Agent tool_use blocks in a **single message** (see `ops-subagent-rules`). If only one target has `high`, dispatch a single agent.
 
 Each researcher-repo agent will:
 1. Locate and clone the relevant external repository
@@ -139,5 +139,5 @@ Ask the user if they want to dig deeper into any area, or if this is sufficient 
 ## Constraints
 
 - **Do NOT make changes.** This skill is read-only — no edits, no commits.
-- **Do NOT plan.** If the user wants to plan based on research, suggest `/ops:plan`.
+- **Do NOT plan.** If the user wants to plan based on research, suggest `/ops-plan`.
 - **Cite sources.** Every finding must reference its source (file:line, doc URL, commit hash).

@@ -1,5 +1,5 @@
 ---
-name: ops:code-quality
+name: ops-code-quality
 description: "Internal: run code formatting, linting, and structural analysis on modified files (qlty or project tools). Activated before code review in implement, do, and other skills."
 user-invocable: false
 ---
@@ -19,7 +19,7 @@ Check if `qlty` is available (`which qlty`) AND the project has a `.qlty/qlty.to
 
 ### Individual tools (fallback)
 
-Examine the project root for formatter and linter configuration files, `package.json` scripts, `Makefile` targets, and CLAUDE.md for project-specific commands.
+Examine the project root for formatter and linter configuration files, `package.json` scripts, `Makefile` targets, and project instruction files (`CLAUDE.md`, `AGENTS.md`, or `GEMINI.md`) for project-specific commands.
 
 If no tools are detected, skip and note it for the reviewer.
 
@@ -42,7 +42,7 @@ Otherwise: run the detected linter on modified files.
 
 - **Errors**: fix them before proceeding.
 - **Warnings**: fix if trivial, otherwise note for the reviewer.
-- **Security findings**: qlty may include security plugins (trivy, trufflehog, osv-scanner, bandit, checkov). If `qlty check` reports findings from these plugins, do NOT fix them here — note them in the report under a `Security findings from qlty` line. The `ops:security-gate` process will use this information when deciding whether to dispatch the security-reviewer.
+- **Security findings**: qlty may include security plugins (trivy, trufflehog, osv-scanner, bandit, checkov). If `qlty check` reports findings from these plugins, do NOT fix them here — note them in the report under a `Security findings from qlty` line. The `ops-security-gate` process will use this information when deciding whether to dispatch the security-reviewer.
 - If linting fails after formatting, the formatter and linter may conflict — note this for the user.
 
 If qlty or the linter crashes or times out, log the error and continue — the tool is optional.
@@ -93,12 +93,12 @@ If individual tools were used:
 ## Code Quality
 - Formatter: <tool> — <N files formatted / no changes>
 - Linter: <tool> — <N errors fixed, N warnings remaining / clean>
-- Smells: skipped (requires qlty — run `/ops:setup` to install)
-- Metrics: skipped (requires qlty — run `/ops:setup` to install)
+- Smells: skipped (requires qlty — run `/ops-init` to install)
+- Metrics: skipped (requires qlty — run `/ops-init` to install)
 ```
 
 If no tools were detected:
 ```
 ## Code Quality
-- No code quality tools detected. Run `/ops:setup` for diagnostic.
+- No code quality tools detected. Run `/ops-init` for diagnostic.
 ```

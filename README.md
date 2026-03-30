@@ -1,39 +1,36 @@
 # ops
 
-A structured development workflow plugin for Claude Code. Plan, implement, debug, review, secure, and ship with discipline.
+A structured development workflow for Claude Code, OpenCode, and other AI coding CLIs. Plan, implement, debug, review, secure, and ship with discipline.
 
 ## Quick use
 
-```
-# First time? Diagnose your environment
-/ops:setup
-```
+> **First time?** See [Install](#install) then run `/ops-init` inside your project.
 
 ```
 # Main pipeline
-/ops:plan add rate limiting to the API     →  /ops:implement  →  /ops:ship
+/ops-plan add rate limiting to the API     →  /ops-implement  →  /ops-ship
                                                       ↑
-                                               /ops:debug (when bugs arise)
+                                               /ops-debug (when bugs arise)
 
 # Or all at once
-/ops:full add rate limiting to the API     (= plan → implement → ship)
+/ops-full add rate limiting to the API     (= plan → implement → ship)
 
 # Specialized pipelines
-/ops:do        rename the logger to use structured output
-/ops:debug     users get 500 on /api/auth
-/ops:test      src/auth/
-/ops:refactor  split the god class in OrderService
-/ops:perf      /api/search takes 3s, target 500ms
-/ops:review-pr 42
+/ops-do        rename the logger to use structured output
+/ops-debug     users get 500 on /api/auth
+/ops-test      src/auth/
+/ops-refactor  split the god class in OrderService
+/ops-perf      /api/search takes 3s, target 500ms
+/ops-review-pr 42
 
 # Standalone
-/ops:research  how does the payment flow work
-/ops:clone-analyze how does express handle middleware error propagation
-/ops:brainstorm I need some kind of caching layer
-/ops:security
+/ops-research  how does the payment flow work
+/ops-clone-analyze how does express handle middleware error propagation
+/ops-brainstorm I need some kind of caching layer
+/ops-security
 
 # Useful combo
-/ops:brainstorm → /ops:do         clarify needs first, then execute
+/ops-brainstorm → /ops-do         clarify needs first, then execute
 ```
 
 ## What it does
@@ -45,41 +42,41 @@ ops enforces a staged workflow with explicit gates, parallel research, adversari
 ```mermaid
 flowchart TD
     %% Pre-work
-    brainstorm["/ops:brainstorm"] -.->|clarifies intent| plan
+    brainstorm["/ops-brainstorm"] -.->|clarifies intent| plan
     brainstorm -.->|clarifies intent| do
-    research["/ops:research"] -.->|gathers context| plan
+    research["/ops-research"] -.->|gathers context| plan
 
     %% Main pipeline
-    plan["/ops:plan"] -->|approved plan| implement["/ops:implement"]
-    implement -->|code ready| ship["/ops:ship"]
+    plan["/ops-plan"] -->|approved plan| implement["/ops-implement"]
+    implement -->|code ready| ship["/ops-ship"]
 
     %% Full chains the main pipeline
-    full["/ops:full"] ==>|"= plan → implement → ship"| plan
+    full["/ops-full"] ==>|"= plan → implement → ship"| plan
 
     %% Lightweight alternative
-    do["/ops:do"] -->|code ready| ship
+    do["/ops-do"] -->|code ready| ship
 
     %% Bug fixing
-    debug["/ops:debug"] -->|fix ready| ship
+    debug["/ops-debug"] -->|fix ready| ship
     debug -.->|bugs during| implement
 
     %% Testing & refactoring
-    test["/ops:test"] -->|tests added| ship
+    test["/ops-test"] -->|tests added| ship
     test -.->|coverage gate| refactor
-    refactor["/ops:refactor"] -->|restructured| ship
+    refactor["/ops-refactor"] -->|restructured| ship
 
     %% Performance
-    perf["/ops:perf"] -->|optimized| ship
+    perf["/ops-perf"] -->|optimized| ship
 
     %% Reviews & audits
-    review-pr["/ops:review-pr"] -.->|comments on PR| ship
-    security["/ops:security"] -.->|reviews| ship
+    review-pr["/ops-review-pr"] -.->|comments on PR| ship
+    security["/ops-security"] -.->|reviews| ship
 
     %% Always active or standalone (no edges — behavioral or independent)
-    clone-analyze["/ops:clone-analyze"]
-    review["/ops:review"]
-    verify["/ops:verify"]
-    setup["/ops:setup"]
+    clone-analyze["/ops-clone-analyze"]
+    review["/ops-review"]
+    verify["/ops-verify"]
+    setup["/ops-init"]
 ```
 
 **Legend:** solid arrow = produces output for the next skill, dashed arrow = optional/contextual relationship, thick arrow = chains the full pipeline, isolated nodes = behavioral (always active).
@@ -89,17 +86,18 @@ flowchart TD
 ```mermaid
 flowchart LR
     %% ─── Skills ───
-    research["/ops:research"]
-    plan["/ops:plan"]
-    implement["/ops:implement"]
-    do["/ops:do"]
-    debug["/ops:debug"]
-    test["/ops:test"]
-    refactor["/ops:refactor"]
-    perf["/ops:perf"]
-    review-pr["/ops:review-pr"]
-    security["/ops:security"]
-    clone-analyze["/ops:clone-analyze"]
+    research["/ops-research"]
+    plan["/ops-plan"]
+    implement["/ops-implement"]
+    do["/ops-do"]
+    debug["/ops-debug"]
+    test["/ops-test"]
+    refactor["/ops-refactor"]
+    perf["/ops-perf"]
+    review-pr["/ops-review-pr"]
+    security["/ops-security"]
+    audit["/ops-audit"]
+    clone-analyze["/ops-clone-analyze"]
 
     %% ─── Research agents ───
     subgraph research_agents["Research"]
@@ -148,63 +146,67 @@ flowchart LR
 ### Pipeline skills
 
 | Skill            | Role                                                     | Input                              | Output                                            | Agents dispatched                                                               |
-|------------------|----------------------------------------------------------|------------------------------------|---------------------------------------------------|---------------------------------------------------------------------------------|
-| `/ops:plan`      | Design and plan before coding                            | Clarified need                     | Spec + plan decomposed into tasks + user approval | via research, spec-reviewer, critic                                             |
-| `/ops:implement` | Execute the plan task by task                            | Validated plan                     | Implemented, reviewed, and validated code         | implementer (xN), code-reviewer, security-reviewer (if triggers)                |
-| `/ops:ship`      | Commit, PR, capture learnings                            | Completed code                     | Commit, PR (optional), learnings, rule proposals  | None                                                                            |
-| `/ops:do`        | Lightweight pipeline: research, execute, verify, review  | Well-understood task               | Implemented and reviewed code                     | researcher-code, researcher-doc, code-reviewer, security-reviewer (if triggers) |
-| `/ops:debug`     | Systematic investigation: hypothesize, test, fix, verify | Bug, error, or unexpected behavior | Diagnosed and fixed code                          | git-historian, code-reviewer, security-reviewer (if triggers)                   |
-| `/ops:full`      | All-in-one meta-pipeline                                 | Work description                   | Everything (plan + implement + ship chained)      | All from plan + implement + ship                                                |
-| `/ops:test`      | Add tests to existing untested code                      | Files/modules to test              | Tests written, coverage improved                  | researcher-code, researcher-doc, test-writer, code-reviewer                     |
-| `/ops:refactor`  | Restructure code without changing behavior               | Code to refactor + goal            | Refactored code, tests still passing              | researcher-code, researcher-doc, code-reviewer                                  |
-| `/ops:perf`      | Performance investigation and optimization               | What's slow + target               | Optimized code with measured before/after         | researcher-code, researcher-doc, code-reviewer                                  |
-| `/ops:review-pr` | Review an external pull request                          | PR number/URL                      | Structured review with actionable comments        | pr-reviewer, security-reviewer (if triggers)                                    |
+| ---------------- | -------------------------------------------------------- | ---------------------------------- | ------------------------------------------------- | ------------------------------------------------------------------------------- |
+| `/ops-plan`      | Design and plan before coding                            | Clarified need                     | Spec + plan decomposed into tasks + user approval | via research, spec-reviewer, critic                                             |
+| `/ops-implement` | Execute the plan task by task                            | Validated plan                     | Implemented, reviewed, and validated code         | implementer (xN), code-reviewer, security-reviewer (if triggers)                |
+| `/ops-ship`      | Commit, PR, capture learnings                            | Completed code                     | Commit, PR (optional), learnings                  | None                                                                            |
+| `/ops-do`        | Lightweight pipeline: research, execute, verify, review  | Well-understood task               | Implemented and reviewed code                     | researcher-code, researcher-doc, code-reviewer, security-reviewer (if triggers) |
+| `/ops-debug`     | Systematic investigation: hypothesize, test, fix, verify | Bug, error, or unexpected behavior | Diagnosed and fixed code                          | git-historian, code-reviewer, security-reviewer (if triggers)                   |
+| `/ops-full`      | All-in-one meta-pipeline                                 | Work description                   | Everything (plan + implement + ship chained)      | All from plan + implement + ship                                                |
+| `/ops-test`      | Add tests to existing untested code                      | Files/modules to test              | Tests written, coverage improved                  | researcher-code, researcher-doc, test-writer, code-reviewer                     |
+| `/ops-refactor`  | Restructure code without changing behavior               | Code to refactor + goal            | Refactored code, tests still passing              | researcher-code, researcher-doc, code-reviewer                                  |
+| `/ops-perf`      | Performance investigation and optimization               | What's slow + target               | Optimized code with measured before/after         | researcher-code, researcher-doc, code-reviewer                                  |
+| `/ops-review-pr` | Review an external pull request                          | PR number/URL                      | Structured review with actionable comments        | pr-reviewer, security-reviewer (if triggers)                                    |
 
 ### Standalone skills
 
-| Skill                | Role                                                                                           | When to use                                                         |
-|----------------------|------------------------------------------------------------------------------------------------|---------------------------------------------------------------------|
-| `/ops:research`      | Explore codebase and documentation (3 agents + conditional repo clone)                         | Understand a codebase area, gather docs, investigate history        |
-| `/ops:clone-analyze` | Clone and analyze an external repo to understand its internals                                 | Understand a library, framework, or tool by reading its source code |
-| `/ops:brainstorm`    | Clarify needs via Socratic dialogue                                                            | Explore intent and requirements before planning                     |
-| `/ops:review`        | Technically evaluate code review feedback                                                      | Receiving comments on code (human or CI)                            |
-| `/ops:security`      | On-demand security review                                                                      | Security review of changes or specific files                        |
-| `/ops:setup`         | Diagnose environment: languages, LSP, code quality tools, security analysis tools, MCP servers | First use, new environment, missing tools                           |
-| `/ops:verify`        | Behavioral rule: evidence before any claim                                                     | Always active — applies in all contexts                             |
+| Skill                | Role                                                                                       | When to use                                                         |
+| -------------------- | ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------- |
+| `/ops-research`      | Explore codebase and documentation (3 agents + conditional repo clone)                     | Understand a codebase area, gather docs, investigate history        |
+| `/ops-clone-analyze` | Clone and analyze an external repo to understand its internals                             | Understand a library, framework, or tool by reading its source code |
+| `/ops-brainstorm`    | Clarify needs via Socratic dialogue                                                        | Explore intent and requirements before planning                     |
+| `/ops-review`        | Technically evaluate code review feedback                                                  | Receiving comments on code (human or CI)                            |
+| `/ops-security`      | On-demand security review                                                                  | Security review of changes or specific files                        |
+| `/ops-audit`         | Full codebase audit — code quality (qlty) + security (semgrep) with cross-triage           | First arrival on project, pre-release, periodic health check        |
+| `/ops-init`          | 6-phase environment diagnostic: recap, ops tools, linters, prerequisites, build tools, LSP | First use, new environment, missing tools                           |
+| `/ops-verify`        | Behavioral rule: evidence before any claim                                                 | Always active — applies in all contexts                             |
 
 ### Internal phases (`user-invocable: false`)
 
 Shared logic extracted from skills. Not callable by the user — invoked programmatically by parent skills.
 
 | Phase                         | Role                                                                                                                                        | Used by                                                                               |
-|-------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------|
-| `ops:instruction-priority`    | Instruction hierarchy (user > CLAUDE.md > ops skill > system prompt)                                                                        | all skills                                                                            |
-| `ops:subagent-rules`          | Context rules for dispatching subagents (inline content, scoping, labeling)                                                                 | plan, implement, do, debug, research, clone-analyze, test, refactor, perf, review-pr  |
-| `ops:code-quality`            | Format, lint, and structural analysis (smells, metrics) on modified files (qlty or project tools) before code review                        | implement, do, debug, test, refactor, perf                                            |
-| `ops:discovery-checks`        | Categorize unexpected discoveries (Minor / Significant / Major)                                                                             | implement, debug                                                                      |
-| `ops:circuit-breaker`         | Diagnose repeated failures (researcher-code + git-historian)                                                                                | implement (3+ failures), debug (5+ failures)                                          |
-| `ops:security-gate`           | Triage (14 triggers) + SAST scan (semgrep, diff-aware) + qlty security findings + dispatch security-reviewer + re-verification loop (cap 3) | implement, do, debug, security, review-pr                                             |
-| `ops:redispatch-optimization` | Generic re-dispatch prompt optimization for review agents                                                                                   | plan (spec-reviewer, critic), implement (code-reviewer), security (security-reviewer) |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `ops-instruction-priority`    | Instruction hierarchy (user > project instructions > ops skill > system prompt)                                                             | all skills                                                                            |
+| `ops-subagent-rules`          | Context rules for dispatching subagents (inline content, scoping, labeling, LSP usage)                                                      | plan, implement, do, debug, research, clone-analyze, test, refactor, perf, review-pr  |
+| `ops-code-quality`            | Format, lint, and structural analysis (smells, metrics) on modified files (qlty or project tools) before code review                        | implement, do, debug, test, refactor, perf                                            |
+| `ops-discovery-checks`        | Categorize unexpected discoveries (Minor / Significant / Major)                                                                             | implement, debug                                                                      |
+| `ops-circuit-breaker`         | Diagnose repeated failures (researcher-code + git-historian)                                                                                | implement (3+ failures), debug (5+ failures)                                          |
+| `ops-security-gate`           | Triage (14 triggers) + SAST scan (semgrep, diff-aware) + qlty security findings + dispatch security-reviewer + re-verification loop (cap 3) | implement, do, debug, security, review-pr                                             |
+| `ops-review-pipeline`         | Build verification → code quality → security gate → code review → project instruction check                                                 | do, perf, refactor, test                                                              |
+| `ops-redispatch-optimization` | Generic re-dispatch prompt optimization for review agents                                                                                   | plan (spec-reviewer, critic), implement (code-reviewer), security (security-reviewer) |
 
 ### Agents
 
-| Agent                 |      Model      | Role                                                                                   | Dispatched by                                                                            |
-|:----------------------|:---------------:|:---------------------------------------------------------------------------------------|:-----------------------------------------------------------------------------------------|
-| **researcher-code**   |   opus (high)   | Explore codebase: patterns, conventions, implementations, integration points, risks    | research, do, test, refactor, perf, implement (circuit-breaker), debug (circuit-breaker) |
-| **researcher-doc**    | sonnet (medium) | Search official docs for libs/tools/APIs (Context7 MCP, fallback WebSearch)            | research, do, test, refactor, perf                                                       |
-| **git-historian**     | sonnet (medium) | Mine git history: timelines, regressions, ownership, hotspots, architectural decisions | research, debug, implement (circuit-breaker)                                             |
-| **researcher-repo**   |   opus (high)   | Clone and analyze external repositories: version-aware analysis, structured findings   | research (conditional), clone-analyze                                                    |
-| **spec-reviewer**     |   opus (high)   | Review spec for completeness, consistency, clarity, and feasibility                    | plan                                                                                     |
-| **critic**            |   opus (high)   | Adversarial plan review: completeness, coherence, security, CLAUDE.md compliance       | plan                                                                                     |
-| **implementer**       |   opus (high)   | Execute one plan task (TDD, code generation, validation)                               | implement                                                                                |
-| **code-reviewer**     |   opus (high)   | Code review: spec compliance, quality, TDD adherence, anti-patterns                    | implement (final review), do, test, refactor, perf                                       |
-| **security-reviewer** |   opus (high)   | Deep security analysis: code, infra, CI/CD, containers, supply chain                   | security-gate: implement, do, debug, security, review-pr                                 |
-| **test-writer**       |   opus (high)   | Analyze existing code and write tests: behavior analysis, edge cases, coverage         | test                                                                                     |
-| **pr-reviewer**       |   opus (high)   | Review external PRs: quality, security, conventions, actionable comments               | review-pr                                                                                |
+| Agent                 |      Model      | Role                                                                                       | Dispatched by                                                                            |
+| :-------------------- | :-------------: | :----------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------- |
+| **researcher-code**   |   opus (high)   | Explore codebase: patterns, conventions, implementations, integration points, risks        | research, do, test, refactor, perf, implement (circuit-breaker), debug (circuit-breaker) |
+| **researcher-doc**    | sonnet (medium) | Search official docs for libs/tools/APIs (Context7 MCP, fallback WebSearch)                | research, do, test, refactor, perf                                                       |
+| **git-historian**     | sonnet (medium) | Mine git history: timelines, regressions, ownership, hotspots, architectural decisions     | research, debug, implement (circuit-breaker)                                             |
+| **researcher-repo**   |   opus (high)   | Clone and analyze external repositories: version-aware analysis, structured findings       | research (conditional), clone-analyze                                                    |
+| **spec-reviewer**     |   opus (high)   | Review spec for completeness, consistency, clarity, and feasibility                        | plan                                                                                     |
+| **critic**            |   opus (high)   | Adversarial plan review: completeness, coherence, security, project instruction compliance | plan                                                                                     |
+| **implementer**       |   opus (high)   | Execute one plan task (TDD, code generation, validation)                                   | implement                                                                                |
+| **code-reviewer**     |   opus (high)   | Code review: spec compliance, quality, TDD adherence, anti-patterns                        | implement (final review), do, test, refactor, perf                                       |
+| **security-reviewer** |   opus (high)   | Deep security analysis: code, infra, CI/CD, containers, supply chain                       | security-gate: implement, do, debug, security, review-pr                                 |
+| **test-writer**       |   opus (high)   | Analyze existing code and write tests: behavior analysis, edge cases, coverage             | test                                                                                     |
+| **pr-reviewer**       |   opus (high)   | Review external PRs: quality, security, conventions, actionable comments                   | review-pr                                                                                |
 
 ## Install
 
-### From marketplace (recommended)
+### Claude Code
+
+#### From marketplace (recommended)
 
 Add the marketplace, then install the plugin:
 
@@ -213,7 +215,7 @@ Add the marketplace, then install the plugin:
 /plugin install ops
 ```
 
-### From a local clone
+#### From a local clone
 
 If you have a local clone of the repository:
 
@@ -221,19 +223,35 @@ If you have a local clone of the repository:
 /plugin install /path/to/ops
 ```
 
+### OpenCode
+
+Tell OpenCode:
+
+> Fetch and follow instructions from https://raw.githubusercontent.com/gigi206/ops/refs/heads/main/.opencode/INSTALL.md
+
+Or manually add to your `opencode.json`:
+
+```json
+{
+  "plugin": ["ops@git+https://github.com/gigi206/ops.git"]
+}
+```
+
+Detailed docs: [docs/opencode/README.md](docs/opencode/README.md)
+
 ### Verify
 
-After install, restart Claude Code and type `/ops:plan`. If the skill loads, you're set.
+After install, restart Claude Code and type `/ops-plan`. If the skill loads, you're set.
 
 ### Setup (recommended)
 
 Run the environment diagnostic to check your tooling:
 
 ```
-/ops:setup
+/ops-init
 ```
 
-This detects languages, LSP availability, code quality tools (qlty), security analysis tools (semgrep), and MCP servers (context7, chrome-devtools-mcp). It proposes installation for anything missing.
+This detects the CLI (Claude Code / OpenCode), languages, LSP availability, code quality tools (qlty), security analysis tools (semgrep), and MCP servers (context7, chrome-devtools-mcp). It proposes installation for anything missing.
 
 ## Requirements
 
@@ -241,7 +259,7 @@ This detects languages, LSP availability, code quality tools (qlty), security an
 - **Node.js** — only needed for the visual brainstorm companion (optional)
 - **Git** — needed by the git-historian agent (optional, skipped if unavailable)
 - **Context7 MCP** — needed by researcher-doc (optional, falls back to web search). Install: `/plugin install context7@claude-plugins-official`
-- **chrome-devtools-mcp** — needed by ops:debug for browser debugging, accessibility audits, LCP optimization (optional). Install: `/plugin install chrome-devtools-mcp@chrome-devtools-plugins`
+- **chrome-devtools-mcp** — needed by ops-debug for browser debugging, accessibility audits, LCP optimization (optional). Install: `/plugin install chrome-devtools-mcp@chrome-devtools-plugins`
 - **qlty** — optional, used by code-quality for unified formatting, linting, and structural analysis (smells, metrics, security plugins) (install: `curl https://qlty.sh | bash`)
 - **semgrep** — optional, used by security-gate for SAST scanning (install: `pip install semgrep`)
 
@@ -252,40 +270,40 @@ No npm dependencies. No database. No compiled binaries.
 ### Quick start
 
 ```
-/ops:plan add rate limiting to the API endpoints
+/ops-plan add rate limiting to the API endpoints
 ```
 
 After the plan is approved:
 
 ```
-/ops:implement
+/ops-implement
 ```
 
 When done:
 
 ```
-/ops:ship
+/ops-ship
 ```
 
 ### Tips
 
-- **Unknown library or tool?** — Use `/ops:clone-analyze` to read the source code of an external library, framework, or tool. ops can also trigger this automatically during `/ops:research` when documentation is insufficient — it clones the source into a temporary directory, analyzes it, and cleans up.
+- **Unknown library or tool?** — Use `/ops-clone-analyze` to read the source code of an external library, framework, or tool. ops can also trigger this automatically during `/ops-research` when documentation is insufficient — it clones the source into a temporary directory, analyzes it, and cleans up.
 
 ## Skills Reference
 
-### `/ops:plan`
+### `/ops-plan`
 
 Brainstorm, research, and plan before writing code.
 
 ```
-/ops:plan <description of what you want to do>
+/ops-plan <description of what you want to do>
 ```
 
 | Step               | What happens                                                         |
-|--------------------|----------------------------------------------------------------------|
+| ------------------ | -------------------------------------------------------------------- |
 | Brainstorm         | Socratic-style design discussion — one question at a time            |
 | Context detection  | Detect languages, check LSP availability, read project conventions   |
-| Parallel research  | Delegates to `/ops:research` (3 agents in parallel)                  |
+| Parallel research  | Delegates to `/ops-research` (3 agents in parallel)                  |
 | Research adequacy  | Evidence table presented to user — gaps trigger follow-up research   |
 | Design approaches  | 2-3 options with pros/cons, recommendation first                     |
 | Spec writing       | Design document written, reviewed by spec-reviewer, approved by user |
@@ -307,45 +325,45 @@ flowchart TD
     CR --> A["User approval"]
 ```
 
-Agents used: via **`/ops:research`** (researcher-code, researcher-doc, git-historian, **researcher-repo** conditional), **spec-reviewer**, **critic**
+Agents used: via **`/ops-research`** (researcher-code, researcher-doc, git-historian, **researcher-repo** conditional), **spec-reviewer**, **critic**
 
 ---
 
-### `/ops:full`
+### `/ops-full`
 
 Full pipeline: plan, implement, and ship in a single session.
 
 ```
-/ops:full <description of what you want to do>
+/ops-full <description of what you want to do>
 ```
 
-Chains `/ops:plan` → user approval → `/ops:implement` → `/ops:ship`. Each sub-skill runs in full with all gates preserved.
+Chains `/ops-plan` → user approval → `/ops-implement` → `/ops-ship`. Each sub-skill runs in full with all gates preserved.
 
 ```mermaid
 flowchart LR
-    plan["/ops:plan"] --> approval{"User approval"} --> implement["/ops:implement"] --> ship["/ops:ship"]
+    plan["/ops-plan"] --> approval{"User approval"} --> implement["/ops-implement"] --> ship["/ops-ship"]
 ```
 
 ---
 
-### `/ops:do`
+### `/ops-do`
 
 Lightweight structured workflow for well-understood tasks.
 
 ```
-/ops:do <description of what you want to do>
+/ops-do <description of what you want to do>
 ```
 
-| Step                        | What happens                                                                                        |
-|-----------------------------|-----------------------------------------------------------------------------------------------------|
-| Restatement                 | Quick reformulation of intent — no brainstorming                                                    |
-| Research                    | 2 agents in parallel: researcher-code, researcher-doc                                               |
-| Scope guard                 | If too complex, suggest escalating to `/ops:plan`                                                   |
-| Tasks (optional)            | Light task breakdown based on decision complexity                                                   |
-| Execute                     | Implement changes directly                                                                          |
-| Verify + Code quality       | Build/compile check + format, lint, structural analysis (`ops:code-quality`, qlty or project tools) |
-| Security gate + Code review | Security triage + light code review (1 cycle max)                                                   |
-| Tests + Docs + CLAUDE.md    | Run tests, update docs, verify project rules                                                        |
+| Step                         | What happens                                                                                        |
+| ---------------------------- | --------------------------------------------------------------------------------------------------- |
+| Restatement                  | Quick reformulation of intent — no brainstorming                                                    |
+| Research                     | 2 agents in parallel: researcher-code, researcher-doc                                               |
+| Scope guard                  | If too complex, suggest escalating to `/ops-plan`                                                   |
+| Tasks (optional)             | Light task breakdown based on decision complexity                                                   |
+| Execute                      | Implement changes directly                                                                          |
+| Verify + Code quality        | Build/compile check + format, lint, structural analysis (`ops-code-quality`, qlty or project tools) |
+| Security gate + Code review  | Security triage + light code review (1 cycle max)                                                   |
+| Tests + Docs + Project rules | Run tests, update docs, verify project rules                                                        |
 
 ```mermaid
 flowchart TD
@@ -363,26 +381,26 @@ Agents used: **researcher-code**, **researcher-doc**, **code-reviewer**, **secur
 
 ---
 
-### `/ops:implement`
+### `/ops-implement`
 
 Execute a validated plan task by task.
 
 ```
-/ops:implement
+/ops-implement
 ```
 
-Prerequisite: a plan from `/ops:plan` or user-provided.
+Prerequisite: a plan from `/ops-plan` or user-provided.
 
 Each task goes through the full pipeline:
 
 | Step             | What happens                                                |
-|------------------|-------------------------------------------------------------|
+| ---------------- | ----------------------------------------------------------- |
 | Implementer      | One agent per task, TDD enforced when tests are relevant    |
 | Validation gate  | Run validation commands, show output — no "it should work"  |
 | Conformity check | Diff vs. plan — no drift, no secrets, conventions preserved |
 | Discovery check  | Pause on significant findings, stop on major discoveries    |
 
-After all tasks: code quality (`ops:code-quality`: format, lint, smells, metrics) → security triage (semgrep + qlty findings) → final review (code-reviewer + security-reviewer if applicable).
+After all tasks: code quality (`ops-code-quality`: format, lint, smells, metrics) → security triage (semgrep + qlty findings) → final review (code-reviewer + security-reviewer if applicable).
 
 **Security escalation triggers** — the security-reviewer is dispatched when the task touches:
 
@@ -421,22 +439,22 @@ Agents used: **implementer**, **code-reviewer**, **security-reviewer** (when app
 
 ---
 
-### `/ops:debug`
+### `/ops-debug`
 
 Systematic debugging: investigate, hypothesize, fix.
 
 ```
-/ops:debug <description of the problem>
+/ops-debug <description of the problem>
 ```
 
 | Step                       | What happens                                                                   |
-|----------------------------|--------------------------------------------------------------------------------|
+| -------------------------- | ------------------------------------------------------------------------------ |
 | Investigate                | Read errors, reproduce, dispatch git-historian for recent changes              |
 | Instrument                 | Add temporary logging at component boundaries (multi-component bugs only)      |
 | Hypothesize                | Max 3 hypotheses with supporting evidence and disproof criteria                |
 | Test                       | Confirm or refute each hypothesis with minimal tests                           |
 | Fix                        | Minimal fix addressing root cause, not symptoms                                |
-| Code quality + Code review | Code quality → security gate → code review (same pipeline as `/ops:implement`) |
+| Code quality + Code review | Code quality → security gate → code review (same pipeline as `/ops-implement`) |
 | Discovery check            | Pause if the bug is broader than diagnosed                                     |
 | Verify                     | Original failing command passes, no regressions — show proof                   |
 
@@ -461,21 +479,21 @@ Agents used: **git-historian**, **code-reviewer**, **security-reviewer** (when a
 
 ---
 
-### `/ops:test`
+### `/ops-test`
 
 Add tests to existing untested code.
 
 ```
-/ops:test <files or modules to test>
+/ops-test <files or modules to test>
 ```
 
 | Step         | What happens                                                                                |
-|--------------|---------------------------------------------------------------------------------------------|
+| ------------ | ------------------------------------------------------------------------------------------- |
 | Scope        | Identify what to test, measure current coverage if possible                                 |
 | Research     | 2 agents in parallel: researcher-code (code analysis), researcher-doc (test framework docs) |
 | Test-writer  | Dispatch test-writer agent: analyze behavior, identify edge cases, write tests              |
 | Validate     | Run full test suite — new + existing tests must pass                                        |
-| Code quality | Format, lint, structural analysis (`ops:code-quality`, qlty or project tools)               |
+| Code quality | Format, lint, structural analysis (`ops-code-quality`, qlty or project tools)               |
 | Code review  | Light review focused on test quality (1 cycle max)                                          |
 
 ```mermaid
@@ -491,23 +509,23 @@ Agents used: **researcher-code**, **researcher-doc**, **test-writer**, **code-re
 
 ---
 
-### `/ops:refactor`
+### `/ops-refactor`
 
 Restructure code without changing behavior.
 
 ```
-/ops:refactor <what to refactor and why>
+/ops-refactor <what to refactor and why>
 ```
 
 | Step          | What happens                                                                                           |
-|---------------|--------------------------------------------------------------------------------------------------------|
+| ------------- | ------------------------------------------------------------------------------------------------------ |
 | Scope         | Clarify target and goal — what's wrong, what "better" looks like                                       |
 | Research      | 2 agents in parallel: researcher-code (map dependencies, risks), researcher-doc (refactoring patterns) |
-| Coverage gate | **Hard gate** — verify tests exist before touching code. Low coverage → suggest `/ops:test` first      |
+| Coverage gate | **Hard gate** — verify tests exist before touching code. Low coverage → suggest `/ops-test` first      |
 | Plan steps    | Break into small, independently verifiable transformations                                             |
 | Execute       | One step at a time, run tests after each step                                                          |
 | Verify        | Full test suite passes, behavior unchanged                                                             |
-| Code quality  | Format, lint, structural analysis (`ops:code-quality`, qlty or project tools)                          |
+| Code quality  | Format, lint, structural analysis (`ops-code-quality`, qlty or project tools)                          |
 | Code review   | Review focused on behavior preservation (1 cycle max)                                                  |
 
 ```mermaid
@@ -525,16 +543,16 @@ Agents used: **researcher-code**, **researcher-doc**, **code-reviewer**
 
 ---
 
-### `/ops:perf`
+### `/ops-perf`
 
 Performance investigation and optimization.
 
 ```
-/ops:perf <what's slow and target performance>
+/ops-perf <what's slow and target performance>
 ```
 
 | Step         | What happens                                                                                      |
-|--------------|---------------------------------------------------------------------------------------------------|
+| ------------ | ------------------------------------------------------------------------------------------------- |
 | Define       | What's slow, how slow, what's the target                                                          |
 | Baseline     | Measure current performance (3+ runs, median). **No baseline = no optimization**                  |
 | Research     | 2 agents in parallel: researcher-code (profile hot paths), researcher-doc (optimization patterns) |
@@ -542,7 +560,7 @@ Performance investigation and optimization.
 | Optimize     | One change at a time, preserve correctness                                                        |
 | Measure      | Re-measure with same method — show before/after delta. No improvement → revert                    |
 | Verify       | Full test suite passes, behavior unchanged                                                        |
-| Code quality | Format, lint, structural analysis (`ops:code-quality`, qlty or project tools)                     |
+| Code quality | Format, lint, structural analysis (`ops-code-quality`, qlty or project tools)                     |
 | Code review  | Review focused on correctness preservation and optimization soundness (1 cycle max)               |
 
 ```mermaid
@@ -561,18 +579,18 @@ Agents used: **researcher-code**, **researcher-doc**, **code-reviewer**
 
 ---
 
-### `/ops:review-pr`
+### `/ops-review-pr`
 
 Review an external pull request.
 
 ```
-/ops:review-pr <PR number or URL>
+/ops-review-pr <PR number or URL>
 ```
 
 | Step          | What happens                                                                |
-|---------------|-----------------------------------------------------------------------------|
+| ------------- | --------------------------------------------------------------------------- |
 | Load PR       | Fetch diff, description, related issues via `gh`                            |
-| Context       | Read CLAUDE.md conventions, scan affected area                              |
+| Context       | Read project conventions, scan affected area                                |
 | PR reviewer   | Dispatch pr-reviewer agent: quality, conventions, logic, tests              |
 | Security gate | Triage diff against security triggers, dispatch security-reviewer if needed |
 | Present       | Structured review (Critical / Important / Nits). Offer to post on PR        |
@@ -590,12 +608,12 @@ Agents used: **pr-reviewer**, **security-reviewer** (if triggers)
 
 ---
 
-### `/ops:research`
+### `/ops-research`
 
 Autonomous codebase and documentation exploration.
 
 ```
-/ops:research <topic or question>
+/ops-research <topic or question>
 ```
 
 Dispatches 3 agents in parallel (researcher-code, researcher-doc, git-historian), synthesizes findings, and conditionally dispatches researcher-repo when confidence is insufficient. Read-only — no changes made.
@@ -610,12 +628,12 @@ flowchart TD
 
 ---
 
-### `/ops:clone-analyze`
+### `/ops-clone-analyze`
 
 Clone and analyze an external repository.
 
 ```
-/ops:clone-analyze <library, framework, or tool to analyze>
+/ops-clone-analyze <library, framework, or tool to analyze>
 ```
 
 Clones the repository (version-matched when possible), analyzes it, and presents structured findings. Use when documentation is insufficient or you need to understand internals.
@@ -629,66 +647,67 @@ Agents used: **researcher-repo**
 
 ---
 
-### `/ops:brainstorm`
+### `/ops-brainstorm`
 
 Interactive brainstorming to clarify needs before planning.
 
 ```
-/ops:brainstorm <what you want to explore>
+/ops-brainstorm <what you want to explore>
 ```
 
 Socratic-style dialogue: clarity check, context exploration, scope assessment, YAGNI filter. Discussion-only — no agents dispatched, no changes made.
 
 ---
 
-### `/ops:setup`
+### `/ops-init`
 
-Diagnose environment and propose tool installation.
+Diagnose environment in 6 phases with stop-and-propose at each phase if issues are found.
 
 ```
-/ops:setup
+/ops-init
 ```
 
-| Step               | What happens                                                                    |
-|--------------------|---------------------------------------------------------------------------------|
-| Languages & LSP    | Detect languages, 4-level LSP diagnostic (test → marketplace → plugin → binary) |
-| Code quality tools | Check qlty availability, detect project formatters/linters                      |
-| Security analysis  | Check semgrep and JSON parser (jq/python3) availability                         |
-| MCP servers        | Check context7 and chrome-devtools-mcp plugin availability                      |
-| Recommendations    | Propose installation for missing tools (user-invoked mode only)                 |
-
-Also called by `/ops:plan` Step 0 (Categories 2-4 informational only).
+| Phase | What happens                                                                  | Stop if missing |
+| ----- | ----------------------------------------------------------------------------- | --------------- |
+| 0     | Discovery — detect CLI, languages, package managers                           | CLI unknown     |
+| 1     | Recap — skills loaded, agents registered, MCP servers                         | MCP missing     |
+| 2     | Ops tools — qlty + semgrep (strongly recommended for review pipeline)         | Yes             |
+| 3     | Project linters — detect from configs (eslint, ruff, etc.), verify installed  | Yes             |
+| 4     | Linter prerequisites — node_modules, venv, type stubs, plugins                | Yes             |
+| 5     | Build tools — compilers, transpilers, build systems                           | Yes             |
+| 6     | LSP — CLI-specific diagnostic (Claude Code: 4-level, OpenCode: binary+config) | Yes             |
 
 ```mermaid
-graph LR
-    S["/ops:setup"] --> L["Languages & LSP (4-level diagnostic)"]
-    S --> Q["Code quality tools (qlty, project tools)"]
-    S --> SG["Security analysis (semgrep)"]
-    S --> MCP["MCP servers (context7, chrome-devtools-mcp)"]
-    L --> D{"Issues found?"}
-    D -->|Yes| O["Fix options (A/B/C/D)"]
-    D -->|No| R["Report"]
-    Q --> R
-    SG --> R
-    MCP --> R
-    O --> R
+graph TD
+    D["Phase 0: Discovery"] --> R["Phase 1: Recap"]
+    R --> OT["Phase 2: Ops tools (qlty, semgrep)"]
+    OT --> PL["Phase 3: Project linters"]
+    PL --> PR["Phase 4: Linter prerequisites"]
+    PR --> BT["Phase 5: Build tools"]
+    BT --> LSP["Phase 6: LSP"]
+    LSP --> S["Final Summary"]
+    OT -.->|missing| FIX["Stop & propose A/B/C"]
+    PL -.->|missing| FIX
+    PR -.->|missing| FIX
+    BT -.->|missing| FIX
+    LSP -.->|missing| FIX
 ```
 
 ---
 
-### `/ops:security`
+### `/ops-security`
 
 On-demand security review of code, infrastructure, or pipeline changes.
 
 ```
-/ops:security                     # staged + unstaged changes
-/ops:security path/to/file        # specific file or directory
-/ops:security --branch            # current branch vs. base branch
-/ops:security --commit <ref>      # specific commit
+/ops-security                     # staged + unstaged changes
+/ops-security path/to/file        # specific file or directory
+/ops-security --branch            # current branch vs. base branch
+/ops-security --commit <ref>      # specific commit
 ```
 
 | Step           | What happens                                                   |
-|----------------|----------------------------------------------------------------|
+| -------------- | -------------------------------------------------------------- |
 | Scope          | Determine what to review based on arguments                    |
 | Triage         | Identify which security domains are touched                    |
 | Review         | Dispatch security-reviewer with scoped diff and context        |
@@ -711,18 +730,47 @@ Agents used: **security-reviewer**
 
 ---
 
-### `/ops:review`
+### `/ops-audit`
+
+Full codebase audit — code quality and security analysis with unified cross-triage.
+
+```
+/ops-audit
+```
+
+| Step         | What happens                                                              |
+| ------------ | ------------------------------------------------------------------------- |
+| Detect tools | Check qlty and semgrep availability                                       |
+| Code quality | `qlty check --all`, `qlty smells --all`, `qlty metrics --all --functions` |
+| Security     | `semgrep scan --config <auto-detected> --json .` (full codebase)          |
+| Cross-triage | Deduplicate, correlate complexity+vulnerabilities, classify by severity   |
+| Report       | Structured report: Critical/High (detail), Medium (top 10), Low (count)   |
+
+Unlike `/ops-security` (diff-only), this scans the **entire codebase**.
+
+```mermaid
+flowchart TD
+    D["Detect tools"] --> Q["qlty (lint + smells + metrics)"]
+    D --> S["semgrep (full scan)"]
+    Q --> T["Cross-triage"]
+    S --> T
+    T --> R["Report"]
+```
+
+---
+
+### `/ops-review`
 
 Evaluate code review feedback technically before acting.
 
 ```
-/ops:review
+/ops-review
 ```
 
 Use when you receive feedback from a human reviewer, CI check, or code-reviewer agent.
 
 | Feedback type                      | Response                                                      |
-|------------------------------------|---------------------------------------------------------------|
+| ---------------------------------- | ------------------------------------------------------------- |
 | Factual ("bug on line 42")         | Reproduce, confirm or refute with evidence                    |
 | Style ("use X pattern")            | Check project conventions first, then evaluate on merit       |
 | Architectural ("restructure this") | Evaluate against spec, discuss before changing                |
@@ -732,35 +780,34 @@ Rules: no performative agreement, no silent ignoring, no unverified changes. Pus
 
 ---
 
-### `/ops:ship`
+### `/ops-ship`
 
 Commit, PR, and capture learnings.
 
 ```
-/ops:ship
+/ops-ship
 ```
 
-| Step           | What happens                                                          |
-|----------------|-----------------------------------------------------------------------|
-| Verify         | Run all validation commands, linters, tests                           |
-| Summarize      | Files modified/created, what was done, deviations from plan           |
-| Commit         | Stage specific files, propose message, wait for approval              |
-| PR (optional)  | Push and create PR if requested                                       |
-| Learnings      | Problems solved, decisions made, gotchas, patterns that worked        |
-| Rule proposals | Recurring learnings proposed as `.claude/rules/` (with user approval) |
+| Step          | What happens                                                   |
+| ------------- | -------------------------------------------------------------- |
+| Verify        | Run all validation commands, linters, tests                    |
+| Summarize     | Files modified/created, what was done, deviations from plan    |
+| Commit        | Stage specific files, propose message, wait for approval       |
+| PR (optional) | Push and create PR if requested                                |
+| Learnings     | Problems solved, decisions made, gotchas, patterns that worked |
 
 Rules: never commit secrets, never push without approval, never skip validation.
 
 ---
 
-### `/ops:verify`
+### `/ops-verify`
 
 Evidence before claims. Always active — not a workflow, a behavioral rule.
 
 This skill is **always on** across all other skills and outside of ops. It enforces one rule: **never claim a result without showing the evidence.**
 
 | Claim              | Required evidence                       |
-|--------------------|-----------------------------------------|
+| ------------------ | --------------------------------------- |
 | "Tests pass"       | Test command output showing 0 failures  |
 | "Build succeeds"   | Build command output with exit code 0   |
 | "No lint errors"   | Linter output showing 0 warnings/errors |
@@ -775,7 +822,7 @@ Red flags: "should", "probably", "seems to", "I believe" — if these appear ins
 - **Parallel research** — 3 agents run simultaneously during planning, with conditional repository cloning when confidence is insufficient.
 - **Adversarial review** — the critic agent tries to break your plan before you build it.
 - **Circuit breakers** — repeated failures escalate to diagnostics, not infinite retries.
-- **Instruction priority** — user > CLAUDE.md > ops > system defaults. Conflicts resolved explicitly.
+- **Instruction priority** — user > project instructions > ops > system defaults. Conflicts resolved explicitly.
 - **TDD enforced** — the implementer follows Red-Green-Refactor with anti-rationalization gates and a deletion rule for code written before tests.
 - **Minimal hooks** — one SessionStart hook injects skill awareness. No keyword detection, no prompt interception, no hidden automation.
 - **Composable phases** — shared content extracted into reusable internal phases. Skills reference phases instead of duplicating content.
@@ -804,6 +851,7 @@ ops/
 │   ├── hooks.json                     # SessionStart hook config
 │   └── session-start                  # Injects skill routing context + plugin root path
 ├── scripts/
+│   ├── ops-detect-cli.sh              # CLI detection (Claude Code / OpenCode / unknown)
 │   └── ops-semgrep-scan.sh            # SAST scan wrapper (config, baseline, error handling)
 ├── skills/
 │   │
@@ -825,7 +873,8 @@ ops/
 │   ├── clone-analyze/SKILL.md         # Clone and analyze external repos
 │   ├── review/SKILL.md                # Evaluate feedback technically
 │   ├── security/SKILL.md              # On-demand security review
-│   ├── setup/SKILL.md                 # Environment diagnostic + tool setup
+│   ├── audit/SKILL.md                 # Full codebase audit (qlty + semgrep)
+│   ├── init/SKILL.md                  # 6-phase environment diagnostic + tool setup
 │   ├── verify/SKILL.md                # Evidence before claims (behavioral)
 │   │
 │   │── # ─── INTERNAL PHASES (user-invocable: false) ───
@@ -835,6 +884,7 @@ ops/
 │   ├── discovery-checks/SKILL.md      # Minor/Significant/Major
 │   ├── circuit-breaker/SKILL.md       # Repeated failure diagnostic
 │   ├── security-gate/SKILL.md         # Triage + SAST (semgrep, diff-aware) + qlty security + dispatch + re-verification loop
+│   ├── review-pipeline/SKILL.md       # Build verification → code quality → security gate → code review
 │   ├── redispatch-optimization/SKILL.md # Re-dispatch prompt optimization
 │   │
 │   │── # ─── ANNEXES ───
@@ -844,7 +894,6 @@ ops/
 │   └── plan/scripts/                  # Visual brainstorm companion (server + UI)
 │
 ├── CHANGELOG.md
-├── COMPARISON-vs-SUPERPOWERS.md
 ├── LICENSE
 └── mise.toml
 ```

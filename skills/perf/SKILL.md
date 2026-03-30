@@ -1,28 +1,28 @@
 ---
-name: ops:perf
+name: ops-perf
 description: "Performance investigation and optimization. Profile, benchmark, identify bottlenecks, optimize with measured evidence."
 ---
 
-# /ops:perf — Performance investigation
+# /ops-perf — Performance investigation
 
 ## Instruction Priority
 
-Follow the `ops:instruction-priority` rules when instructions conflict.
+Follow the `ops-instruction-priority` rules when instructions conflict.
 
 ## Subagent Rules
 
-Before dispatching any agent in this skill, follow the `ops:subagent-rules` process.
+Before dispatching any agent in this skill, follow the `ops-subagent-rules` process.
 
 ## Purpose
 
-Investigate and fix performance problems. This is NOT a bug (`/ops:debug`) — the code works, it's just slow. Every claim must be backed by measurements: baseline before, result after, delta quantified.
+Investigate and fix performance problems. This is NOT a bug (`/ops-debug`) — the code works, it's just slow. Every claim must be backed by measurements: baseline before, result after, delta quantified.
 
 ---
 
 ## Workflow
 
 ```
-1. Define problem → 2. Establish baseline → 3. Research → 4. Hypothesize → 5. Optimize → 6. Measure → 7. Verify → 8. Code Quality → 9. Code Review → 10. Check CLAUDE.md
+1. Define problem → 2. Establish baseline → 3. Research → 4. Hypothesize → 5. Optimize → 6. Measure → 7. Verify → 8. Review Pipeline
 ```
 
 ---
@@ -69,7 +69,7 @@ Record the baseline with exact numbers:
 
 ## Step 3: Research (2 agents in parallel)
 
-Dispatch two agents **in parallel** — both Agent tool_use blocks in a **single message** (see `ops:subagent-rules`):
+Dispatch two agents **in parallel** — both Agent tool_use blocks in a **single message** (see `ops-subagent-rules`):
 
 ### researcher-code
 - Profile the target code: trace the hot path, identify where time is spent
@@ -138,28 +138,13 @@ Present the comparison:
 1. Run the full test suite — all tests must pass
 2. Confirm the optimization didn't change behavior
 3. Present final before/after comparison with all optimizations applied
-4. `/ops:verify` behavioral rule applies — show the numbers
+4. `/ops-verify` behavioral rule applies — show the numbers
 
 ---
 
-## Step 8: Code Quality
+## Step 8: Review Pipeline
 
-Run the `ops:code-quality` process on all modified files. Fix any issues.
-
----
-
-## Step 9: Code Review
-
-Dispatch the **code-reviewer** agent with:
-- The complete diff (`git diff`)
+Run the `ops-review-pipeline` process with the following code-reviewer context:
 - The performance problem description and baseline measurements
 - The optimization hypothesis and measured results
 - Explicit instruction: **verify correctness is preserved** and the optimization is sound (not a micro-optimization that hurts readability for negligible gain)
-
-**One cycle maximum**: fix issues, re-run review once. If still failing → escalate to user.
-
----
-
-## Step 10: Check CLAUDE.md
-
-Read `CLAUDE.md` and `.claude/CLAUDE.md`. Verify all applicable rules were followed. Fix violations before completing.
