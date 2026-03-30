@@ -89,7 +89,7 @@ If the user ran `/ops:brainstorm` before invoking `/ops:plan`, the brainstorming
 2. Output a short recap: chosen approach, scope, key decisions
 3. Skip to Step 2 (Context Detection)
 
-Do NOT re-do the full brainstorming process. The user already validated the approach.
+The user already validated the approach.
 
 ### Anti-Pattern: "This Is Too Simple To Need A Design"
 
@@ -109,71 +109,12 @@ You MUST complete these steps in order:
 - [ ] 8. **Challenge scope with YAGNI** — remove unnecessary complexity
 - [ ] 9. **Gate** — objective clear, approach chosen, design validated section by section
 
-### Process Flow
-
-```dot
-digraph brainstorming {
-    "Clarity check" [shape=box];
-    "Intent clear?" [shape=diamond];
-    "Ask user to clarify" [shape=box];
-    "Explore project context" [shape=box];
-    "Visual questions ahead?" [shape=diamond];
-    "Offer Visual Companion" [shape=box];
-    "Assess scope" [shape=box];
-    "Too large?" [shape=diamond];
-    "Decompose into sub-projects" [shape=box];
-    "Ask clarifying questions" [shape=box];
-    "Propose 2-3 approaches" [shape=box];
-    "User chooses approach?" [shape=diamond];
-    "Present design by sections" [shape=box];
-    "Section approved?" [shape=diamond];
-    "Revise section" [shape=box];
-    "More sections?" [shape=diamond];
-    "YAGNI filter" [shape=box];
-    "Objective clear?" [shape=diamond];
-    "Proceed to Step 2" [shape=doublecircle];
-
-    "Clarity check" -> "Intent clear?";
-    "Intent clear?" -> "Ask user to clarify" [label="no"];
-    "Ask user to clarify" -> "Intent clear?";
-    "Intent clear?" -> "Explore project context" [label="yes"];
-    "Explore project context" -> "Visual questions ahead?";
-    "Visual questions ahead?" -> "Offer Visual Companion" [label="yes"];
-    "Visual questions ahead?" -> "Assess scope" [label="no"];
-    "Offer Visual Companion" -> "Assess scope";
-    "Assess scope" -> "Too large?";
-    "Too large?" -> "Decompose into sub-projects" [label="yes"];
-    "Decompose into sub-projects" -> "Ask clarifying questions";
-    "Too large?" -> "Ask clarifying questions" [label="no"];
-    "Ask clarifying questions" -> "Propose 2-3 approaches";
-    "Propose 2-3 approaches" -> "User chooses approach?";
-    "User chooses approach?" -> "Propose 2-3 approaches" [label="unclear, refine"];
-    "User chooses approach?" -> "Present design by sections" [label="yes"];
-    "Present design by sections" -> "Section approved?";
-    "Section approved?" -> "Revise section" [label="no"];
-    "Revise section" -> "Section approved?";
-    "Section approved?" -> "More sections?" [label="yes"];
-    "More sections?" -> "Present design by sections" [label="yes"];
-    "More sections?" -> "YAGNI filter" [label="no"];
-    "YAGNI filter" -> "Objective clear?";
-    "Objective clear?" -> "Ask clarifying questions" [label="no, refine"];
-    "Objective clear?" -> "Proceed to Step 2" [label="yes"];
-}
-```
-
 ### The Process
 
 **Clarity check (before anything else):**
-Before exploring code or asking detailed questions, verify you understand the user's intent. Ask yourself:
-1. **What** is being asked? (Can you restate it in one sentence?)
-2. **Why** does the user want this? (What problem does it solve?)
-3. **What does success look like?** (How will the user know it works?)
-
-If you can't answer all 3 confidently from the user's request, ask the user to clarify **before** exploring the project. One short question, not three.
+Verify you can restate what is asked, why, and what success looks like. If you can't answer all 3 confidently, ask the user to clarify before exploring the project.
 
 > Example: "Before I dive in — I want to make sure I understand. You want [restatement]. The goal is [why]. Is that right, or am I missing something?"
-
-This prevents building the wrong thing. A 10-second check saves hours of wasted planning.
 
 **Exploring the project:**
 - Check out the current project state first (files, docs, recent commits)
@@ -192,26 +133,17 @@ This prevents building the wrong thing. A 10-second check saves hours of wasted 
 - Each sub-project gets its own spec → plan → implementation cycle
 
 **Asking clarifying questions:**
-- **One question at a time** — do NOT overwhelm with multiple questions. This means ONE question per message, not 2-3 grouped together. If you have 5 questions, send 5 separate messages. The user's answer to question 1 may change what question 2 should be.
+- **One question at a time** — ONE question per message, not 2-3 grouped together. If you catch yourself writing "Question 4:", "Question 5:", "Question 6:" — STOP. Pick the most important one, send it alone, wait for the answer.
 - **Multiple choice preferred** — easier to answer than open-ended when possible
 - Focus on understanding: purpose, constraints, success criteria
-- If a topic needs more exploration, break it into multiple questions
-- If you catch yourself writing "Question 4:", "Question 5:", "Question 6:" in the same message — STOP. Pick the most important one, send it alone, wait for the answer.
 
 **Proposing 2-3 approaches:**
-- Once the problem is understood, propose **2-3 different approaches** with trade-offs
-- **Lead with your recommendation** — present the best option first, explain why, then present alternatives
-- For each approach: name, how it works (2-3 sentences), pros, cons, fit with existing conventions
-- **Always present at least one alternative** — the user needs to make an informed decision
-- **Wait for the user to choose** before proceeding. Do NOT skip even if one approach seems obviously better.
+- Once the problem is understood, propose 2-3 approaches with trade-offs. Lead with your recommendation and always include at least one alternative.
+- Wait for the user to choose before proceeding — do not skip even if one approach seems obviously better.
 
 **Presenting design by sections:**
-- Present the chosen approach's design **section by section**, not as a wall of text
-- Scale each section to its complexity: a few sentences if straightforward, up to 200-300 words if nuanced
-- Cover across sections: architecture, components, data flow, error handling, testing strategy
-- **Ask after each section**: "Does this look right so far?" — wait for the user to validate before the next section
-- If the user requests changes to a section, revise it and re-present before moving on
-- Design for isolation: smaller units with clear purpose, well-defined interfaces, testable independently
+- Present the design section by section, not as a wall of text. Ask after each section if it looks right — wait for validation before the next.
+- If the user requests changes, revise and re-present before moving on.
 
 **Challenging scope with YAGNI (MANDATORY output):**
 - Is every part of the request actually needed right now?
@@ -230,9 +162,7 @@ You MUST present a YAGNI assessment to the user before proceeding, even if the s
 If this block does not appear in your output before moving to Step 2, you have skipped a required step.
 
 **Working in existing codebases:**
-- Explore the current structure before proposing changes. Follow existing patterns.
-- Where existing code has problems that affect the work (e.g., a file that's grown too large, unclear boundaries), include targeted improvements as part of the design.
-- Do NOT propose unrelated refactoring. Stay focused on what serves the current goal.
+- Follow existing patterns. Include targeted improvements only when they directly affect the current work — do not propose unrelated refactoring.
 
 ### Gate
 
@@ -241,7 +171,7 @@ If this block does not appear in your output before moving to Step 2, you have s
 - The user has chosen an approach from the 2-3 proposed.
 - The design has been presented section by section and each section validated by the user.
 - You have evaluated whether the topic involves visual questions (UI, layouts, mockups, diagrams).
-- If visual: you MUST have offered the visual companion before proceeding. If you skipped the offer, go back and make it now — it MUST be its own message, not combined with other questions.
+- If visual: you must have offered the visual companion before proceeding. If you skipped the offer, go back and make it now — as its own message.
 
 You MUST output this block before proceeding to Step 2:
 
@@ -364,15 +294,13 @@ For each agent-chosen dependency, present to the user:
 > - **Risk**: [maintenance status, maturity, last release]
 > Which option do you prefer?"
 
-**Gate**: Do NOT include an external dependency in the spec that the user has not explicitly validated. "Implement X" does NOT mean the user validated every sub-component you chose to implement X. If you chose a dependency, the user must approve it.
-
-If a dependency was already validated conversationally during brainstorming, you do not need to re-ask — but you MUST still present its **risk profile** (maintenance status, last release, community size) before proceeding to spec if it was not covered during the conversation.
-
-This is a gate, not a suggestion. If the spec contains an agent-chosen dependency that was never presented to the user, you have FAILED this skill.
-
 ### Gate
 
-**Do NOT proceed to spec writing until the user has chosen an approach AND validated all external dependencies.**
+Do not proceed to spec writing until the user has chosen an approach and validated all external dependencies. If you chose a dependency, the user must approve it — "Implement X" does not mean the user validated every sub-component.
+
+If a dependency was already validated conversationally during brainstorming, you do not need to re-ask — but you must still present its risk profile (maintenance status, last release, community size) if not covered during the conversation.
+
+If the spec contains an agent-chosen dependency that was never presented to the user, you have FAILED this skill.
 
 ---
 
@@ -501,7 +429,7 @@ The critic:
 6. **Escalation**: If CRITICAL found or 3+ IMPORTANT → adversarial mode (expand scope, challenge every decision)
 7. **Verdict**: APPROVE or REJECT with confidence levels and perspective attribution
 
-**If REJECT**: Revise the plan addressing the critic's concerns, then **re-dispatch the critic** following the `ops:redispatch-optimization` process. This re-dispatch is MANDATORY — do NOT skip it. Maximum 3 iterations. If still rejected after 3 rounds, present both the plan and the critic's concerns to the user for decision.
+**If REJECT**: Revise the plan addressing the critic's concerns, then **re-dispatch the critic** following the `ops:redispatch-optimization` process. This re-dispatch is MANDATORY. Maximum 3 iterations. If still rejected after 3 rounds, present both the plan and the critic's concerns to the user for decision.
 
 If you fix the critic's concerns but do not re-dispatch the critic, you have FAILED this skill. The whole point of the critic is adversarial validation — bypassing the re-check defeats the purpose.
 

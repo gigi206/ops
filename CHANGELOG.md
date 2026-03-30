@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.3.2 (2026-03-30)
+
+### ops:plan — Prompt consolidation (545 → 473 lines, -13%)
+
+- refactor: removed graphviz diagram from Step 1 (-52 lines) — fully redundant with checklist + prose
+- refactor: condensed "Proposing 2-3 approaches" in Step 1 to 2 lines (detail lives in Step 5)
+- refactor: condensed "Presenting design by sections" in Step 1 to 2 lines (detail lives in Step 6a)
+- refactor: merged duplicate dependency gates in Step 5 into single gate preserving content constraint, workflow sequencing, and consequence language
+- refactor: condensed verbose prose in Step 1 — clarity check, clarifying questions, working in codebases
+- refactor: removed 3 doubly-enforced emphasis instances (already covered by HARD-GATE tags or consequence language)
+
 ## 2.3.1 (2026-03-30)
 
 ### ops:plan — No-placeholders rule + TDD granularity
