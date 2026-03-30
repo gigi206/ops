@@ -1,5 +1,26 @@
 # Changelog
 
+## 2.3.0 (2026-03-30)
+
+### ops:brainstorm — Richer brainstorming process (inspired by superpowers analysis)
+
+- feat: new Step 7 "Propose 2-3 approaches" — present trade-offs and recommendation, wait for user choice before proceeding
+- feat: new Step 8 "Present design by sections" — each section validated individually by the user before moving to the next
+- feat: task tracking throughout brainstorming — 9 tasks created and tracked for progress visibility
+- feat: Step 11 transition — direct offer to launch `/ops:plan`, skipping redundant re-brainstorming
+- refactor: workflow expanded from 7 steps to 11
+
+### ops:plan — Brainstorm phase alignment + validation improvements
+
+- feat: Step 1 checklist expanded with "Propose 2-3 approaches" and "Present design by sections"
+- feat: Step 1 detects if `/ops:brainstorm` was already run and skips to Step 2 with recap
+- feat: Step 6a changed to section-by-section design validation with user approval per section
+- feat: Brainstorm Complete gate block now tracks approach chosen and design sections validated
+- fix: process flow (graphviz) updated with approach proposal and section validation loops
+- fix: LSP diagnostics added to validation gate table in implement skill (Step 2b)
+- fix: new Step 0b discovers project test/build commands (Makefile, bin/, package.json) for task validation
+- fix: critic REJECT loop requires updating task breakdown to reflect spec changes from review loops
+
 ## 2.2.5 (2026-03-30)
 
 ### ops:plan — Hardened workflow gates (7 improvements)

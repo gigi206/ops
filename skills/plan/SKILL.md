@@ -82,6 +82,15 @@ If this block does not appear in your output before Step 1, you have skipped a r
 
 ## Step 1: Brainstorm (MANDATORY — cannot be skipped)
 
+### If `/ops:brainstorm` was already run
+
+If the user ran `/ops:brainstorm` before invoking `/ops:plan`, the brainstorming is already done. In this case:
+1. Read the brainstorm summary from the conversation
+2. Output a short recap: chosen approach, scope, key decisions
+3. Skip to Step 2 (Context Detection)
+
+Do NOT re-do the full brainstorming process. The user already validated the approach.
+
 ### Anti-Pattern: "This Is Too Simple To Need A Design"
 
 Every project goes through this process. A config change, a single-function utility, a bug fix — all of them. "Simple" projects are where unexamined assumptions cause the most wasted work. The design can be short (a few sentences for truly simple projects), but you MUST present it and get approval.
@@ -95,8 +104,10 @@ You MUST complete these steps in order:
 - [ ] 3. **Offer visual companion** — if topic will involve visual questions (see Visual Companion section below)
 - [ ] 4. **Assess scope** — decompose if too large for a single spec
 - [ ] 5. **Ask clarifying questions** — one at a time, Socratic style
-- [ ] 6. **Challenge scope with YAGNI** — remove unnecessary complexity
-- [ ] 7. **Gate** — objective clear, scope agreed
+- [ ] 6. **Propose 2-3 approaches** — with trade-offs and recommendation, wait for user choice
+- [ ] 7. **Present design by sections** — each section validated by user before moving to next
+- [ ] 8. **Challenge scope with YAGNI** — remove unnecessary complexity
+- [ ] 9. **Gate** — objective clear, approach chosen, design validated section by section
 
 ### Process Flow
 
@@ -112,6 +123,12 @@ digraph brainstorming {
     "Too large?" [shape=diamond];
     "Decompose into sub-projects" [shape=box];
     "Ask clarifying questions" [shape=box];
+    "Propose 2-3 approaches" [shape=box];
+    "User chooses approach?" [shape=diamond];
+    "Present design by sections" [shape=box];
+    "Section approved?" [shape=diamond];
+    "Revise section" [shape=box];
+    "More sections?" [shape=diamond];
     "YAGNI filter" [shape=box];
     "Objective clear?" [shape=diamond];
     "Proceed to Step 2" [shape=doublecircle];
@@ -128,7 +145,16 @@ digraph brainstorming {
     "Too large?" -> "Decompose into sub-projects" [label="yes"];
     "Decompose into sub-projects" -> "Ask clarifying questions";
     "Too large?" -> "Ask clarifying questions" [label="no"];
-    "Ask clarifying questions" -> "YAGNI filter";
+    "Ask clarifying questions" -> "Propose 2-3 approaches";
+    "Propose 2-3 approaches" -> "User chooses approach?";
+    "User chooses approach?" -> "Propose 2-3 approaches" [label="unclear, refine"];
+    "User chooses approach?" -> "Present design by sections" [label="yes"];
+    "Present design by sections" -> "Section approved?";
+    "Section approved?" -> "Revise section" [label="no"];
+    "Revise section" -> "Section approved?";
+    "Section approved?" -> "More sections?" [label="yes"];
+    "More sections?" -> "Present design by sections" [label="yes"];
+    "More sections?" -> "YAGNI filter" [label="no"];
     "YAGNI filter" -> "Objective clear?";
     "Objective clear?" -> "Ask clarifying questions" [label="no, refine"];
     "Objective clear?" -> "Proceed to Step 2" [label="yes"];
@@ -172,6 +198,21 @@ This prevents building the wrong thing. A 10-second check saves hours of wasted 
 - If a topic needs more exploration, break it into multiple questions
 - If you catch yourself writing "Question 4:", "Question 5:", "Question 6:" in the same message — STOP. Pick the most important one, send it alone, wait for the answer.
 
+**Proposing 2-3 approaches:**
+- Once the problem is understood, propose **2-3 different approaches** with trade-offs
+- **Lead with your recommendation** — present the best option first, explain why, then present alternatives
+- For each approach: name, how it works (2-3 sentences), pros, cons, fit with existing conventions
+- **Always present at least one alternative** — the user needs to make an informed decision
+- **Wait for the user to choose** before proceeding. Do NOT skip even if one approach seems obviously better.
+
+**Presenting design by sections:**
+- Present the chosen approach's design **section by section**, not as a wall of text
+- Scale each section to its complexity: a few sentences if straightforward, up to 200-300 words if nuanced
+- Cover across sections: architecture, components, data flow, error handling, testing strategy
+- **Ask after each section**: "Does this look right so far?" — wait for the user to validate before the next section
+- If the user requests changes to a section, revise it and re-present before moving on
+- Design for isolation: smaller units with clear purpose, well-defined interfaces, testable independently
+
 **Challenging scope with YAGNI (MANDATORY output):**
 - Is every part of the request actually needed right now?
 - Can a simpler version achieve the same goal?
@@ -197,6 +238,8 @@ If this block does not appear in your output before moving to Step 2, you have s
 
 **Do NOT proceed to context detection until:**
 - The objective is clear and the scope is agreed.
+- The user has chosen an approach from the 2-3 proposed.
+- The design has been presented section by section and each section validated by the user.
 - You have evaluated whether the topic involves visual questions (UI, layouts, mockups, diagrams).
 - If visual: you MUST have offered the visual companion before proceeding. If you skipped the offer, go back and make it now — it MUST be its own message, not combined with other questions.
 
@@ -209,6 +252,8 @@ You MUST output this block before proceeding to Step 2:
 - Visual companion: offered (accepted/declined) / not applicable (no UI/visual elements)
 - Scope: [one sentence]
 - Clarifying questions asked: N
+- Approaches proposed: N (user chose: [approach name])
+- Design sections validated: N/N
 - YAGNI: presented (kept: X, removed: Y)
 ```
 
@@ -335,12 +380,15 @@ This is a gate, not a suggestion. If the spec contains an agent-chosen dependenc
 
 After the user has chosen an approach, flesh it out into a full design and persist it.
 
-### 6a. Present the design
+### 6a. Present the design by sections
 
-Present a brief design summary before writing the spec:
-- A few sentences if straightforward, up to 200-300 words if nuanced
-- Cover: architecture, components, data flow, error handling, testing strategy
-- The spec-reviewer (Step 6c) will validate completeness — keep this conversational, not exhaustive
+Present the design **section by section** — not as a single wall of text. Each section should be validated by the user before moving to the next.
+
+- Scale each section to its complexity: a few sentences if straightforward, up to 200-300 words if nuanced
+- Cover across sections: architecture, components, data flow, error handling, testing strategy
+- **Ask after each section**: "Does this look right so far?" — wait for the user to validate
+- If the user requests changes to a section, revise it and re-present before moving on
+- The spec-reviewer (Step 6c) will validate the full spec — but section-by-section validation catches misunderstandings early
 
 **Design for isolation and clarity:**
 - Break the system into smaller units that each have one clear purpose
