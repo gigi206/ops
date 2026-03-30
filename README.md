@@ -73,7 +73,7 @@ flowchart TD
 
     %% Reviews & audits
     review-pr["/ops:review-pr"] -.->|comments on PR| ship
-    security["/ops:security"] -.->|audits| ship
+    security["/ops:security"] -.->|reviews| ship
 
     %% Always active or standalone (no edges — behavioral or independent)
     clone-analyze["/ops:clone-analyze"]
@@ -153,7 +153,7 @@ flowchart LR
 | `/ops:implement` | Execute the plan task by task | Validated plan | Implemented, reviewed, and validated code | implementer (xN), code-reviewer, security-reviewer (if triggers) |
 | `/ops:ship` | Commit, PR, capture learnings | Completed code | Commit, PR (optional), learnings, rule proposals | None |
 | `/ops:do` | Lightweight pipeline: research, execute, verify, review | Well-understood task | Implemented and reviewed code | researcher-code, researcher-doc, code-reviewer, security-reviewer (if triggers) |
-| `/ops:debug` | Systematic investigation: hypothesize, test, fix, verify | Bug, error, or unexpected behavior | Diagnosed and fixed code | git-historian, code-reviewer, security-reviewer (if applicable) |
+| `/ops:debug` | Systematic investigation: hypothesize, test, fix, verify | Bug, error, or unexpected behavior | Diagnosed and fixed code | git-historian, code-reviewer, security-reviewer (if triggers) |
 | `/ops:full` | All-in-one meta-pipeline | Work description | Everything (plan + implement + ship chained) | All from plan + implement + ship |
 | `/ops:test` | Add tests to existing untested code | Files/modules to test | Tests written, coverage improved | researcher-code, researcher-doc, test-writer, code-reviewer |
 | `/ops:refactor` | Restructure code without changing behavior | Code to refactor + goal | Refactored code, tests still passing | researcher-code, researcher-doc, code-reviewer |
@@ -168,7 +168,7 @@ flowchart LR
 | `/ops:clone-analyze` | Clone and analyze an external repo to understand its internals | Understand a library, framework, or tool by reading its source code |
 | `/ops:brainstorm` | Clarify needs via Socratic dialogue | Explore intent and requirements before planning |
 | `/ops:review` | Technically evaluate code review feedback | Receiving comments on code (human or CI) |
-| `/ops:security` | On-demand security audit | Security review of changes or specific files |
+| `/ops:security` | On-demand security review | Security review of changes or specific files |
 | `/ops:setup` | Diagnose environment: languages, LSP, code quality tools, security analysis tools, MCP servers | First use, new environment, missing tools |
 | `/ops:verify` | Behavioral rule: evidence before any claim | Always active — applies in all contexts |
 
@@ -192,14 +192,14 @@ Shared logic extracted from skills. Not callable by the user — invoked program
 |---|---|---|---|
 | **researcher-code** | Explore codebase: patterns, conventions, implementations, integration points, risks | research, do, test, refactor, perf, implement (circuit-breaker), debug (circuit-breaker) | Read-only source code analysis |
 | **researcher-doc** | Search official docs for libs/tools/APIs (Context7 MCP, fallback WebSearch) | research, do, test, refactor, perf | Doc queries, API schemas, config references |
-| **git-historian** | Mine git history: timelines, regressions, ownership, hotspots, architectural decisions | research, implement (circuit-breaker), debug (circuit-breaker) | 2 modes: Research (broad exploration) and Investigation (targeted at failing files) |
+| **git-historian** | Mine git history: timelines, regressions, ownership, hotspots, architectural decisions | research, debug, implement (circuit-breaker) | 2 modes: Research (broad exploration) and Investigation (targeted at failing files) |
 | **researcher-repo** | Clone and analyze external repositories: version-aware analysis, structured findings | research (conditional), clone-analyze | Shallow clone, code analysis, version comparison |
 | **spec-reviewer** | Review spec for completeness, consistency, clarity, and feasibility | plan | Verdict: Approved / Issues Found. Mandatory re-dispatch if issues (max 3 iterations) |
 | **critic** | Adversarial plan review: completeness, coherence, security, CLAUDE.md compliance | plan | Verdict: APPROVE / REJECT with confidence levels. Pre-engagement prediction to avoid confirmation bias |
 | **implementer** | Execute one plan task (TDD, code generation, validation) | implement | 1 agent per plan task. Pipeline: implement, validation gate, conformity check |
 | **code-reviewer** | Code review: spec compliance, quality, TDD adherence, anti-patterns | implement (final review), do, test, refactor, perf | Review on complete diff after all tasks. Verdict: Approved / Issues (Important/Suggestions) / Critical |
-| **security-reviewer** | Deep security analysis: code, infra, CI/CD, containers, supply chain | via security-gate: implement, do, security, review-pr | Dispatched only if security-gate detects sensitive domains or semgrep reports findings. Re-dispatch loop (max 3) after fixes |
-| **test-writer** | Analyze existing code and write tests: behavior analysis, edge cases, coverage | test, refactor (pre-refactor coverage) | Writes tests only, does not modify production code |
+| **security-reviewer** | Deep security analysis: code, infra, CI/CD, containers, supply chain | via security-gate: implement, do, debug, security, review-pr | Dispatched only if security-gate detects sensitive domains or semgrep reports findings. Re-dispatch loop (max 3) after fixes |
+| **test-writer** | Analyze existing code and write tests: behavior analysis, edge cases, coverage | test | Writes tests only, does not modify production code |
 | **pr-reviewer** | Review external PRs: quality, security, conventions, actionable comments | review-pr | Structured review with severity levels (Critical / Important / Nits) |
 
 ## Install
