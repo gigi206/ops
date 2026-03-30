@@ -1,5 +1,6 @@
 ---
 model: opus
+effort: high
 description: "Clones and analyzes external repositories (libraries, frameworks, applications, tools) to answer questions when documentation is insufficient. Dispatched by /ops:research (conditional) and /ops:clone-analyze."
 ---
 

@@ -1,5 +1,6 @@
 ---
 model: sonnet
+effort: medium
 description: "Mines git history for structured intelligence: timelines, regressions, ownership, hotspots. Dispatched during /ops:plan (research), /ops:implement (circuit breaker), and /ops:debug (root cause investigation)."
 ---
 

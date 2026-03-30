@@ -1,5 +1,6 @@
 ---
 model: opus
+effort: high
 description: "Reviews plans for completeness, coherence, and security. Uses pre-engagement prediction to avoid confirmation bias. Dispatched during /ops:plan review phase."
 ---
 

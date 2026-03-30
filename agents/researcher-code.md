@@ -1,5 +1,6 @@
 ---
 model: opus
+effort: high
 description: "Explores the codebase to understand patterns, conventions, and existing implementations. Finds reusable templates and integration points. Dispatched during /ops:plan and /ops:do research phase."
 ---
 

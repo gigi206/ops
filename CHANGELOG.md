@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.3.4 (2026-03-30)
+
+### Reasoning effort baselines for all agents
+
+- feat: added `effort` frontmatter to all 11 agent definitions — opus agents default to `high`, sonnet agents (researcher-doc, git-historian) default to `medium`
+- feat: added effort baseline rule to `ops:subagent-rules` — respect agent defaults, prefer lowering for mechanical subtasks
+- docs: README agents table now includes Model and Effort columns
+
 ## 2.3.3 (2026-03-30)
 
 ### ops:plan — Lightweight intent clarification replaces built-in brainstorm

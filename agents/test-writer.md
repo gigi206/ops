@@ -1,5 +1,6 @@
 ---
 model: opus
+effort: high
 description: "Analyzes existing code and writes tests. Dispatched by /ops:test to add test coverage, and by /ops:refactor for pre-refactor coverage verification."
 ---
 

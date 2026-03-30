@@ -1,5 +1,6 @@
 ---
 model: opus
+effort: high
 description: "Executes individual implementation tasks from a validated plan. Writes code, runs validation, reports status. Dispatched during /ops:implement for each task."
 ---
 

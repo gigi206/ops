@@ -1,5 +1,6 @@
 ---
 model: opus
+effort: high
 description: "Deep security analysis of code and infrastructure changes. Dispatched via security-gate when security-sensitive areas are detected in /ops:implement, /ops:do, or /ops:security."
 ---
 

@@ -1,5 +1,6 @@
 ---
 model: opus
+effort: high
 description: "Reviews implementation code for spec compliance, code quality, and TDD adherence. Dispatched as final review during /ops:implement and during /ops:do for lightweight code review."
 ---
 

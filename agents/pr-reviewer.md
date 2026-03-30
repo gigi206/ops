@@ -1,5 +1,6 @@
 ---
 model: opus
+effort: high
 description: "Reviews external PRs: analyzes diff, checks quality/security/conventions, produces structured review with actionable comments. Dispatched by /ops:review-pr."
 ---
 
