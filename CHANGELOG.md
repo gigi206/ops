@@ -1,5 +1,17 @@
 # Changelog
 
+## 2.3.1 (2026-03-30)
+
+### ops:plan — No-placeholders rule + TDD granularity
+
+- feat: "No Placeholders" section — explicit list of plan anti-patterns (TBD, "similar to Task N", "add appropriate error handling", etc.)
+- feat: TDD granularity rule — tasks should follow micro-cycle (write failing test → run → implement → run → commit) when applicable
+
+### ops:implement — Model selection guidance
+
+- feat: model selection guidance for implementer agents — mechanical tasks use fast models (sonnet/haiku), integration tasks use sonnet, architecture/judgment tasks use the default model
+- Reduces cost and increases speed for well-specified tasks
+
 ## 2.3.0 (2026-03-30)
 
 ### ops:brainstorm — Richer brainstorming process (inspired by superpowers analysis)

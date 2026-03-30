@@ -452,6 +452,19 @@ Each task MUST have ALL of:
 - Each task MUST be independently verifiable via its validation command.
 - Tasks MUST be ordered by dependency (prerequisites before dependents, config before consumers, schemas before data).
 - A task that touches more than 3 files is probably too big. Consider splitting it.
+- **TDD granularity**: When the project has a test framework, each task should follow the TDD micro-cycle: write failing test → run to verify failure → implement minimal code → run to verify pass → commit. The plan should make this explicit in each task's steps when applicable.
+
+### No Placeholders (MANDATORY)
+
+Every task must contain the actual content an implementer needs. These are **plan failures** — never write them:
+- "TBD", "TODO", "implement later", "fill in details"
+- "Add appropriate error handling" / "add validation" / "handle edge cases"
+- "Write tests for the above" (without specifying what to test)
+- "Similar to Task N" (repeat the details — the implementer may read tasks out of order)
+- Steps that describe what to do without showing how (code blocks required for code steps when the approach is non-obvious)
+- References to types, functions, or methods not defined in any task
+
+If you find yourself writing any of these, stop and fill in the actual content. A plan with placeholders is not a plan — it's a sketch.
 
 ### CLAUDE.md-Driven Tasks (when CLAUDE.md exists)
 

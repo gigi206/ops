@@ -85,11 +85,25 @@ TaskUpdate(id: <task_id>, status: "in_progress")
 - If Task B depends on files created/modified by Task A, Task B MUST wait until Task A's full pipeline is complete.
 - Maximum 3 implementer agents running in parallel — more than this makes conformity checks unmanageable.
 
+### Model Selection
+
+Use the least powerful model that can handle each task to conserve cost and increase speed:
+
+- **Mechanical tasks** (isolated functions, clear specs, 1-2 files, pure config): use `model: "sonnet"` or `model: "haiku"`
+- **Integration tasks** (multi-file coordination, pattern matching, debugging): use `model: "sonnet"`
+- **Architecture/judgment tasks** (design decisions, broad codebase understanding, complex refactoring): use the default model (most capable)
+
+**Task complexity signals:**
+- Touches 1-2 files with complete spec and code shown → fast model
+- Touches multiple files with integration concerns → standard model
+- Requires design judgment or broad codebase understanding → most capable model
+
 Spawn the **implementer** agent with:
 - The specific task to implement (not the whole plan)
 - The relevant context: overall approach + this task's details
 - The files to read/modify
 - The validation command for this task
+- The appropriate `model` parameter based on task complexity
 
 The implementer will automatically detect if the project has a test framework. If tests are relevant to the task, it enforces TDD (Red/Green/Refactor): write a failing test first, then minimal code to pass, then refactor. If the task is pure config/data with no applicable tests, it implements directly.
 
