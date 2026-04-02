@@ -1,5 +1,15 @@
 # Changelog
 
+## 3.1.1 (2026-04-02)
+
+### Review skill — anti-sycophancy and source-aware feedback handling
+
+- feat: add anti-sycophancy section to `ops-review` — forbidden responses table (performative agreement, gratitude expressions), correct response examples (technical acknowledgment only), self-test: "technical content or social noise?"
+- feat: source-specific feedback handling — user feedback (trusted, skip to action) vs. external reviewers (verify technically first, 4-point checklist with YAGNI grep check)
+- feat: strengthened ambiguity handling — STOP and clarify ALL unclear items before implementing, multi-item ordering: blocking → simple → complex, test each individually
+- fix: consistency cleanup — "just say thanks" → "acknowledge and proceed", deduplicated Prohibited Behaviors table against new anti-sycophancy section
+- inspired by superpowers plugin `receiving-code-review` skill, adapted to ops conventions
+
 ## 3.1.0 (2026-04-02)
 
 ### Targeted persuasion mechanisms for LLM compliance

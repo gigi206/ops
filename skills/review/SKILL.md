@@ -19,11 +19,42 @@ This is a behavioral skill for when you receive code review feedback — from a 
 
 When you receive feedback on your code:
 
-1. **Read** the feedback carefully
+1. **Read** the complete feedback without reacting
 2. **Verify technically** — is the feedback correct? Read the code, run the test, check the claim.
 3. **If correct** → fix the issue, show the fix, verify it works
 4. **If incorrect** → push back with evidence. Explain why the feedback doesn't apply.
-5. **If ambiguous** → ask for clarification before making changes
+5. **If any item is ambiguous** → STOP. Do not implement anything. Ask for clarification on ALL unclear items before making any changes. Partial understanding leads to wrong implementation.
+6. **If multi-item** → implement in order: blocking issues → simple fixes → complex fixes. Test each individually.
+
+---
+
+## Anti-Sycophancy
+
+Code review requires technical evaluation, not emotional performance. Technical correctness over social comfort.
+
+**Forbidden responses — delete these before sending:**
+
+| Response                        | Why it's forbidden                          | Instead                              |
+|---------------------------------|---------------------------------------------|--------------------------------------|
+| "You're absolutely right!"      | Performative agreement — you didn't verify  | Restate the technical requirement    |
+| "Great catch!" / "Good point!"  | Flattery replacing analysis                 | Just fix it and show the diff        |
+| "Thanks for catching that!"     | Gratitude replacing action                  | `"Fixed. [description of change]"`   |
+| "Excellent feedback!"           | Empty praise                                | Start working — actions > words      |
+| Any gratitude expression        | Social performance, not engineering         | State the fix or ask a question      |
+
+**When feedback IS correct:**
+```
+✅ "Fixed. [Brief description of what changed]"
+✅ "Confirmed — [specific issue]. Fixed in [location]."
+✅ [Just fix it and show in the code]
+
+❌ "You're absolutely right!"
+❌ "Great point!" / "Great catch!"
+❌ "Thanks for catching that!"
+❌ ANY performative agreement or standalone gratitude
+```
+
+The test: does your response contain technical content, or just social noise? "Fixed the null check on line 42" is engineering. "Great catch!" is performance.
 
 ---
 
@@ -33,11 +64,38 @@ When you receive feedback on your code:
 
 | Behavior                                     | Why it's bad                                                  |
 |----------------------------------------------|---------------------------------------------------------------|
-| "You're absolutely right!" without checking  | Performative agreement — you didn't verify                    |
-| "Great catch!" then making a random change   | You're guessing at what the reviewer meant                    |
 | Accepting all suggestions without evaluation | Some suggestions may conflict with the spec or introduce bugs |
 | Silently ignoring feedback you disagree with | If you disagree, say so with evidence                         |
 | Changing code the reviewer didn't mention    | Scope creep — only address the specific feedback              |
+| Implementing before verifying                | The suggestion may be wrong for this codebase                 |
+
+---
+
+## Source-Specific Handling
+
+### From the user (human partner)
+- **Trusted** — implement after understanding, no need to verify the intent
+- **Still ask** if scope is unclear
+- **Skip to action** — no performative acknowledgment needed
+
+### From external reviewers (PR comments, code-reviewer agent, CI)
+Before implementing any suggestion:
+1. Is this technically correct for THIS codebase?
+2. Does it break existing functionality?
+3. Is there a reason the current implementation exists (compatibility, spec requirement)?
+4. Does the reviewer have the full context?
+
+If the suggestion seems wrong → push back with technical reasoning.
+If it conflicts with prior user decisions → stop and discuss with the user first.
+
+### YAGNI Check
+
+When a reviewer suggests "implementing properly" or adding a feature:
+1. Grep the codebase for actual usage of the code in question
+2. If unused → suggest removal (YAGNI) instead of improvement
+3. If used → implement the improvement
+
+Do not gold-plate unused code because a reviewer asked for it.
 
 ---
 
@@ -87,5 +145,5 @@ This skill applies when:
 - The critic agent rejects a plan with specific concerns
 
 It does NOT apply to:
-- Generic compliments ("looks good") — just say thanks
+- Generic compliments ("looks good") — acknowledge and proceed
 - Approval without issues — proceed normally
