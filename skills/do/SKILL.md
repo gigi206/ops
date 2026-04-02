@@ -1,6 +1,6 @@
 ---
 name: ops-do
-description: "Lightweight structured workflow: research, execute, verify, review."
+description: "Use when the task is well-understood, small, and doesn't need design discussion."
 ---
 
 # /ops-do — Lightweight structured workflow

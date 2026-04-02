@@ -1,6 +1,6 @@
 ---
 name: ops-full
-description: "Full pipeline: plan, implement, and ship in a single session."
+description: "Use when you want to plan, build, and ship a feature in one go."
 ---
 
 # /ops-full — Full pipeline

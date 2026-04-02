@@ -1,6 +1,6 @@
 ---
 name: ops-ship
-description: "Commit, PR, and capture learnings."
+description: "Use when work is done and ready to commit or create a PR."
 ---
 
 # /ops-ship — Ship the work

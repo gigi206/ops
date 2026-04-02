@@ -1,6 +1,6 @@
 ---
 name: ops-implement
-description: "Execute a validated plan task by task."
+description: "Use when a plan has been approved and you're ready to build."
 ---
 
 # /ops-implement — Execute a validated plan
@@ -312,3 +312,17 @@ Include this section in the completion summary. If the user saves it (e.g., in a
 
 5. **Update spec status**: if a spec file exists for this work, update its status to `**Status**: Implemented`.
 6. Ask the user what to do next (commit, review, continue)
+
+---
+
+## Red Flags — you are about to break the pipeline
+
+If any of these thoughts cross your mind, STOP — you are about to compromise the implementation pipeline:
+
+| Thought | Reality |
+|---------|---------|
+| "These 2 tasks are small, I'll bundle them in one implementer" | 1 task = 1 agent. No bundling. The count audit will catch it. |
+| "Code quality looks clean, no need to run it before the reviewer" | Hard gate. Quality BEFORE review. Always. |
+| "The security-gate says NOT NEEDED but I have a doubt" | Dispatch the security-reviewer. False positives are cheap. |
+| "Final validation is redundant, I validated each task" | Tasks interact. Re-validate ALL. Not some — ALL. |
+| "The implementer reported DONE, no need to check" | Run the validation command yourself. Trust but verify. |

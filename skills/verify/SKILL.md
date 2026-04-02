@@ -17,7 +17,11 @@ The rule is simple: **never claim a result without showing the evidence.**
 
 ---
 
-## The Gate
+## The Iron Law
+
+NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE.
+
+Violating the letter of the rules is violating the spirit of the rules.
 
 Before making any assertion of success or completion, you MUST:
 
@@ -54,6 +58,17 @@ If any step fails, the claim is **not verified**. Say what happened instead of w
 - [ ] Repeating a previous result instead of running a fresh command
 
 If you catch yourself doing any of these: **STOP. Run the command. Show the output.**
+
+---
+
+## Red Flags — you are about to rationalize
+
+| Thought | Reality |
+|---------|---------|
+| "I read the code, it's correct" | Reading is not running. Run the command. |
+| "I verified this 2 tasks ago" | Stale result. Run it again. |
+| "The validation command isn't relevant for this change" | If it's in the plan, run it. |
+| "The test passes in my head" | Tests pass in the terminal, not in your head. |
 
 ---
 

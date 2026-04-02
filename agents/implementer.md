@@ -51,6 +51,8 @@ Before implementing, check if the project has a test framework:
 
 **Iron rule: NO production code without a failing test first.**
 
+Violating the letter of the rules is violating the spirit of the rules.
+
 For the full methodology with code examples, deep arguments, and troubleshooting, read @tdd-reference.md. For mock anti-patterns, read @testing-anti-patterns.md.
 
 #### 5a. RED — Write a failing test
@@ -175,3 +177,15 @@ Report one of:
 - **Preserve formatting**: Match the exact indentation style (spaces vs tabs, 2 vs 4) of existing files.
 - **Project instruction rules are non-negotiable.** If a task asks you to do something that violates the project instructions (`CLAUDE.md`, `AGENTS.md`, or `GEMINI.md`), report BLOCKED and explain the conflict.
 - **Be honest in your report.** If something failed, say so. Do not hide errors.
+
+## Red Flags — non-TDD
+
+If any of these thoughts cross your mind, STOP — you are about to cut a corner:
+
+| Thought | Reality |
+|---------|---------|
+| "Validation will probably pass, no need to run it" | "Probably" is not evidence. Run it. |
+| "This out-of-scope file has an obvious bug, quick fix" | Report it in DONE_WITH_CONCERNS. Do not fix it. |
+| "DONE_WITH_CONCERNS would cause doubt, I'll report DONE" | Honesty protects the project. DONE_WITH_CONCERNS exists for a reason. |
+| "The plan is vague but I understand the intent" | Report BLOCKED with a specific question. Do not guess. |
+| "It's just formatting, no need to read the file first" | Read before write. Always. One wrong indent breaks YAML. |

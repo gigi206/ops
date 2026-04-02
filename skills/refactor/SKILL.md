@@ -1,6 +1,6 @@
 ---
 name: ops-refactor
-description: "Restructure code without changing behavior. Verifies test coverage first, then applies incremental changes with validation between each step."
+description: "Use when code needs restructuring without changing its external behavior."
 ---
 
 # /ops-refactor — Refactor code safely

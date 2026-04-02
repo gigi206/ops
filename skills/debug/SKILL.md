@@ -1,6 +1,6 @@
 ---
 name: ops-debug
-description: "Systematic debugging: investigate, hypothesize, fix."
+description: "Use when something is broken, failing, or behaving unexpectedly."
 ---
 
 # /ops-debug — Systematic debugging
@@ -13,7 +13,11 @@ Follow the `ops-instruction-priority` rules when instructions conflict.
 
 Before dispatching any agent in this skill, follow the `ops-subagent-rules` process.
 
-## Philosophy
+## The Iron Law
+
+NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST.
+
+Violating the letter of the rules is violating the spirit of the rules.
 
 Do NOT guess. Investigate systematically. Understand the root cause before writing a fix.
 
@@ -165,3 +169,17 @@ Only declare fixed after showing proof.
 ## Circuit Breaker
 
 **5+ failed fix attempts** triggers the `ops-circuit-breaker` process (threshold: 5+, window: 60 days for git-historian). This is likely an architectural problem, not a simple bug.
+
+---
+
+## Red Flags — you are about to guess
+
+If any of these thoughts cross your mind, STOP — you are about to skip root cause investigation:
+
+| Thought | Reality |
+|---------|---------|
+| "The error is obvious, no need to investigate" | Obvious errors hide deep root causes. Investigate. |
+| "I've seen this bug before, I know the fix" | Confirm with evidence. Your memory may be wrong. |
+| "One test is enough to validate the hypothesis" | Unless it's intermittent. Test multiple times. |
+| "The fix works, no need for code review" | Unless it modifies ≤1 file and is a pure typo/config change. Otherwise review is mandatory. |
+| "All hypotheses are refuted, I'll try a fix anyway" | Go back to Step 1. No fix without a confirmed root cause. |

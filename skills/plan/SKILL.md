@@ -1,6 +1,6 @@
 ---
 name: ops-plan
-description: "Clarify intent, research, and plan before writing code."
+description: "Use when a task needs design, research, or decomposition before coding."
 ---
 
 # /ops-plan — Clarify intent, research, and plan
@@ -392,3 +392,19 @@ Present the validated plan to the user with an explicit question:
 Do NOT proceed to `/ops-implement` until the user explicitly approves. The user invoking `/ops-implement` counts as approval, but you should still ask before they need to invoke it.
 
 The plan remains in conversation context for `/ops-implement` to consume.
+
+---
+
+## Red Flags — you are about to skip a step
+
+If any of these thoughts cross your mind, STOP — you are about to bypass a gate:
+
+| Thought | Reality |
+|---------|---------|
+| "The intent is clear, no need to clarify with the user" | Step 1 is mandatory. Clarify. |
+| "I already know this codebase, research is unnecessary" | The 3 agents find what you don't know to look for. |
+| "One research agent is enough for this simple case" | 3 agents, one message. No substitutions. |
+| "The critic approved, but I improved the plan after" | Re-dispatch the critic. It must validate the changes. |
+| "The user said 'go ahead', that means implement now" | That means approve the plan. Invoke /ops-implement. |
+| "The spec is obvious, no need for spec-reviewer" | The reviewer finds what you forgot. Dispatch it. |
+| "I'll skip the research adequacy table, it's clearly fine" | The table must appear in your output. It's not a mental check. |

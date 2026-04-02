@@ -1,5 +1,18 @@
 # Changelog
 
+## 3.1.0 (2026-04-02)
+
+### Targeted persuasion mechanisms for LLM compliance
+
+- feat: add hybrid Red Flags / Rationalization tables to 6 core files — `implementer`, `critic`, `verify`, `plan`, `implement`, `debug`
+- feat: elevate `verify` "The Gate" to named Iron Law with code-block preamble and letter/spirit inoculation
+- feat: elevate `debug` "Philosophy" to named Iron Law with code-block preamble and letter/spirit inoculation
+- feat: add letter/spirit inoculation to `implementer` TDD Iron Rule
+- feat: add non-TDD Red Flags table to `implementer` agent (validation skip, scope creep, report honesty)
+- feat: add anti-complacency Red Flags table to `critic` agent (rubber-stamping, premature approval)
+- feat: CSO-optimized skill descriptions — 7 skills rewritten from process-focused to trigger-focused (`plan`, `implement`, `debug`, `do`, `refactor`, `ship`, `full`)
+- docs: design spec at `docs/specs/2026-04-02-persuasion-mechanisms-design.md`
+
 ## 3.0.0 (2026-03-30)
 
 ### OpenCode compatibility + skill renaming + internal refactoring
