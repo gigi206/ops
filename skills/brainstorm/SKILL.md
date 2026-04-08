@@ -89,68 +89,12 @@ If the topic has no visual component, mark the task as completed with note "not 
 ## Step 6: Clarifying questions
 
 - **One question at a time** — do NOT overwhelm with multiple questions. ONE question per message.
-- **Multiple choice preferred** — easier to answer than open-ended when possible. Prefer the **A/B/C question format** (list 2-4 lettered options, one per line, with a one-line recommendation at the end), which is the canonical structure used by the mandatory templates below AND by Step 7's approach proposals.
-- Focus on understanding: purpose, constraints, success criteria
+- **Multiple choice preferred** — easier to answer than open-ended when possible. Use the **A/B/C question format**: list 2-4 lettered options (one per line) followed by a one-line recommendation. This is the canonical structure used throughout this skill.
+- Focus on understanding: purpose, constraints, success criteria.
 - If you catch yourself writing "Question 4:", "Question 5:" in the same message — STOP. Pick the most important one, send it alone, wait.
 - The user's answer to question 1 may change what question 2 should be.
 
-### Mandatory question templates (when applicable)
-
-**Structure of this section** (read this first):
-- Step 6 (here) defines question **templates** for 3 architectural dimensions.
-- Step 7 below contains the **full checklist** of 7 architectural dimensions and the gate that verifies all applicable dimensions have been addressed before moving to Step 8.
-- These 3 templates correspond to 3 of the 7 dimensions in Step 7's checklist — the ones where vague wording is most likely to silently hide an architectural decision (instance defaults, authorization source of truth, failure mode). For the other 4 dimensions (storage, UI placement, backward compat, test boundaries), use the plain A/B/C question format defined above — no specific template is required because the choices are usually framed unambiguously by the question itself.
-
-When the feature triggers the "applies if" condition for one of these 3 templates, you MUST present the question in the templated format below — the structure is what protects against vagueness. The Step 7 dimensions checklist verifies that all applicable dimensions (templated or not) have been addressed before moving to Step 8.
-
-#### Template A — Deployment-instance defaults
-
-**Applies if**: the feature introduces any toggle, flag, setting, policy, or per-resource configuration.
-
-> **Question — default behavior and override**
->
-> For this new [toggle / setting / policy], how is the default value handled?
->
-> - **A)** Disabled by default, explicit per-resource opt-in. No environment variable.
-> - **B)** Enabled by default, explicit per-resource opt-out. No environment variable.
-> - **C)** Disabled by default, **but** an environment variable / Django setting / instance config lets operators change the default at instance scope, with per-resource override still possible.
-> - **D)** Always forced to a fixed value, no configuration possible (hardcoded constant).
->
-> My recommendation: [A/B/C/D] because [context-specific reason]. This is an important deployment decision — option C is often what separates a feature that is "usable in self-hosted deployments" from one that is "only usable with per-resource tweaks".
-
-This question is mandatory for any feature that exposes a toggle/policy. Skipping it leads to features that work for the dev environment but cannot be configured per-instance.
-
-#### Template B — Source of truth for authorization
-
-**Applies if**: the feature touches permissions, visibility, "who can do what", admin/owner/member distinctions, or any UI element conditionally shown based on the user's rights.
-
-> **Question — where the authorization logic lives**
->
-> The frontend needs to know whether the current user can [action]. Where does that decision live?
->
-> - **A) Server-driven** — the backend computes an `ability` (boolean) and exposes it via the API (e.g. `room.abilities.can_X = true/false`). The frontend just reads the boolean and renders the UI conditionally. No duplication of the permission rule.
-> - **B) Client-driven** — the frontend reads the raw state (role, configuration, metadata) and computes the decision itself. Faster to implement but duplicates the logic with the backend (drift risk).
-> - **C) Hybrid** — the frontend reconciles multiple sources (local state + shared metadata + backend role). Often tempting when the infrastructure already exists, but introduces complex failure modes (fail-closed flicker, fire-and-forget propagation).
->
-> My recommendation: **A**, unless latency or a real-time context forbids it. The rule must have a single owner: the backend. The frontend should never re-decide a permission the backend has already evaluated.
-
-This question is mandatory for any permission/auth/visibility feature. Skipping it tends to push the design toward "extend whatever channel is already there" (option C) instead of "define a clean ability" (option A).
-
-#### Template C — Failure mode
-
-**Applies if**: the feature depends on async work, external services, fire-and-forget propagation, or any source of state that can be unavailable.
-
-> **Question — behavior on failure**
->
-> If [the source of truth, e.g. shared room metadata, the external API, the worker] fails or is unavailable:
->
-> - **A) Fail-closed** — the action is denied by default. The user sees an error. Maximum security, degraded UX.
-> - **B) Fail-open** — the action is allowed by default. The user sees nothing. UX intact, degraded security.
-> - **C) Retry with timeout** — try N times before falling back (to fail-closed or fail-open). More complex.
->
-> My recommendation: [A/B/C] because [security vs UX context].
-
-These three templates are not exhaustive — see Step 7 "Architectural Dimensions Checklist" for the full list. They are highlighted here because vague wording on these three dimensions is most likely to silently hide an architectural decision.
+**Scope of this step**: Step 6 is for intent and context clarification only (purpose, constraints, success criteria, scoping). Architectural decisions — storage, permissions, instance defaults, failure mode, UI placement, backward compatibility, test boundaries — are **not** asked here. They are handled in Step 7 with a mandatory checklist and inline templates. Do not anticipate Step 7's questions in Step 6.
 
 ---
 
@@ -184,21 +128,108 @@ Once you understand the problem space, propose **2-3 different approaches** with
 
 ### Architectural Dimensions Checklist (MANDATORY)
 
-Before moving to Step 8, you MUST have presented an explicit choice for EACH of these dimensions that applies to the current feature. Skipping a dimension that applies is a FAILURE of this skill.
+Before moving to Step 8, you MUST have presented an explicit choice for EACH of the seven dimensions below that applies to the current feature. For each applicable dimension, present a multi-choice question (A/B/C format) and wait for the user's answer. Skipping an applicable dimension is a FAILURE of this skill.
 
-| Dimension | When it applies | Question to ask |
+If a dimension is not applicable, state it explicitly in your output: "Dimension X: not applicable because [reason]". This makes the YAGNI filter visible.
+
+**Overview of the 7 dimensions** (details below):
+
+| # | Dimension | When it applies |
 |---|---|---|
-| **Storage location** | Any new persistent state | "Where is this stored: existing field X / new field Y / new model Z?" |
-| **Source of truth for permissions** | Any feature touching auth/visibility/policy | "Where does the authority live: server-computed ability exposed via API / client-side reconciliation reading state / hybrid?" (see Step 6 question template) |
-| **Instance-wide defaults** | Any feature with a toggle/setting/policy | "How is the default set: hardcoded / per-resource only / instance-wide via env var or setting + per-resource override?" (see Step 6 question template) |
-| **Failure mode** | Any feature with async / network / external dependency | "If the dependency fails: fail-closed (deny) / fail-open (allow) / retry with timeout?" (see Step 6 question template) |
-| **UI placement** | Any feature adding UI | "Where in the existing UI: section X / new section / standalone view?" — and CONFIRM the literal placement (top/bottom/middle) before validating |
-| **Backward compatibility** | Any feature changing existing behavior | "Existing resources: preserved as-is / migrated lazily / migrated eagerly?" |
-| **Test boundaries** | Any non-trivial feature | "Tests at: unit / integration / e2e / all three?" |
+| 1 | Storage location | Any new persistent state |
+| 2 | Source of truth for permissions | Any feature touching auth/visibility/policy |
+| 3 | Instance-wide defaults | Any feature with a toggle/setting/policy |
+| 4 | Failure mode | Any feature with async / network / external dependency |
+| 5 | UI placement | Any feature adding UI |
+| 6 | Backward compatibility | Any feature changing existing behavior |
+| 7 | Test boundaries | Any non-trivial feature |
 
-For each applicable dimension, present a multi-choice question (Step 6 format) BEFORE writing the design sections (Step 8). The user's answers are the architectural decisions you write into the spec.
+Three dimensions (2, 3, 4) have **mandatory inline templates** — you MUST use them verbatim when applicable. The structure is what protects against vague wording that silently hides an architectural decision. The other four dimensions use the plain A/B/C format with the short question shown in their section.
 
-If the dimension is not applicable, state explicitly in your output: "Dimension X: not applicable because [reason]". This makes the YAGNI filter visible.
+---
+
+#### Dimension 1 — Storage location
+
+**Applies if**: any new persistent state.
+
+Question: "Where is this stored: existing field X / new field Y / new model Z?"
+
+---
+
+#### Dimension 2 — Source of truth for permissions
+
+**Applies if**: the feature touches permissions, visibility, "who can do what", admin/owner/member distinctions, or any UI element conditionally shown based on the user's rights.
+
+> **Question — where the authorization logic lives**
+>
+> The frontend needs to know whether the current user can [action]. Where does that decision live?
+>
+> - **A) Server-driven** — the backend computes an `ability` (boolean) and exposes it via the API (e.g. `room.abilities.can_X = true/false`). The frontend just reads the boolean and renders the UI conditionally. No duplication of the permission rule.
+> - **B) Client-driven** — the frontend reads the raw state (role, configuration, metadata) and computes the decision itself. Faster to implement but duplicates the logic with the backend (drift risk).
+> - **C) Hybrid** — the frontend reconciles multiple sources (local state + shared metadata + backend role). Often tempting when the infrastructure already exists, but introduces complex failure modes (fail-closed flicker, fire-and-forget propagation).
+>
+> My recommendation: **A**, unless latency or a real-time context forbids it. The rule must have a single owner: the backend. The frontend should never re-decide a permission the backend has already evaluated.
+
+Skipping this dimension tends to push the design toward "extend whatever channel is already there" (option C) instead of "define a clean ability" (option A).
+
+---
+
+#### Dimension 3 — Instance-wide defaults
+
+**Applies if**: the feature introduces any toggle, flag, setting, policy, or per-resource configuration.
+
+> **Question — default behavior and override**
+>
+> For this new [toggle / setting / policy], how is the default value handled?
+>
+> - **A)** Disabled by default, explicit per-resource opt-in. No environment variable.
+> - **B)** Enabled by default, explicit per-resource opt-out. No environment variable.
+> - **C)** Disabled by default, **but** an environment variable / Django setting / instance config lets operators change the default at instance scope, with per-resource override still possible.
+> - **D)** Always forced to a fixed value, no configuration possible (hardcoded constant).
+>
+> My recommendation: [A/B/C/D] because [context-specific reason]. This is an important deployment decision — option C is often what separates a feature that is "usable in self-hosted deployments" from one that is "only usable with per-resource tweaks".
+
+Skipping this dimension leads to features that work for the dev environment but cannot be configured per-instance.
+
+---
+
+#### Dimension 4 — Failure mode
+
+**Applies if**: the feature depends on async work, external services, fire-and-forget propagation, or any source of state that can be unavailable.
+
+> **Question — behavior on failure**
+>
+> If [the source of truth, e.g. shared room metadata, the external API, the worker] fails or is unavailable:
+>
+> - **A) Fail-closed** — the action is denied by default. The user sees an error. Maximum security, degraded UX.
+> - **B) Fail-open** — the action is allowed by default. The user sees nothing. UX intact, degraded security.
+> - **C) Retry with timeout** — try N times before falling back (to fail-closed or fail-open). More complex.
+>
+> My recommendation: [A/B/C] because [security vs UX context].
+
+---
+
+#### Dimension 5 — UI placement
+
+**Applies if**: any feature adding UI.
+
+Question: "Where in the existing UI: section X / new section / standalone view?" — and CONFIRM the literal placement (top/bottom/middle) before validating.
+
+---
+
+#### Dimension 6 — Backward compatibility
+
+**Applies if**: any feature changing existing behavior.
+
+Question: "Existing resources: preserved as-is / migrated lazily / migrated eagerly?"
+
+---
+
+#### Dimension 7 — Test boundaries
+
+**Applies if**: any non-trivial feature.
+
+Question: "Tests at: unit / integration / e2e / all three?"
 
 ---
 
@@ -270,15 +301,15 @@ When the objective is clear and the scope is agreed, present a concise summary:
 
 ### Architectural decisions (per dimension)
 
-For each dimension from the Step 7 checklist that applies, list the user's chosen answer (verbatim if a Step 6 template was used). Mark non-applicable dimensions explicitly with N/A and the reason. This is the structured trace the critic's Lens 5 brainstorm trace check consumes downstream.
+For each dimension from the Step 7 checklist that applies, list the user's chosen answer (verbatim for dimensions 2/3/4 where the inline templates apply). Mark non-applicable dimensions explicitly with N/A and the reason. This is the structured trace the critic's Lens 5 brainstorm trace check consumes downstream.
 
-- **Storage location**: [chosen value, e.g. "existing Room.configuration JSONField — no migration"] OR `N/A — no new persistent state`
-- **Source of truth for permissions**: [verbatim Template B answer, e.g. "A — server-driven via abilities.can_X exposed in serializer"] OR `N/A — feature does not touch permissions`
-- **Instance-wide defaults**: [verbatim Template A answer, e.g. "C — env var RECORDING_X_BY_DEFAULT with per-room override"] OR `N/A — feature has no toggle/policy`
-- **Failure mode**: [verbatim Template C answer, e.g. "A — fail-closed, deny by default"] OR `N/A — no async/external dependency`
-- **UI placement**: [exact placement confirmed by user, e.g. "new section at bottom of Admin panel, after Access section"] OR `N/A — no UI change`
-- **Backward compatibility**: [chosen value, e.g. "existing rooms preserved as-is, default OFF"] OR `N/A — no behavior change for existing data`
-- **Test boundaries**: [chosen value, e.g. "backend pytest unit + integration; no frontend tests (no test runner)"] OR `N/A — trivial change`
+- **Dimension 1 — Storage location**: [chosen value, e.g. "existing Room.configuration JSONField — no migration"] OR `N/A — no new persistent state`
+- **Dimension 2 — Source of truth for permissions**: [verbatim answer to Dimension 2 template, e.g. "A — server-driven via abilities.can_X exposed in serializer"] OR `N/A — feature does not touch permissions`
+- **Dimension 3 — Instance-wide defaults**: [verbatim answer to Dimension 3 template, e.g. "C — env var RECORDING_X_BY_DEFAULT with per-room override"] OR `N/A — feature has no toggle/policy`
+- **Dimension 4 — Failure mode**: [verbatim answer to Dimension 4 template, e.g. "A — fail-closed, deny by default"] OR `N/A — no async/external dependency`
+- **Dimension 5 — UI placement**: [exact placement confirmed by user, e.g. "new section at bottom of Admin panel, after Access section"] OR `N/A — no UI change`
+- **Dimension 6 — Backward compatibility**: [chosen value, e.g. "existing rooms preserved as-is, default OFF"] OR `N/A — no behavior change for existing data`
+- **Dimension 7 — Test boundaries**: [chosen value, e.g. "backend pytest unit + integration; no frontend tests (no test runner)"] OR `N/A — trivial change`
 
 ### Other key decisions
 - [Decisions made during brainstorming that are not architectural-dimension answers — e.g. naming, scope clarifications, deferred follow-ups]

@@ -1,5 +1,16 @@
 # Changelog
 
+## 3.2.1 (2026-04-08)
+
+### Brainstorm skill — Step 6/7 consolidation (structural refactor, no behavior change)
+
+Resolved a dual source-of-truth problem in `skills/brainstorm/SKILL.md`: question templates for three architectural dimensions (instance defaults, authorization source, failure mode) lived in Step 6 while the checklist of seven dimensions they belong to lived in Step 7, forcing a meta-paragraph in Step 6 to explain the cross-reference. Symptom: weaker models lost track of which dimensions were templated and which were not, and the "applies if" conditions were duplicated in both steps.
+
+- refactor(brainstorm): Step 6 reduced to intent/context clarification only (~15 lines). Templates A/B/C removed from Step 6; the meta-paragraph "Structure of this section" removed. A new "Scope of this step" note explicitly forbids anticipating Step 7's architectural questions in Step 6.
+- refactor(brainstorm): Step 7 "Architectural Dimensions Checklist" restructured from a flat table into an overview table + seven numbered `#### Dimension N` sub-sections. The three templated dimensions (2 Source of truth for permissions, 3 Instance-wide defaults, 4 Failure mode) now contain their A/B/C(/D) templates inline, verbatim, collocated with the dimension they serve. The four non-templated dimensions keep their short question format.
+- refactor(brainstorm): Step 10 Summary template renamed dimension headings from free-form ("Source of truth for permissions") to numbered ("Dimension 2 — Source of truth for permissions") to align with Step 7's numbering. Example text updated to reference "answer to Dimension N template" instead of "Template A/B/C answer".
+- No behavior change: the HARD-GATE-FORK, the mandatory checklist, the forced choice rules, and the downstream critic Lens 5 brainstorm trace consumption all remain identical. Only the location and naming of content changed.
+
 ## 3.2.0 (2026-04-07)
 
 ### Architectural decision-locking and per-task quality review (inspired by superpowers analysis)
