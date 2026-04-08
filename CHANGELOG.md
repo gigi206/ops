@@ -1,5 +1,29 @@
 # Changelog
 
+## 3.3.0 (2026-04-08)
+
+### Brainstorm skill — chain-of-custody decomposition into 11 step files (OpenCode + weaker-models compatibility)
+
+The brainstorm skill has been decomposed into 11 sequential step files using a chain-of-custody loading pattern. Motivation: the skill runs on non-Claude models via OpenCode (GPT-4o-mini, Mistral, Gemini Flash, local models) whose instruction-following is measurably weaker than the Claude family. A monolithic 345-line `SKILL.md` was exceeding the effective attention budget of these models — they would silently skip gates and dimensions. The chain-of-custody pattern reduces per-turn instruction load to a single 30-to-180-line step file, and an explicit hand-off at the end of each file removes the model's discretion over when to read the next step.
+
+- feat(brainstorm): `SKILL.md` rewritten as a ~60-line bootstrap containing only purpose, workflow diagram with the 11 file paths, global constraints, execution rules, and the instruction to read `step-01-task-checklist.md` to begin. No step content remains in `SKILL.md`.
+- feat(brainstorm): 11 new step files under `skills/brainstorm/`:
+  - `step-01-task-checklist.md` — creates the 10-task progress checklist
+  - `step-02-clarity-check.md` — restate-what-why-success gate
+  - `step-03-explore-context.md` — project state / recent commits / conventions
+  - `step-04-visual-companion.md` — mockups/diagrams companion offer
+  - `step-05-assess-scope.md` — multi-subsystem decomposition check
+  - `step-06-clarifying-questions.md` — intent/context A/B/C questions (one at a time)
+  - `step-07-architectural-decisions.md` — HARD-GATE-FORK + 7-dimensions checklist with inline templates (the densest file, ~180 lines)
+  - `step-08-design-sections.md` — section-by-section design validation
+  - `step-09-yagni-filter.md` — YAGNI Check block
+  - `step-10-summary.md` — Brainstorm Summary template with architectural-decisions block
+  - `step-11-transition.md` — `/ops-plan` hand-off
+- feat(brainstorm): every step file ends with a mandatory `## ✅ End of Step N` block containing (a) a step-specific completion checklist, (b) a `TaskUpdate` instruction to mark the step completed, and (c) an explicit hand-off: `**→ Next: read skills/brainstorm/step-NN+1-[name].md now and execute Step N+1.** Do NOT continue without reading that file first.` This is the chain-of-custody enforcement mechanism — the model does not decide when to load the next file, the current file tells it.
+- feat(brainstorm): Step 1 task list expanded from 9 to 10 tasks — `summary & transition` split into `Brainstorm: summary` (Step 10) and `Brainstorm: transition` (Step 11) for atomic per-step progress tracking.
+- No content loss: every instruction, template, gate, example, and constraint from the previous monolithic `SKILL.md` has been preserved verbatim and relocated into the appropriate step file. The `<HARD-GATE-FORK>` block (Step 7), the 7-dimension architectural checklist with its 3 inline templates, the Step 10 summary template with numbered dimensions, and the 5 global constraints are all intact.
+- No behavior change in the brainstorm workflow: the 11 steps, the gates, the forced choices, and the downstream critic Lens 5 brainstorm trace consumption all behave identically. Only the file layout and per-turn attention load changed.
+
 ## 3.2.1 (2026-04-08)
 
 ### Brainstorm skill — Step 6/7 consolidation (structural refactor, no behavior change)
