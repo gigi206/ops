@@ -341,10 +341,25 @@ How to apply:
 
 Spawn the **critic** agent to review the plan.
 
+### Required dispatch context
+
+The critic dispatch prompt MUST include ALL of the following:
+
+1. **The plan file path** (e.g. `docs/specs/YYYY-MM-DD-<topic>-plan.md`)
+2. **The companion spec file path** (e.g. `docs/specs/YYYY-MM-DD-<topic>-design.md`)
+3. **The brainstorm summary block** — copy verbatim the "Brainstorm Summary" markdown block from the conversation context (the one produced at the end of `/ops-brainstorm` Step 10, OR the recap you produced in this skill's Step 1 if brainstorm was already done). This is REQUIRED for the critic's Lens 5 brainstorm trace check (was each architectural decision in the plan validated in brainstorm, or invented post-brainstorm?).
+4. **The project instruction file path** (`CLAUDE.md` / `AGENTS.md` / `GEMINI.md`) if one exists at the project root
+
+If you dispatch the critic without the brainstorm summary, the Lens 5 brainstorm trace check cannot run — and architectural decisions silently invented during research will not be flagged. This is the exact failure mode that Lens 5 was designed to catch. Do NOT dispatch the critic without the brainstorm summary attached.
+
+Degraded case: if the user invoked `/ops-plan` directly without prior brainstorm AND without enough conversation context to reconstruct a brainstorm summary, state in the dispatch prompt: "No brainstorm summary available — the critic should explicitly note in Lens 5 that the brainstorm trace check cannot be performed and treat any architectural decision in the plan with extra scrutiny."
+
+### What the critic does
+
 The critic:
 1. **Pre-engagement**: Predicts 3 potential problems BEFORE reading the plan details (prevents confirmation bias)
-2. **Reviews against 4 lenses**: Missing steps, Contradictions, Security vulnerabilities, project instruction compliance
-3. **Multi-perspective review**: Executor, Stakeholder, Skeptic viewpoints
+2. **Reviews against 5 lenses**: Missing steps, Contradictions, Security vulnerabilities, project instruction compliance, **architectural alternatives** (Lens 5)
+3. **Multi-perspective review**: Executor, Stakeholder, Skeptic, Architect viewpoints
 4. **Gap analysis**: What's missing that nobody asked about?
 5. **Self-Audit + Realist Check**: Low-confidence findings become Open Questions, severity ratings are pressure-tested
 6. **Escalation**: If CRITICAL found or 3+ IMPORTANT → adversarial mode (expand scope, challenge every decision)

@@ -148,7 +148,7 @@ flowchart LR
 | Skill            | Role                                                     | Input                              | Output                                            | Agents dispatched                                                               |
 | ---------------- | -------------------------------------------------------- | ---------------------------------- | ------------------------------------------------- | ------------------------------------------------------------------------------- |
 | `/ops-plan`      | Design and plan before coding                            | Clarified need                     | Spec + plan decomposed into tasks + user approval | via research, spec-reviewer, critic                                             |
-| `/ops-implement` | Execute the plan task by task                            | Validated plan                     | Implemented, reviewed, and validated code         | implementer (xN), code-reviewer, security-reviewer (if triggers)                |
+| `/ops-implement` | Execute the plan task by task with per-task quality review | Validated plan                     | Implemented, reviewed, and validated code         | implementer (xN), code-reviewer (per-task lightweight + final), security-reviewer (if triggers) |
 | `/ops-ship`      | Commit, PR, capture learnings                            | Completed code                     | Commit, PR (optional), learnings                  | None                                                                            |
 | `/ops-do`        | Lightweight pipeline: research, execute, verify, review  | Well-understood task               | Implemented and reviewed code                     | researcher-code, researcher-doc, code-reviewer, security-reviewer (if triggers) |
 | `/ops-debug`     | Systematic investigation: hypothesize, test, fix, verify | Bug, error, or unexpected behavior | Diagnosed and fixed code                          | git-historian, code-reviewer, security-reviewer (if triggers)                   |
@@ -195,9 +195,9 @@ Shared logic extracted from skills. Not callable by the user — invoked program
 | **git-historian**     | sonnet (medium) | Mine git history: timelines, regressions, ownership, hotspots, architectural decisions     | research, debug, implement (circuit-breaker)                                             |
 | **researcher-repo**   |   opus (high)   | Clone and analyze external repositories: version-aware analysis, structured findings       | research (conditional), clone-analyze                                                    |
 | **spec-reviewer**     |   opus (high)   | Review spec for completeness, consistency, clarity, and feasibility                        | plan                                                                                     |
-| **critic**            |   opus (high)   | Adversarial plan review: completeness, coherence, security, project instruction compliance | plan                                                                                     |
+| **critic**            |   opus (high)   | Adversarial plan review: 5 lenses (incl. architectural alternatives), 4 perspectives incl. Architect — see [`agents/critic.md`](agents/critic.md) | plan                                                                                     |
 | **implementer**       |   opus (high)   | Execute one plan task (TDD, code generation, validation)                                   | implement                                                                                |
-| **code-reviewer**     |   opus (high)   | Code review: spec compliance, quality, TDD adherence, anti-patterns                        | implement (final review), do, test, refactor, perf                                       |
+| **code-reviewer**     |   opus (high)   | Code review: spec compliance, quality, TDD adherence, anti-patterns                        | implement (per-task lightweight + final review), do, test, refactor, perf                |
 | **security-reviewer** |   opus (high)   | Deep security analysis: code, infra, CI/CD, containers, supply chain                       | security-gate: implement, do, debug, security, review-pr                                 |
 | **test-writer**       |   opus (high)   | Analyze existing code and write tests: behavior analysis, edge cases, coverage             | test                                                                                     |
 | **pr-reviewer**       |   opus (high)   | Review external PRs: quality, security, conventions, actionable comments                   | review-pr                                                                                |
@@ -308,7 +308,7 @@ Brainstorm, research, and plan before writing code.
 | Design approaches  | 2-3 options with pros/cons, recommendation first                     |
 | Spec writing       | Design document written, reviewed by spec-reviewer, approved by user |
 | Task decomposition | Ordered tasks with files, changes, and validation commands           |
-| Critic review      | Adversarial review (4 lenses, 3 perspectives, self-audit)            |
+| Critic review      | Adversarial review (5 lenses incl. architectural alternatives, 4 perspectives incl. Architect, self-audit) |
 | User approval      | Plan presented for final approval before implementation              |
 
 ```mermaid
@@ -426,11 +426,14 @@ flowchart TD
     subgraph task_loop["Per task (×N)"]
         IMP{{"implementer"}} --> V["Validation gate"]
         V --> CC["Conformity check"]
-        CC --> DC["Discovery check"]
+        CC --> PTR{{"code-reviewer<br/>(per-task lightweight)"}}
+        PTR -->|Critical/Important| FIX["Fix loop<br/>(fresh implementer, max 3)"]
+        FIX --> PTR
+        PTR -->|Approved| DC["Discovery check"]
     end
     DC --> CQ["Code quality"]
     CQ --> ST["Security triage"]
-    ST --> CODREV{{"code-reviewer"}}
+    ST --> CODREV{{"code-reviewer<br/>(final, full diff)"}}
     ST -.->|if triggers| SECREV{{"security-reviewer"}}
     CODREV --> FV["Final validation"]
 ```

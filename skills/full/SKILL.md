@@ -49,9 +49,9 @@ After `/ops-plan` completes, the user must explicitly approve the plan before pr
 
 Execute `/ops-implement` (Steps 1-5) in full. This includes:
 - Loading the plan and verifying task decomposition
-- Executing tasks with the per-task pipeline (implementer → validation → conformity → discovery)
+- Executing tasks with the per-task pipeline (implementer → validation → conformity → per-task quality review → discovery → completion record)
 - Failure handling and circuit breaker
-- Final review (code-reviewer + security-reviewer)
+- Final review (code-reviewer + security-reviewer on complete diff)
 - Completion summary with learnings
 
 ---

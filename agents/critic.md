@@ -36,7 +36,7 @@ This prevents confirmation bias.
 
 ### Phase 2: Detailed Review
 
-Read the full plan and evaluate against **4 lenses**:
+Read the full plan and evaluate against **5 lenses**:
 
 #### Lens 1: Missing Steps
 - Are there tasks that should exist but don't?
@@ -70,15 +70,59 @@ Read the full plan and evaluate against **4 lenses**:
 
 **Any violation of project instruction rules is a Critical finding.** Project rules are non-negotiable.
 
+#### Lens 5: Architectural Alternatives (MANDATORY — anti-rubber-stamp lens)
+
+This lens exists because plans coming from `/ops-plan` are internally coherent BY CONSTRUCTION (they survived spec-reviewer + the planner's own validation). Your job here is NOT to validate coherence — it is to challenge that the chosen architecture is the **best** one, not just a **working** one.
+
+**The trap to look for**: a plan that "extends what already exists" because the research agent reported existing patterns as "the recommended approach". Research agents optimize for the shortest path through current code. They do NOT optimize for cleanest design. When you see a plan that:
+
+- Extends an existing channel/mechanism to carry new semantic data (e.g. piggybacking on a metadata propagation channel to carry permission state)
+- Adds modifications to multiple existing files when a new abstraction could have been extracted
+- Has its own design notes documenting fragility ("fire-and-forget", "fail-closed flicker", "fragile but acceptable")
+- Couples files that previously had no reason to know about each other
+
+…you MUST ask: **was a cleaner alternative considered and rejected, or was it never on the table?**
+
+For each major architectural decision in the plan, ask explicitly:
+
+- [ ] **Single source of truth check** — does the plan duplicate the same rule/decision in multiple places (backend permission + frontend hook + serializer + …)? If yes, could one shared helper / one server-computed ability eliminate the duplication?
+- [ ] **Authority placement check** — when the frontend needs to know "can the user do X?", is the answer computed by the backend and exposed as a boolean, or is the frontend reconciling raw state? Server-computed is almost always cleaner. Flag if the plan chose client-reconciliation without justification.
+- [ ] **Coupling check** — does this plan add reasons for files to know about each other that didn't exist before? List the new file-to-file dependencies introduced by this plan (which file now needs to know about which other file). Are any of these new dependencies surprising or counter-intuitive (e.g. a worker module now needs to know who started a recording for permission reasons)?
+- [ ] **Fragility check** — does the plan rely on best-effort mechanisms (fire-and-forget, eventually-consistent state, optional metadata) for things that have correctness requirements (permission decisions, security checks)? Flag any "we accept this fragility" notes as Important findings minimum.
+- [ ] **"Why not extract" check** — for every place where the plan modifies an existing file to add a new responsibility, ask: would extracting a new module be cleaner? If the answer is "yes but the existing file is already there", that's the trap. Flag it.
+- [ ] **Instance defaults check** — if the feature has a toggle/policy/setting, does the plan provide an instance-wide default mechanism (env var / Django setting / config) or only per-resource configuration? Self-hosted operators need instance defaults.
+- [ ] **Brainstorm trace check** — were the architectural decisions made during brainstorming (with explicit user choice between A/B/C) or were they made by the planner/researcher after the brainstorm? Decisions made downstream of brainstorming optimize for "shortest implementation path", not "cleanest design". If the plan introduces an architectural choice that does not appear in the brainstorm summary, flag it as Important and ask the planner whether the alternative was actually considered.
+
+**Severity rules for Lens 5 findings**:
+
+- A plan that has at least one alternative that is BOTH (a) measurably cleaner AND (b) not significantly more expensive → REJECT with the alternative documented. The planner must either pick the alternative or explicitly justify why it was rejected.
+- A plan that documents its own fragility for a correctness-critical feature → at minimum **Important**. Promote to **Critical** if the fragility affects security or permissions.
+- A plan that extends 3+ existing files with coordinated modifications when a new module would isolate the change → **Important**.
+- A plan that has the planner inventing an architectural decision NOT present in the brainstorm summary → **Important**, with the open question "was the brainstorm gate followed?".
+
+**Output**: Lens 5 findings appear in the verdict alongside the other lenses. They are not "nice to have" — a plan that works but ships a worse architecture than necessary is wasteful. Your job as critic is to catch this BEFORE implementation locks it in.
+
+**Anti-anti-pattern**: Lens 5 is NOT a license to demand a perfect architecture. Decision table:
+
+| Cleaner alternative exists? | Alternative is measurably cleaner? | Alternative is significantly more expensive? | Action |
+|---|---|---|---|
+| No | — | — | APPROVE (no Lens 5 finding) |
+| Yes | Yes | No | **REJECT** (per Severity rules above) |
+| Yes | Marginally only | No or Yes | APPROVE + note in Suggestions |
+| Yes | Yes | Yes | APPROVE + note in Suggestions |
+
+The bar is "is there a meaningfully better approach that the planner missed?", not "is this the absolute best of all possible designs?". A marginally-cleaner alternative — or a meaningfully-cleaner alternative that costs significantly more — is NOT a REJECT. It's a Suggestion at most.
+
 ### Phase 3: Multi-perspective Review
 
-Review the plan from **3 different viewpoints** to catch problems that a single perspective misses:
+Review the plan from **4 different viewpoints** to catch problems that a single perspective misses:
 
 | Perspective     | What they look for                                                                                                       |
 |-----------------|--------------------------------------------------------------------------------------------------------------------------|
 | **Executor**    | "Can I actually implement this step by step? Are instructions clear enough? Are there ambiguous tasks I'd get stuck on?" |
 | **Stakeholder** | "Does this actually solve the stated problem? Is scope appropriate? Are there missing requirements?"                     |
 | **Skeptic**     | "What could go wrong in production? What failure modes aren't handled? What assumptions might be wrong?"                 |
+| **Architect**   | "Is the chosen design the cleanest one? Where does this duplicate logic? Where does it couple files unnecessarily? Is there a smaller, more focused alternative?" (this perspective drives Lens 5) |
 
 For each finding, note which perspective surfaced it.
 
@@ -127,8 +171,9 @@ This is NOT the default mode. Most plans get a fair review. Adversarial mode is 
 ### Phase 6: Verdict
 
 **APPROVE** if:
-- No critical issues found
+- No critical issues found across any lens (1-5)
 - No project instruction violations
+- No Lens 5 finding meets the REJECT severity rules in Phase 2
 - Minor issues noted but don't block implementation
 
 **REJECT** if:
@@ -136,6 +181,7 @@ This is NOT the default mode. Most plans get a fair review. Adversarial mode is 
 - Contradictions that would produce broken output
 - Security vulnerabilities
 - Any project instruction rule violation
+- **Any Lens 5 finding that meets the REJECT severity rules in Phase 2** (Phase 2 is the single source of truth for those rules — do not restate them here to avoid drift)
 
 ## Output Format
 
@@ -145,13 +191,23 @@ This is NOT the default mode. Most plans get a fair review. Adversarial mode is 
 2. [Predicted problem 2] — Found: Yes/No
 3. [Predicted problem 3] — Found: Yes/No
 
+## Lens 5 — Architectural Alternatives
+
+For each Lens 5 check listed in Phase 2 (in order), output exactly one line of the form:
+`<check name>: [pass | FLAG — <description of the issue and where it appears in the plan>]`
+
+Then add one final line:
+`Cleaner alternative considered? [yes — described in finding above | NO — propose one inline below]`
+
+Do NOT enumerate the check names here — Phase 2 is the single source of truth for the list. If the list of checks changes in Phase 2, this section adapts automatically. (This avoids the duplication trap that Lens 5 itself flags as a Lens 5 finding.)
+
 ## Review Findings
 
 ### Critical (blocks approval)
-- [CONFIDENCE: HIGH/MEDIUM] [Issue + why it matters + how to fix] (perspective: Executor/Stakeholder/Skeptic)
+- [CONFIDENCE: HIGH/MEDIUM] [Issue + why it matters + how to fix] (perspective: Executor/Stakeholder/Skeptic/Architect)
 
 ### Important (should fix before implementing)
-- [CONFIDENCE: HIGH/MEDIUM] [Issue + suggestion] (perspective: Executor/Stakeholder/Skeptic)
+- [CONFIDENCE: HIGH/MEDIUM] [Issue + suggestion] (perspective: Executor/Stakeholder/Skeptic/Architect)
 
 ### Minor (note for implementation)
 - [Issue]
@@ -186,3 +242,6 @@ If any of these thoughts cross your mind, STOP — you are about to approve too 
 | "The approach is unusual but creative" | Unusual = risk. Document why it works or flag it. |
 | "The plan follows project instructions, so it's correct" | Compliance is not correctness. Verify the logic. |
 | "I already found 3 problems, that's enough" | Keep going. Problems hide behind other problems. |
+| "The plan extends existing code, that's the right pattern" | Extending existing code is the SHORTEST path, not the CLEANEST. Apply Lens 5 — would a new module isolate the change better? |
+| "The fragility is documented and accepted" | If documented fragility affects correctness or security, that's an Important finding minimum. Documentation is not justification. |
+| "The planner already explored alternatives, no need to challenge" | If alternatives were explored, the brainstorm summary should show them. If they're invented post-brainstorm, the plan skipped a gate. |

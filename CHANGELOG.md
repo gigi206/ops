@@ -1,5 +1,37 @@
 # Changelog
 
+## 3.2.0 (2026-04-07)
+
+### Architectural decision-locking and per-task quality review (inspired by superpowers analysis)
+
+Improvements addressing a class of failure where `/ops-plan` produces an internally coherent plan whose architecture is measurably inferior to alternatives that were never considered. Root cause: the brainstorm phase deferred architectural decisions to research, and the research phase optimized for shortest implementation path rather than cleanest design. The fix has two pillars expressed across the entries below: (1) lock architectural decisions during brainstorm via mandatory question templates and a HARD-GATE-FORK, and (2) add an early-warning quality gate during implementation via a per-task code-reviewer dispatch with Lens-5-style drift detection.
+
+- feat(brainstorm): `<HARD-GATE-FORK>` in Step 7 forbids deferring architectural decisions to `/ops-plan` or research. Phrases like "we'll figure this out during the plan", "TBD", or any equivalent deferral trigger a skill failure.
+- feat(brainstorm): mandatory question Template A "Deployment-instance defaults" — A/B/C/D format covering env-var/setting overrides for instance operators. Applies to any feature with a toggle/policy.
+- feat(brainstorm): mandatory question Template B "Source of truth for authorization" — A/B/C format forcing explicit choice between server-driven ability, client-driven reconciliation, or hybrid. Applies to any permission/visibility feature.
+- feat(brainstorm): mandatory question Template C "Failure mode" — A/B/C format forcing explicit fail-closed/fail-open/retry choice. Applies to any feature with async or external dependencies.
+- feat(brainstorm): Step 7 "Architectural Dimensions Checklist" with 7 dimensions (storage, authority placement, instance defaults, failure mode, UI placement, backward compatibility, test boundaries). Each applicable dimension must have an explicit user choice before moving to Step 8.
+- feat(brainstorm): Step 10 Summary template now requires a structured `### Architectural decisions (per dimension)` section listing each Step 7 dimension with its chosen value. This is the data the critic's Lens 5 brainstorm trace check consumes.
+- feat(brainstorm): Step 11 Transition explicitly requires keeping the Brainstorm Summary block visible in conversation context so `/ops-plan` Step 8 can attach it to the critic dispatch.
+- feat(critic): new **Lens 5 — Architectural Alternatives** with 7 checks (single source of truth, authority placement, coupling, fragility, why-not-extract, instance defaults, brainstorm trace). Severity rules: REJECT if a meaningfully cleaner alternative exists, or if documented fragility affects security/permissions. Phase 6 verdict updated.
+- feat(critic): new **4th perspective "Architect"** in Phase 3 multi-perspective review. Drives Lens 5. Surfaces design quality issues that the Executor / Stakeholder / Skeptic perspectives miss.
+- feat(critic): new red flags row entries: "extends existing code = right pattern" → SHORTEST path, not CLEANEST; "fragility documented = OK" → documentation is not justification; "alternatives explored = no need to challenge" → if alternatives were explored, they should appear in the brainstorm summary.
+- feat(plan): Step 8 critic dispatch now mandates a structured context block — plan path, spec path, **brainstorm summary verbatim** (required for Lens 5 brainstorm trace check), project instruction file. Degraded-case clause for direct `/ops-plan` invocation without prior brainstorm.
+- feat(implement): new **Step 2d — Per-task Quality Review** between conformity check and discovery check. Lightweight code-reviewer dispatch on the cumulative working tree state captured by the new `scripts/ops-capture-task-state.sh` script (tracked diff via `git diff HEAD` plus untracked new file contents via `git ls-files --others --exclude-standard`), with the dispatch prompt scoping findings to the task being reviewed. Catches duplication and Lens-5-style architectural drift task by task while context is hot. Fix loop max 3 iterations with repeated-finding circuit breaker. Inspired by superpowers' subagent-driven-development pattern, adapted to ops's "no commit per task" convention.
+- feat(scripts): new `scripts/ops-capture-task-state.sh` — read-only script that captures the cumulative working tree state for the per-task quality review (tracked changes via `git diff HEAD` + untracked new files via `git ls-files --others --exclude-standard`, with binary detection). Used by `/ops-implement` Step 2d. Tested empirically against clean trees, modified-only tasks, new-file-only tasks, mixed scenarios, binary files, and a real repo with 4273 lines of state. Per AGENTS.md convention: deterministic logic in `scripts/`, not inlined in skills.
+- feat(implement): two-layer review architecture documented in HARD-GATE — per-task lightweight (Step 2d) catches single-task drift; final full-diff review (Step 4) catches cross-task issues. Both mandatory.
+- feat(implement): `<HARD-GATE-CODE-QUALITY>` scoped to Step 4 final review only. The per-task review at Step 2d is exempt to keep iteration cheap. qlty/lint hygiene at the per-task level is delegated to commit hooks or to the final code-quality pass.
+- feat(implement): per-task quality review entry in Task Completion Record (Step 2f) with iteration count and suggestions list.
+- feat(implement): three new red flags row entries: "skip per-task, final will catch it", "fix per-task issues in final pass", "task 1 was clean so skip task 2".
+- feat(researcher-code): new top-of-file mission statement — "**You report observations, not recommendations.**" Reframes the agent as observer rather than architect. Patterns are observations. Architectural decisions belong to the brainstorm phase and the planner.
+- feat(researcher-code): explicit forbidden phrasing list — "recommended", "the right approach", "natural fit", "naturally extend", "we should", "the plan should". Required phrasing examples for neutral observation framing.
+- feat(researcher-code): new output markers `[FRAGILITY]` for fire-and-forget / fail-open / missing tests on critical paths, `[POTENTIAL EXTENSION POINT]` for existing mechanisms the task could mechanically extend (decision deferred to planner).
+- feat(researcher-code): Output Format updated — "Files in scope (observation, not prescription)" replaces "Files to Create/Modify"; "Currently interacts with" replaces "Will interact with"; "(observations only)" appended to Similar Implementations heading.
+- fix(implement): line 123 referenced "completion summary (Step 4)" but the completion summary is in Step 5. Corrected to reference task completion record (Step 2f) and final completion summary (Step 5).
+- fix(implement): renumbered sub-steps 2d→2e (Discovery Check) and 2e→2f (Task Completion Record) to make room for the new 2d (Per-task Quality Review). All cross-references updated.
+- fix(full): Step 3 pipeline description updated to include the per-task quality review and completion record.
+- fix(README + CHANGELOG): "4 lenses" → "5 lenses incl. architectural alternatives", "3 perspectives" → "4 perspectives incl. Architect".
+
 ## 3.1.1 (2026-04-02)
 
 ### Review skill — anti-sycophancy and source-aware feedback handling
@@ -584,7 +616,7 @@ Initial public release.
 - `/ops:verify` — Behavioral skill (always active): evidence before claims
 
 ### Agents
-- **critic** (Opus) — Adversarial plan review with 4 lenses, 3 perspectives, self-audit
+- **critic** (Opus) — Adversarial plan review with 5 lenses (incl. architectural alternatives), 4 perspectives (incl. Architect), self-audit
 - **researcher-code** (Opus) — Codebase patterns, conventions, architecture mapping, risk flagging
 - **researcher-doc** (Sonnet) — External docs via Context7 MCP with version validation and source priority
 - **git-historian** (Sonnet) — Commit timeline, regressions, ownership, hotspots

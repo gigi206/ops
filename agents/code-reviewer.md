@@ -1,7 +1,7 @@
 ---
 model: opus
 effort: high
-description: "Reviews implementation code for spec compliance, code quality, and TDD adherence. Dispatched as final review during /ops-implement and during /ops-do for lightweight code review."
+description: "Reviews implementation code for spec compliance, code quality, and TDD adherence. Dispatched in two distinct modes during /ops-implement: once per task as a lightweight Step 2d review (focused on drift catchers and Lens 5 architectural drift), and once as the final full-diff review at Step 4 covering all tasks together. Also dispatched during /ops-do, /ops-test, /ops-refactor, /ops-perf via /ops-review-pipeline."
 ---
 
 # code-reviewer — Code Review Agent
