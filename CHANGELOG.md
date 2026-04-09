@@ -1,5 +1,28 @@
 # Changelog
 
+## 3.4.0 (2026-04-09)
+
+### Plan skill — chain-of-custody decomposition into 10 step files (OpenCode + weaker-models compatibility)
+
+Second application of the chain-of-custody pattern validated in 3.3.0 on the brainstorm skill. The plan skill has been decomposed into 10 sequential step files numbered 00-09 (matching the existing Step 0 to Step 9 sequence). Motivation is identical: the skill runs on non-Claude models via OpenCode whose instruction-following is weaker than Claude's family, and the monolithic 426-line `SKILL.md` was exceeding their effective attention budget. Plan was the most urgent next target because it is the longest ops skill and has four distributed HARD gates that weaker models were silently skipping.
+
+- feat(plan): `SKILL.md` rewritten as a ~130-line bootstrap containing the two top-level hard gates (`HARD-GATE-0`, `HARD-GATE-1`), the "When to use which skill" decision table, the Instruction Priority and Subagent Rules references, the Overview, the workflow diagram with all 10 file paths, the execution rules (including the branching-hand-off rule for Steps 4 and 8), and the global "Red Flags — you are about to skip a step" anti-pattern table. No step content remains in `SKILL.md`.
+- feat(plan): 10 new step files under `skills/plan/`:
+  - `step-00-discover-commands.md` — creates the 10-task progress checklist as a preamble, then discovers project test/build/lint commands. Environment health check with `/ops-init` proposal preserved. Contains a reminder of HARD-GATE-0 and HARD-GATE-1 from the bootstrap.
+  - `step-01-clarify-intent.md` — clarity check + scope check + brainstorm offer, with the "brainstorm already done" branch preserved. Requires the `## Intent Confirmed` output block regardless of which branch.
+  - `step-02-context-detection.md` — project instruction file + directory structure + conventions.
+  - `step-03-parallel-research.md` — `HARD-GATE-RESEARCH` collocated with the 3-agent dispatch instruction (researcher-code + researcher-doc + git-historian, single message).
+  - `step-04-research-adequacy.md` — evidence table with 4 dimensions, **branching hand-off with 3 branches**: Branch A (3-4 OK → Step 5), Branch B (1-2 GAP → stay in step, fill the gap, re-evaluate), Branch C (0 evidence → go back to Step 1).
+  - `step-05-design-approaches.md` — 2-3 approaches with name/how/pros/cons/fits/reuse + mandatory External Dependency Validation block + approach gate.
+  - `step-06-write-review-spec.md` — sub-steps 6a/6b/6c/6d kept in a single file (tightly coupled: present by sections → write file → spec-reviewer loop → present to user). The inner spec-review loop is handled inside the step, not at the hand-off level.
+  - `step-07-write-plan.md` — task decomposition mandatory rules + no-placeholders list + project-instruction-driven tasks + sizing guide + TDD granularity.
+  - `step-08-critic-review.md` — required dispatch context (plan path, spec path, brainstorm summary verbatim, project instruction file), Lens 5 brainstorm trace rationale, degraded case, `## Critic Re-verification` block template, **branching hand-off with 2 branches**: Branch A (APPROVE → Step 9), Branch B (REJECT → stay, re-dispatch via `ops-redispatch-optimization`, max 3 iterations, re-evaluate).
+  - `step-09-user-approval.md` — `HARD-GATE-HANDOFF` collocated with the 3-option user prompt. Explicitly forbids implementing code inline.
+- feat(plan): every step file ends with a mandatory `## ✅ End of Step N` block containing (a) a step-specific completion checklist, (b) a `TaskUpdate` instruction to mark the step completed, and (c) an explicit hand-off. Steps 4 and 8 have branching hand-offs that explicitly describe each branch and the corresponding next file or loop-back behavior.
+- feat(plan): task tracking added to `/ops-plan` (previously absent) — Step 0's preamble creates a 10-task checklist matching the 10 steps; each step file marks its own task `in_progress` at the start and `completed` at the end via `TaskUpdate`. This mirrors the pattern established in `/ops-brainstorm` 3.3.0. Task names: "Plan: discover commands", "Plan: clarify intent", "Plan: context detection", "Plan: parallel research", "Plan: research adequacy check", "Plan: design approaches", "Plan: write & review spec", "Plan: write plan", "Plan: critic review", "Plan: user approval".
+- No content loss: all four `<HARD-GATE-*>` blocks preserved verbatim (`HARD-GATE-0` and `HARD-GATE-1` in `SKILL.md` bootstrap, `HARD-GATE-RESEARCH` in `step-03`, `HARD-GATE-HANDOFF` in `step-09`); the "When to use which skill" table, the research adequacy dimensions table, the external-dependency validation template, the 5-section plan structure, the task decomposition rules, the no-placeholders list, the critic dispatch requirements, the `Critic Re-verification` block template, and the Red Flags table are all intact.
+- Minor behavior change: task tracking was not previously part of `/ops-plan` — this is the only behavior change, documented explicitly above. The 10-step workflow, the 4 HARD gates, the required output blocks (`Discovered Commands`, `Intent Confirmed`, research adequacy table, `Critic Re-verification`), the re-dispatch loops, and the downstream `/ops-implement` handoff all behave identically to v3.3.0.
+
 ## 3.3.0 (2026-04-08)
 
 ### Brainstorm skill — chain-of-custody decomposition into 11 step files (OpenCode + weaker-models compatibility)
