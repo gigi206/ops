@@ -27,6 +27,10 @@ The per-task review uses a **focused** code-reviewer dispatch (cumulative workin
 Do NOT dispatch security-reviewer per task — security-reviewer is for the final pass only (it needs cross-task context to be useful).
 </HARD-GATE>
 
+<HARD-GATE-LANGUAGE>
+User-facing output uses the user's conversation language. Technical terms (tool/command/skill/agent names, code identifiers, paths) stay in English. Step files are English tooling for YOU, not content for the user — reading English instructions does NOT license English replies. If you catch yourself drafting a reply in English when the user writes in another language, STOP and restart in the user's language. Drift to English mid-session is a FAILURE.
+</HARD-GATE-LANGUAGE>
+
 ## Instruction Priority
 
 Follow the `ops-instruction-priority` rules when instructions conflict.

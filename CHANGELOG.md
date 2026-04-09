@@ -1,5 +1,18 @@
 # Changelog
 
+## 3.6.2 (2026-04-09)
+
+### Implement skill — add HARD-GATE-LANGUAGE to prevent mid-session language drift
+
+Second empirical defect observed during chain-of-custody validation on GLM-5.1 (OpenCode), separate from the v3.6.1 no-bundling issue but present in the same validation context. The conversation started in French, brainstorm and plan executed entirely in French, but when transitioning into `/ops-implement` the model's user-facing output switched to English and stayed in English for subsequent messages — while the user's prompts were still in French.
+
+Root cause: no ops skill other than `/ops-init` has an explicit language consistency rule. The model's "language state" is inferred implicitly from the conversation context, and over long sessions the implicit anchor toward English (from reading many English step files and English tool outputs — build logs, validation errors, agent reports) can overcome the user's non-English prompts. Implement is the most likely skill to trigger this drift because its step files are the most technically dense (vocabulary like "implementer / validation gate / conformity check / HARD-GATE / dispatch" saturates the attention) and its Step 2 loop generates the longest runs of English tool output.
+
+- fix(implement): new `<HARD-GATE-LANGUAGE>` block in `skills/implement/SKILL.md` bootstrap, placed immediately after the existing top-level `<HARD-GATE>` block and before `## Instruction Priority`. Five sentences, tight: (1) user-facing output uses the user's conversation language; (2) technical terms (tool/command/skill/agent names, code identifiers, paths) stay in English; (3) step files are English tooling for the model, not content for the user — reading English instructions does NOT license English replies; (4) if the model catches itself drafting a reply in English when the user writes in another language, STOP and restart in the user's language; (5) drift to English mid-session is a FAILURE.
+- Scope: intentionally localized to `skills/implement/SKILL.md` only, NOT echoed into `step-02-execute-tasks.md`. Rationale: the no-bundling gate required a step-02 echo in v3.6.1 because the bypass was observed INSIDE the loop iteration; the language drift, by contrast, was observed at the SKILL.md-to-step-02 transition and could be a one-shot anchoring effect rather than a loop-iterated drift. A single gate at the top of SKILL.md should be sufficient. If language drift recurs inside the loop despite this gate, a step-02 echo can be added in a follow-up patch.
+- Scope: not applied to brainstorm, plan, or init — the observed drift happened only at the implement transition. Brainstorm and plan ran entirely in French throughout the validation session. Applying the fix globally to all 4 decomposed skills would be speculative defense without empirical evidence in those skills.
+- No behavior change in sessions that were already maintaining language consistency (typically Claude Code on a well-aligned Claude model) — the gate adds a constraint that compliant models already satisfy. The gate targets the specific drift pattern observed on GLM-5.1 and similar non-Claude models.
+
 ## 3.6.1 (2026-04-09)
 
 ### Implement skill — reinforce no-bundling HARD-GATE at the top of step-02 (observed bypass attempt)
