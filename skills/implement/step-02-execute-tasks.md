@@ -1,5 +1,22 @@
 # Step 2 — Execute Tasks
 
+<HARD-GATE-NO-BUNDLING>
+Every task in the plan MUST go through the per-task pipeline (2a → 2f) INDIVIDUALLY. One task = one implementer agent. No exceptions.
+
+If you find yourself writing, proposing, or asking the user ANY of the following, you have FAILED this skill:
+
+- "Implement Tasks N+M in a single dispatch" (bundling)
+- "Execute tasks directly using the edit tools instead of dispatching implementer agents" (bypass)
+- "Batch simpler tasks into direct edits, use subagents for complex ones" (bundling + bypass)
+- Asking the user to choose between "execute the full pipeline rigorously" and "faster alternatives" — THE RIGOROUS PIPELINE IS THE ONLY OPTION. Do not negotiate, do not offer shortcuts, do not propose to batch based on task size or complexity.
+
+If the plan has 18 tasks, you dispatch 18 implementer agents. If it has 50 tasks, you dispatch 50. Token cost is NOT a valid reason to bundle — the user can interrupt the skill at any time if they want to stop. Offering the user a "lighter" alternative is the same thing as silently bundling — both defeat the purpose of the per-task pipeline (per-task review catches drift task-by-task while context is hot).
+
+The post-hoc count audit in the `## ✅ End of Step 2` completion checklist verifies that `count(implementer agents dispatched) ≥ count(plan tasks)`. If you bundle or bypass, the audit WILL catch it and you will have to redo the bundled tasks individually.
+
+This gate is a specific reinforcement of the top-level `<HARD-GATE>` in `skills/implement/SKILL.md` — it is repeated here because this file is the per-task loop, and the top-level gate is "far" from the point of enforcement. Read this gate every time you re-enter the loop for a new task.
+</HARD-GATE-NO-BUNDLING>
+
 For each task in the plan, in order, run the per-task pipeline below (2a → 2b → 2c → 2d → 2e → 2f). When the current task's pipeline is complete, move to the next plan task and restart the pipeline from 2a. When ALL plan tasks have been processed, proceed to the End of Step 2 block and hand off to Step 3.
 
 **Before starting a task**, mark it as `in_progress` via `TaskUpdate`.

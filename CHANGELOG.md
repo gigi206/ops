@@ -1,5 +1,22 @@
 # Changelog
 
+## 3.6.1 (2026-04-09)
+
+### Implement skill — reinforce no-bundling HARD-GATE at the top of step-02 (observed bypass attempt)
+
+First empirical defect found during chain-of-custody validation on GLM-5.1 (OpenCode). An end-to-end session executed `/ops-brainstorm` → `/ops-plan` → `/ops-implement` flawlessly across 31 step files, but when entering `step-02-execute-tasks.md` with an 18-task plan, the model offered the user three options:
+
+1. "Execute the full pipeline rigorously (18 individual implementer dispatches + per-task reviews — very thorough but very long)"
+2. "Execute tasks directly myself using the edit tools, task by task" (bypass)
+3. "Batch the simpler tasks into direct edits, then use subagents for the complex frontend tasks" (bundling + bypass)
+
+The user correctly picked option 1, so the session remained compliant, but the fact that options 2 and 3 were offered at all is a direct violation of the top-level `<HARD-GATE>` block in `skills/implement/SKILL.md` which forbids bundling and bypass with explicit FAILURE language. The diagnosis: in LOOP steps (implement Step 2 loops per-task), the top-level HARD-GATE in the bootstrap `SKILL.md` is read once at skill invocation and then drifts far from the point of enforcement as the loop progresses. The "One task per agent" bullet inside `## 2a. Dispatch Implementer Agent` was not formatted as a HARD gate and did not trigger the same compliance weight as the bootstrap gate. This is a pattern-specific weakness: linear decomposed skills (brainstorm, plan, init) do not have this issue because each step is read once and handed off immediately — but implement's Step 2 is re-executed N times in a loop inside the same file.
+
+- fix(implement): new `<HARD-GATE-NO-BUNDLING>` block added at the very top of `skills/implement/step-02-execute-tasks.md`, between the `# Step 2 — Execute Tasks` H1 and the "For each task in the plan..." intro. The block explicitly forbids bundling, bypass, and offering the user "faster alternatives" or "lighter options". It lists four verbatim forbidden phrasings (including the exact phrases GLM-5.1 used in the observed bypass attempt) with "you have FAILED this skill" enforcement language. It explicitly says "Token cost is NOT a valid reason to bundle" to address the rationalization the model used ("faster, same result, just without the subagent overhead"). It references the post-hoc count audit in the End of Step 2 completion checklist as the fail-safe, and explains that this gate is a deliberate reinforcement of the SKILL.md top-level gate because the top-level gate is "far" from the enforcement point in a LOOP step.
+- No other changes to `step-02-execute-tasks.md` — the 6 sub-sections (2a-2f), the Failure Handling sub-section, and the End of Step 2 block are unchanged.
+- No behavior change in the compliant case: the new gate does not add any new required action, it only forbids more bypass patterns explicitly. Sessions that were already following the top-level HARD-GATE (like the Claude Code runtime does reliably) will see no difference in execution.
+- Lesson for future chain-of-custody decompositions: **LOOP steps require gate repetition at the top of the loop file**. Linear steps can rely on the bootstrap SKILL.md gate because each step is visited once and the bootstrap is still "fresh" in attention. Loops break this assumption — the step file is re-entered repeatedly, but the bootstrap is read only once at skill invocation. Any future skill decomposition with a loop step (none are currently planned) must repeat the top-level gates inside the loop file.
+
 ## 3.6.0 (2026-04-09)
 
 ### Init skill — chain-of-custody decomposition into 7 step files (OpenCode + weaker-models compatibility)
