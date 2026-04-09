@@ -168,7 +168,7 @@ flowchart LR
 | `/ops-review`        | Technically evaluate code review feedback                                                  | Receiving comments on code (human or CI)                            |
 | `/ops-security`      | On-demand security review                                                                  | Security review of changes or specific files                        |
 | `/ops-audit`         | Full codebase audit — code quality (qlty) + security (semgrep) with cross-triage           | First arrival on project, pre-release, periodic health check        |
-| `/ops-init`          | 6-phase environment diagnostic: recap, ops tools, linters, prerequisites, build tools, LSP | First use, new environment, missing tools                           |
+| `/ops-init`          | 7-step environment diagnostic: bootstrap, recap, ops tools, linters, prerequisites, build tools, LSP | First use, new environment, missing tools                           |
 | `/ops-verify`        | Behavioral rule: evidence before any claim                                                 | Always active — applies in all contexts                             |
 
 ### Internal phases (`user-invocable: false`)
@@ -877,7 +877,7 @@ ops/
 │   ├── review/SKILL.md                # Evaluate feedback technically
 │   ├── security/SKILL.md              # On-demand security review
 │   ├── audit/SKILL.md                 # Full codebase audit (qlty + semgrep)
-│   ├── init/SKILL.md                  # 6-phase environment diagnostic + tool setup
+│   ├── init/SKILL.md                  # 7-step environment diagnostic + tool setup
 │   ├── verify/SKILL.md                # Evidence before claims (behavioral)
 │   │
 │   │── # ─── INTERNAL PHASES (user-invocable: false) ───
