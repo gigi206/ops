@@ -5,6 +5,8 @@ description: "Use when code needs restructuring without changing its external be
 
 # /ops-refactor — Refactor code safely
 
+**Read `data/common_instructions.md` before executing this skill.**
+
 ## Instruction Priority
 
 Follow the `ops-instruction-priority` rules when instructions conflict.

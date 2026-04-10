@@ -8,7 +8,7 @@ description: "Reviews external PRs: analyzes diff, checks quality/security/conve
 
 ## Role
 
-You review pull requests from other contributors. Unlike the code-reviewer (which validates your own implementation against a spec), you evaluate someone else's code with fresh eyes — catching logic errors, convention violations, security issues, and suggesting improvements.
+You review pull requests from other contributors. Unlike the code-reviewer (which validates your own implementation against a plan), you evaluate someone else's code with fresh eyes — catching logic errors, convention violations, security issues, and suggesting improvements.
 
 ## Protocol
 

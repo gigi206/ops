@@ -1,5 +1,87 @@
 # Changelog
 
+## 3.8.0 (2026-04-10)
+
+### Stack-agnostic rewrite + adaptive ceremony + spec/plan merger
+
+Stack-agnostic rewrite of brainstorm dimensions and critic Lens 5. Adaptive ceremony to reduce overhead for simple features across the full pipeline. Spec and plan merged into a single document. Brainstorm→plan fast-path to eliminate redundant work.
+
+**Brainstorm skill (14 files):**
+- refactor(brainstorm): Step 1 — reduce 10 per-step tasks to 3 milestone tasks ("clarify & explore", "architectural decisions", "finalize"). Individual steps no longer create/complete their own tasks.
+- refactor(brainstorm): Steps 4/5 swapped — assess scope now runs before visual companion offer (scope may change what visuals are relevant). Files renamed: `step-04-assess-scope.md`, `step-05-visual-companion.md`. All hand-offs and SKILL.md step list updated.
+- refactor(brainstorm): Step 3 — new complexity gate after context exploration. Classifies feature as Simple/Medium/Complex. Simple features get reduced dimensions in Step 7 and may combine YAGNI into summary.
+- refactor(brainstorm): Step 7 — architectural dimensions changed from opt-out to opt-in. Dimensions with no real choice (obvious answer or N/A) are listed in a batch block — no individual A/B/C question needed. Dimensions with genuine choices still require forced A/B/C. End-of-step checklist updated.
+
+**Plan skill — spec/plan merger:**
+- refactor(plan): Merge spec and plan into a single document. Step 6 becomes "Validate Design" (keeps section-by-section user validation, drops spec file writing, spec-reviewer dispatch, and separate user presentation). Step 7 writes a unified plan to `docs/plans/YYYY-MM-DD-<topic>.md` containing both design and task breakdown. Step 8 critic dispatch simplified (one file path instead of two). Spec-reviewer agent no longer dispatched in the plan flow.
+
+**Plan skill — brainstorm→plan fast-path:**
+- fix(plan): Step 1 — preserve full brainstorm summary verbatim (including per-dimension architectural decisions) for critic Lens 5. Explicit fallback for partial/incomplete brainstorm: if no `## Brainstorm Summary` block found in context, treat as fresh plan.
+- fix(plan): Step 2 — skip full project structure exploration post-brainstorm. Only read project instruction file (CLAUDE.md etc.) if brainstorm did not reference it.
+- fix(plan): Step 3 — new "Delta Research Mode" post-brainstorm. HARD-GATE-RESEARCH (mandatory 3 agents) does not apply when brainstorm already explored context. Dispatches only needed agents: researcher-code always (delta prompt), researcher-doc only if unvalidated external dependencies, git-historian only if brainstorm was in a previous session.
+- fix(plan): Step 4 — brainstorm findings accepted as evidence source alongside delta research in the adequacy table.
+- fix(plan): Step 5 — skip approach proposal when brainstorm already locked an approach. State locked decisions, check delta research for invalidations, flag conflicts to user.
+- No changes to the solo plan path — all existing behavior when `/ops-plan` runs without prior brainstorm is preserved.
+
+**Plan skill — risk tags and conflict handling:**
+- feat(plan): Step 7 — mandatory `[low-risk]` / `[high-risk]` task risk tags with always-high-risk list (auth, permissions, schema, encryption, CI/CD, secrets). Tags determine per-task ceremony during implementation.
+- fix(plan): Step 7 — new "Conflict with brainstorm decisions" rule: flag conflicts between brainstorm decisions and project instruction rules to the user instead of silently overriding.
+
+**Implement skill (2 files):**
+- refactor(implement): Step 2 HARD-GATE-NO-BUNDLING — reduced from 17-line duplicate to 2-line reference to SKILL.md source gate.
+- refactor(implement): Step 2 model selection — simplified from 3-tier complexity table to risk-tag-based rule (`[low-risk]` → sonnet, `[high-risk]` → default model, retry on failure).
+- feat(implement): Step 2d per-task review — now conditional on `[high-risk]` tag. `[low-risk]` tasks skip per-task review entirely (caught by final review).
+- refactor(implement): Step 2d reviewer scope — removed Lens 5 architectural drift from per-task review (delegated to final review at full-diff scale where it has cross-task visibility). Tradeoff note added for future re-evaluation.
+
+**Agent changes (3 files):**
+- refactor(critic): Phase 1 pre-engagement predictions — now conditional: skip for plans with ≤5 tasks and no cross-cutting concerns. Always-run triggers for auth, permissions, schema, public API, cross-module deps.
+- refactor(implementer): Step 4 — `[low-risk]` tasks route to direct implement (skip TDD). Anti-rationalization table updated for risk-tag awareness.
+- refactor(code-reviewer): Removed Step 5 (Security Scan) — security analysis is handled by security-gate + security-reviewer. Basic security hygiene (hardcoded secrets, disabled TLS) remains in Step 4 Code Quality table. Steps renumbered. YAML description updated for Lens 5 scope clarification.
+
+**Security gate (1 file):**
+- feat(security-gate): New complexity filter — trigger matches on small diffs (<50 LOC, boolean flags only, no new interfaces) are LOW-SENSITIVITY and don't force dispatch alone. Four triggers always force dispatch regardless: auth, secrets, encryption, CI/CD.
+
+**Shared infrastructure:**
+- feat: new `data/common_instructions.md` — cross-cutting rules (user language, one question at a time, stop-and-propose, no unsolicited changes) factored out of individual skills. All 18 user-invocable SKILL.md files now reference it.
+- fix: `data/bootstrap-context.md` — added common_instructions reference at the top of the skill routing table.
+- fix: `bin/ops-semgrep-scan.sh` — filter non-scannable file extensions (.md, .txt, .rst, .adoc, .pdf, images, fonts, media, archives) before passing to semgrep. Fixes "Invalid scanning root" errors.
+- refactor: `scripts/` directory renamed to `bin/` — aligns with Claude Code plugin convention (auto-adds `bin/` to PATH). OpenCode plugin creates a symlink to work around `:` in package cache paths.
+- refactor: `agents/spec-reviewer.md` deleted — no longer dispatched after spec/plan merger. References cleaned from redispatch-optimization.
+- refactor: `scripts/ops-capture-task-state.sh` deleted — replaced by inline `git diff HEAD` + `git ls-files` instructions in implement step-02.
+- refactor: `step-06-write-review-spec.md` renamed to `step-06-validate-design.md` — reflects the new role (design validation, no spec writing).
+- refactor(review-pipeline): security gate promoted to HARD-GATE — mandatory triage block, impossible to skip. Protects ops-do, ops-refactor, ops-test, ops-perf.
+
+**Stack-agnostic rewrite (brainstorm + critic):**
+
+All brainstorm architectural dimensions, examples, and recommendations rewritten to be stack-agnostic. The previous version assumed a web/backend-authoritative/Django-like context: "server-driven is almost always cleaner", "env var / Django setting", "Room.configuration JSONField", "abilities.can_X exposed in serializer". These assumptions break for offline-first apps, local-first systems, CLIs, pure libraries, edge runtimes, data pipelines, and many other architectures.
+
+This version presents architectural options neutrally and lets the user's context (gathered in Steps 1-6) drive the recommendation. The hard-gate mechanism (decisions MUST be locked here, not deferred to plan/research) is preserved — only the bias in the options themselves is removed.
+
+**AGENTS.md — new stack-agnostic principle:**
+- feat(project): new "Stack-agnostic by default" section in AGENTS.md. All ops content (skills, agents, examples, templates, checklists) must remain stack-agnostic. Hardcoded stack references, architectural recommendations framed as universal truths, and feature-type assumptions are forbidden without explicit contextual justification.
+
+**Brainstorm skill changes (4 files):**
+- refactor(brainstorm): Step 7 dimensions renamed for neutrality:
+  - Dimension 1: "Storage location" → "State / data location"
+  - Dimension 2: "Source of truth for permissions" → "Source of authority (decision ownership)" — generalized beyond permissions to cover validation, routing, policy, feature flags, derived values
+  - Dimension 3: "Instance-wide defaults" → "Configuration & defaults" — removed Django/env-var-specific wording, replaced with "the project's conventional configuration surface"
+  - Dimension 5: "UI placement" → "Interface surface placement" — now covers CLI, API, protocol, library exports, not just web UI
+- refactor(brainstorm): Step 7 Dimension 2 template rewritten — 3 options renamed: "Server-driven" → "Centralized owner", "Client-driven" → "Local / decentralized owner", "Hybrid" → "Hybrid / reconciling". Recommendation replaced with "no default — depends on your context" + explicit context-fit guide per option. The template no longer assumes backend/frontend split.
+- refactor(brainstorm): Step 7 Dimension 3 template rewritten — stack-specific mechanism names removed. New rule: "do NOT name a specific configuration mechanism unless the user has already told you which conventional configuration surface this project uses."
+- refactor(brainstorm): Step 7 adds `<HARD-GATE-NEUTRALITY>` block — enforces neutral presentation of options, forbids universal claims ("almost always cleaner", "the right default"), forbids stack assumptions, and requires context-conditioned recommendations (cite user's prior answer or present neutrally).
+- refactor(brainstorm): Step 7 "Note on scope" added — 7 dimensions are a default checklist, not exhaustive or universally applicable. Features may need extra dimensions not listed; some features will have many N/A dimensions. The checklist is a safety net, not a quota.
+- refactor(brainstorm): Step 7 end-of-step checklist updated — new verification items for neutrality and stack-agnostic wording.
+- refactor(brainstorm): Step 7 "verbatim templates" → "structural templates" — the structure (question + lettered options + context-fit framing) must be preserved, but wording can be adapted to the feature. Removes rigidity while keeping the anti-ambiguity protection.
+- refactor(brainstorm): Step 10 summary template aligned — dimension names updated to match Step 7 renames. Example values replaced with stack-neutral alternatives. "verbatim answer" → "user's exact wording".
+- refactor(brainstorm): Step 6 enumeration updated — architectural subjects list aligned with new dimension names.
+
+**Critic agent changes (1 file):**
+- refactor(critic): Lens 5 "Authority placement check" neutralized — removed "Server-computed is almost always cleaner". New framing: flag when the plan does not justify its authority placement choice, not when it picks a specific approach. Explicitly states "centralized, local, or hybrid can all be correct depending on context."
+- refactor(critic): Lens 5 "Single source of truth check" neutralized — removed stack-specific examples ("backend permission + frontend hook + serializer"). Now uses generic "component" language.
+- refactor(critic): Lens 5 "Instance defaults check" renamed to "Configuration defaults check" — removed "env var / Django setting / config", replaced with "whatever configuration surface the project uses".
+- refactor(critic): Lens 5 "Coupling check" example neutralized — removed recording-specific example, replaced with generic "module gaining an unexpected dependency on an unrelated domain".
+- No behavior change to the critic's Lens 5 severity rules, APPROVE/REJECT decision table, or the brainstorm trace check. Only the bias in the individual check descriptions is removed.
+
 ## 3.7.1 (2026-04-09)
 
 ### Research skill — chain-of-custody decomposition into 6 step files

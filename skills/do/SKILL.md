@@ -5,6 +5,8 @@ description: "Use when the task is well-understood, small, and doesn't need desi
 
 # /ops-do — Lightweight structured workflow
 
+**Read `data/common_instructions.md` before executing this skill.**
+
 ## Instruction Priority
 
 Follow the `ops-instruction-priority` rules when instructions conflict.
@@ -80,8 +82,8 @@ Run build/compile commands, validation commands, dry-runs. `/ops-verify` behavio
 Run the `ops-review-pipeline` process with the following code-reviewer context:
 - The user's original intent (restatement from Step 1)
 - The task list from Step 4 (if any)
-- Explicit instruction: **skip spec compliance check** (no spec exists — use user intent and task list as reference)
-- Scope: LSP diagnostics, code quality, project conventions. No spec compliance.
+- Explicit instruction: **skip plan compliance check** (no plan exists — use user intent and task list as reference)
+- Scope: LSP diagnostics, code quality, project conventions. No plan compliance.
 
 ---
 

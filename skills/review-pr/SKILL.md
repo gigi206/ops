@@ -5,6 +5,8 @@ description: "Review an external PR: checkout, analyze, produce structured revie
 
 # /ops-review-pr — Review a pull request
 
+**Read `data/common_instructions.md` before executing this skill.**
+
 ## Instruction Priority
 
 Follow the `ops-instruction-priority` rules when instructions conflict.

@@ -5,6 +5,8 @@ description: "Use when something is broken, failing, or behaving unexpectedly."
 
 # /ops-debug — Systematic debugging
 
+**Read `data/common_instructions.md` before executing this skill.**
+
 <HARD-GATE-IRON-LAW>
 NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST.
 

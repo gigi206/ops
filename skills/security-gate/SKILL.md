@@ -25,6 +25,13 @@ Evaluate the changes against these security domain triggers:
 - Data storage, retention, or backup configuration handling sensitive data
 - Logging, audit, or observability configuration (risk of leaking sensitive data)
 
+**Complexity filter**: If ALL of the following are true, a trigger match is LOW-SENSITIVITY and should NOT force dispatch by itself (only dispatch if semgrep or qlty also report findings):
+- The diff touches fewer than 50 lines of code (excluding comments, blank lines, and test files)
+- The changes are limited to boolean flags, configuration values, or feature toggles (no new logic paths, no new conditional branches)
+- No new external interfaces are introduced (no new endpoints, CLI commands, exports, or protocol messages)
+
+**Always-dispatch triggers** (bypass the complexity filter): authentication/identity federation, secrets/credentials/keys/tokens, encryption/TLS/certificates, and CI/CD pipeline configuration. These are high-impact regardless of diff size.
+
 ## Step 1b: SAST Scan
 
 Run `ops-semgrep-scan.sh [--config <path>] <modified files>` (the script is on PATH via the session-start hook). If you already know the semgrep config path (e.g., `.semgrep/` or `.semgrep.yml` in project root), pass it via `--config`. Otherwise, omit `--config` and the script auto-detects. The script handles diff-aware baseline selection and error handling.

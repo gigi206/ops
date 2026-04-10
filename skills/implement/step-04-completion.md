@@ -49,7 +49,7 @@ Silently skipping a validation command is a FAILURE of this skill.
 
 Include this section in the completion summary. If the user saves it (e.g., in a project doc or memory), it becomes searchable context for future tasks.
 
-5. **Update spec status**: if a spec file exists for this work, update its status to `**Status**: Implemented`.
+5. **Update plan status**: if a plan file exists for this work (`docs/plans/YYYY-MM-DD-<topic>.md`), update its status to `**Status**: Implemented`.
 6. Ask the user what to do next (commit, review, continue)
 
 ---
@@ -63,7 +63,7 @@ Before marking complete, verify:
 - [ ] You called `TaskList` and confirmed all plan tasks are `completed` or `cancelled` (none left `in_progress` or `pending`).
 - [ ] You presented the completion summary with tasks / files / deviations / concerns / code review / security review / per-task review effectiveness.
 - [ ] You captured Learnings (Problems solved / Decisions made / Gotchas discovered / Patterns that worked).
-- [ ] If a spec file exists: you updated its Status to `Implemented`.
+- [ ] If a plan file exists: you updated its Status to `Implemented`.
 - [ ] You asked the user what to do next (commit, review, continue).
 
 **→ Skill complete.** All 4 steps of `/ops-implement` have been executed. The implementation is ready for the user's next action (typically `/ops-ship` to commit). There is no next file to read.

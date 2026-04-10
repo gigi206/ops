@@ -109,7 +109,6 @@ flowchart LR
 
     %% ─── Review agents ───
     subgraph review_agents["Review"]
-        sr{{"spec-reviewer"}}
         cr{{"critic"}}
         codrev{{"code-reviewer"}}
         secrev{{"security-reviewer"}}
@@ -125,7 +124,7 @@ flowchart LR
     %% ─── Dispatch ───
     research --> rc & rd & gh
     research -.->|conditional| rr
-    plan --> sr & cr
+    plan --> cr
     implement --> imp & codrev
     implement -.->|if triggers| secrev
     do --> rc & rd & codrev
@@ -147,7 +146,7 @@ flowchart LR
 
 | Skill            | Role                                                     | Input                              | Output                                            | Agents dispatched                                                               |
 | ---------------- | -------------------------------------------------------- | ---------------------------------- | ------------------------------------------------- | ------------------------------------------------------------------------------- |
-| `/ops-plan`      | Design and plan before coding                            | Clarified need                     | Spec + plan decomposed into tasks + user approval | via research, spec-reviewer, critic                                             |
+| `/ops-plan`      | Design and plan before coding                            | Clarified need                     | Plan (unified design + tasks) + user approval     | via research, critic                                                            |
 | `/ops-implement` | Execute the plan task by task with per-task quality review | Validated plan                     | Implemented, reviewed, and validated code         | implementer (xN), code-reviewer (per-task lightweight + final), security-reviewer (if triggers) |
 | `/ops-ship`      | Commit, PR, capture learnings                            | Completed code                     | Commit, PR (optional), learnings                  | None                                                                            |
 | `/ops-do`        | Lightweight pipeline: research, execute, verify, review  | Well-understood task               | Implemented and reviewed code                     | researcher-code, researcher-doc, code-reviewer, security-reviewer (if triggers) |
@@ -184,7 +183,7 @@ Shared logic extracted from skills. Not callable by the user — invoked program
 | `ops-circuit-breaker`         | Diagnose repeated failures (researcher-code + git-historian)                                                                                | implement (3+ failures), debug (5+ failures)                                          |
 | `ops-security-gate`           | Triage (14 triggers) + SAST scan (semgrep, diff-aware) + qlty security findings + dispatch security-reviewer + re-verification loop (cap 3) | implement, do, debug, security, review-pr                                             |
 | `ops-review-pipeline`         | Build verification → code quality → security gate → code review → project instruction check                                                 | do, perf, refactor, test                                                              |
-| `ops-redispatch-optimization` | Generic re-dispatch prompt optimization for review agents                                                                                   | plan (spec-reviewer, critic), implement (code-reviewer), security (security-reviewer) |
+| `ops-redispatch-optimization` | Generic re-dispatch prompt optimization for review agents                                                                                   | plan (critic), implement (code-reviewer), security (security-reviewer)                |
 
 ### Agents
 
@@ -194,10 +193,9 @@ Shared logic extracted from skills. Not callable by the user — invoked program
 | **researcher-doc**    | sonnet (medium) | Search official docs for libs/tools/APIs (Context7 MCP, fallback WebSearch)                | research, do, test, refactor, perf                                                       |
 | **git-historian**     | sonnet (medium) | Mine git history: timelines, regressions, ownership, hotspots, architectural decisions     | research, debug, implement (circuit-breaker)                                             |
 | **researcher-repo**   |   opus (high)   | Clone and analyze external repositories: version-aware analysis, structured findings       | research (conditional), clone-analyze                                                    |
-| **spec-reviewer**     |   opus (high)   | Review spec for completeness, consistency, clarity, and feasibility                        | plan                                                                                     |
 | **critic**            |   opus (high)   | Adversarial plan review: 5 lenses (incl. architectural alternatives), 4 perspectives incl. Architect — see [`agents/critic.md`](agents/critic.md) | plan                                                                                     |
 | **implementer**       |   opus (high)   | Execute one plan task (TDD, code generation, validation)                                   | implement                                                                                |
-| **code-reviewer**     |   opus (high)   | Code review: spec compliance, quality, TDD adherence, anti-patterns                        | implement (per-task lightweight + final review), do, test, refactor, perf                |
+| **code-reviewer**     |   opus (high)   | Code review: plan compliance, quality, TDD adherence, anti-patterns                        | implement (per-task lightweight + final review), do, test, refactor, perf                |
 | **security-reviewer** |   opus (high)   | Deep security analysis: code, infra, CI/CD, containers, supply chain                       | security-gate: implement, do, debug, security, review-pr                                 |
 | **test-writer**       |   opus (high)   | Analyze existing code and write tests: behavior analysis, edge cases, coverage             | test                                                                                     |
 | **pr-reviewer**       |   opus (high)   | Review external PRs: quality, security, conventions, actionable comments                   | review-pr                                                                                |
@@ -301,31 +299,32 @@ Brainstorm, research, and plan before writing code.
 
 | Step               | What happens                                                         |
 | ------------------ | -------------------------------------------------------------------- |
-| Brainstorm         | Socratic-style design discussion — one question at a time            |
-| Context detection  | Detect languages, check LSP availability, read project conventions   |
-| Parallel research  | Delegates to `/ops-research` (3 agents in parallel)                  |
+| Discover commands  | Detect test/build/lint commands from project config                   |
+| Clarify intent     | Confirm understanding with the user (recap if post-brainstorm)       |
+| Context detection  | Explore directory structure and conventions                          |
+| Parallel research  | 2-3 research agents in parallel (researcher-code + researcher-doc, git-historian conditional) |
 | Research adequacy  | Evidence table presented to user — gaps trigger follow-up research   |
 | Design approaches  | 2-3 options with pros/cons, recommendation first                     |
-| Spec writing       | Design document written, reviewed by spec-reviewer, approved by user |
-| Task decomposition | Ordered tasks with files, changes, and validation commands           |
+| Validate design    | Design presented section by section, validated by user               |
+| Write plan         | Unified plan (design + tasks) written to `docs/plans/`               |
 | Critic review      | Adversarial review (5 lenses incl. architectural alternatives, 4 perspectives incl. Architect, self-audit) |
 | User approval      | Plan presented for final approval before implementation              |
 
 ```mermaid
 flowchart TD
-    B["Brainstorm"] --> C["Context detection"]
-    C --> R{{"researcher-code + researcher-doc + git-historian"}}
+    DC["Discover commands"] --> CI["Clarify intent"]
+    CI --> C["Context detection"]
+    C --> R{{"researcher-code + researcher-doc (+ git-historian conditional)"}}
     R -.->|confidence insufficient| RR{{"researcher-repo"}}
     R --> RA["Research adequacy"]
     RA --> D["Design approaches"]
-    D --> S["Spec writing"]
-    S --> SR{{"spec-reviewer"}}
-    SR --> T["Task decomposition"]
-    T --> CR{{"critic"}}
+    D --> V["Validate design"]
+    V --> P["Write plan"]
+    P --> CR{{"critic"}}
     CR --> A["User approval"]
 ```
 
-Agents used: via **`/ops-research`** (researcher-code, researcher-doc, git-historian, **researcher-repo** conditional), **spec-reviewer**, **critic**
+Agents used: researcher-code, researcher-doc, git-historian (conditional), **researcher-repo** (conditional), **critic**
 
 ---
 
@@ -664,7 +663,7 @@ Socratic-style dialogue: clarity check, context exploration, scope assessment, Y
 
 ### `/ops-init`
 
-Diagnose environment in 6 phases with stop-and-propose at each phase if issues are found.
+Diagnose environment in 7 steps with stop-and-propose at each step if issues are found.
 
 ```
 /ops-init
@@ -776,7 +775,7 @@ Use when you receive feedback from a human reviewer, CI check, or code-reviewer 
 | ---------------------------------- | ------------------------------------------------------------- |
 | Factual ("bug on line 42")         | Reproduce, confirm or refute with evidence                    |
 | Style ("use X pattern")            | Check project conventions first, then evaluate on merit       |
-| Architectural ("restructure this") | Evaluate against spec, discuss before changing                |
+| Architectural ("restructure this") | Evaluate against plan, discuss before changing                |
 | Security ("vulnerable to X")       | Always take seriously, verify attack vector, fix if confirmed |
 
 Rules: no performative agreement, no silent ignoring, no unverified changes. Push back with evidence when feedback is incorrect.
@@ -838,7 +837,7 @@ ops/
 ├── .claude-plugin/
 │   ├── marketplace.json               # Marketplace registry entry
 │   └── plugin.json                    # Plugin manifest
-├── agents/                            # 11 specialized agents
+├── agents/                            # 10 specialized agents
 │   ├── code-reviewer.md
 │   ├── critic.md
 │   ├── git-historian.md
@@ -848,18 +847,17 @@ ops/
 │   ├── researcher-doc.md
 │   ├── researcher-repo.md
 │   ├── security-reviewer.md
-│   ├── spec-reviewer.md
 │   └── test-writer.md
+├── bin/
+│   ├── ops-detect-cli.sh              # CLI detection (Claude Code / OpenCode / unknown)
+│   └── ops-semgrep-scan.sh            # SAST scan wrapper (config, baseline, error handling)
 ├── hooks/
 │   ├── hooks.json                     # SessionStart hook config
 │   └── session-start                  # Injects skill routing context + plugin root path
-├── scripts/
-│   ├── ops-detect-cli.sh              # CLI detection (Claude Code / OpenCode / unknown)
-│   └── ops-semgrep-scan.sh            # SAST scan wrapper (config, baseline, error handling)
 ├── skills/
 │   │
 │   │── # ─── PIPELINES (user-facing) ───
-│   ├── plan/SKILL.md                  # Brainstorm → research → design → spec → plan → critic
+│   ├── plan/SKILL.md                  # Discover → clarify → research → design → validate → plan → critic
 │   ├── implement/SKILL.md             # Load plan → execute tasks → review
 │   ├── do/SKILL.md                    # Lightweight: research → execute → verify → review
 │   ├── debug/SKILL.md                 # Investigate → hypothesize → fix → verify

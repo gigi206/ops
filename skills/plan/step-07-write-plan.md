@@ -2,13 +2,20 @@
 
 Mark the task "Plan: write plan" as `in_progress` now via `TaskUpdate`.
 
-Based on the chosen approach and research results, write a detailed plan with:
+Based on the chosen approach, validated design (from Step 6), and research results, write a unified plan document with:
 
 1. **Summary**: What we're doing and why (2-3 sentences)
-2. **Research findings**: Key insights from the research agents (including researcher-repo if dispatched)
-3. **Approach**: The chosen approach and why
-4. **Task breakdown**: See task decomposition rules below
-5. **Risks**: What could go wrong
+2. **Design**: The validated design sections from Step 6 (architecture, components, data flow, error handling, testing strategy — whatever sections were validated)
+3. **Research findings**: Key insights from the research agents (including researcher-repo if dispatched)
+4. **Approach**: The chosen approach and why
+5. **Task breakdown**: See task decomposition rules below
+6. **Risks**: What could go wrong
+
+## Persist the plan
+
+Write the plan to `docs/plans/YYYY-MM-DD-<topic>.md`. Do NOT commit — the user decides when to commit. User preferences for file location override the default path.
+
+Set `**Status**: Draft` in the plan header. This status is updated to `**Status**: Approved` after the critic review (Step 8) and user approval (Step 9).
 
 ## Task Decomposition (MANDATORY)
 
@@ -21,6 +28,11 @@ Each task MUST have ALL of:
 - **Validation**: The command to verify this task is done
 
 **Rules**:
+- **Risk tags** (MANDATORY): Tag each task with `[low-risk]` or `[high-risk]` in the task description. This determines per-task ceremony during `/ops-implement`:
+  - **`[low-risk]`** — Mechanical changes with no design judgment: config values, i18n strings, type definitions, file renames, feature flag toggles. Implementation: dispatch + validation + completion record only (per-task code review and TDD skipped).
+  - **`[high-risk]`** — Structural changes with design judgment: business logic, permissions, refactors, new modules, API changes. Implementation: full pipeline including per-task code review and TDD.
+  - **Always `[high-risk]`** regardless of apparent simplicity: authentication/authorization logic, permission checks, data deletion or migration, schema changes, encryption/TLS configuration, CI/CD pipeline modifications, secret or credential handling. These categories carry outsized blast radius even when the diff is small.
+  - Default if not tagged: `[high-risk]`.
 - **Sizing guide**: Code-level changes: 2-5 minutes. Setup/integration tasks (test framework, CI config, complex resources): up to 30 minutes. No fixed upper limit for complex features — size by coherence, not by clock.
 - Each task MUST be independently verifiable via its validation command.
 - Tasks MUST be ordered by dependency (prerequisites before dependents, config before consumers, schemas before data).
@@ -55,6 +67,8 @@ How to apply:
 
 **Do NOT treat project instruction rules as "nice to have".** If a rule applies to this change, it MUST have a corresponding task in the plan.
 
+**Conflict with brainstorm decisions**: If a brainstorm decision explicitly contradicts a project instruction rule (e.g., brainstorm decided "no e2e tests" but project instructions require e2e for all features), flag the conflict to the user: "Brainstorm decision [X] conflicts with project rule [Y]. Which takes priority?" Do NOT silently override either one. The user's explicit choice resolves the conflict.
+
 **Gate**: Do NOT proceed to critic review if the plan has no task breakdown or if any task is missing files/change/validation. If project instructions exist and applicable rules have no corresponding tasks, do not proceed either.
 
 **Present the plan in sections** short enough to read and digest — not a wall of text. Let the user absorb each section before the next.
@@ -64,7 +78,8 @@ How to apply:
 ## ✅ End of Step 7
 
 Before proceeding, verify:
-- [ ] The plan contains all 5 sections: Summary, Research findings, Approach, Task breakdown, Risks.
+- [ ] The plan contains all 6 sections: Summary, Design, Research findings, Approach, Task breakdown, Risks.
+- [ ] The plan is written to `docs/plans/YYYY-MM-DD-<topic>.md` (or a user-specified path) with `**Status**: Draft`.
 - [ ] Every task has Description + Files + Change + Validation.
 - [ ] Tasks are ordered by dependency (prerequisites before dependents).
 - [ ] No placeholders ("TBD", "TODO", "add appropriate X", "similar to Task N", etc.) appear in the plan.

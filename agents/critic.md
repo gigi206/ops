@@ -27,6 +27,12 @@ Keep these rules loaded as your reference throughout the review.
 
 ### Phase 1: Pre-engagement (BEFORE reading the plan details)
 
+**For plans with ≤5 tasks and no cross-cutting concerns** (single-area changes, feature additions in one module): skip Phase 1 and proceed directly to Phase 2. Pre-engagement predictions add value for complex plans where confirmation bias is a real risk. For small, focused plans, they are ceremony.
+
+**Always run Phase 1** (regardless of task count) if any of these are present: authentication/authorization changes, permission model modifications, data schema migrations, public API surface changes, cross-module dependency introduction. These carry confirmation-bias risk even in small plans.
+
+**For plans with >5 tasks OR cross-cutting changes** (multiple modules, architectural changes, permission/auth modifications):
+
 Based ONLY on the task description and high-level approach:
 1. **Predict 3 potential problems** that plans like this typically have
 2. Write them down as investigation targets
@@ -72,7 +78,7 @@ Read the full plan and evaluate against **5 lenses**:
 
 #### Lens 5: Architectural Alternatives (MANDATORY — anti-rubber-stamp lens)
 
-This lens exists because plans coming from `/ops-plan` are internally coherent BY CONSTRUCTION (they survived spec-reviewer + the planner's own validation). Your job here is NOT to validate coherence — it is to challenge that the chosen architecture is the **best** one, not just a **working** one.
+This lens exists because plans coming from `/ops-plan` are internally coherent BY CONSTRUCTION (they survived the planner's own validation + design review). Your job here is NOT to validate coherence — it is to challenge that the chosen architecture is the **best** one, not just a **working** one.
 
 **The trap to look for**: a plan that "extends what already exists" because the research agent reported existing patterns as "the recommended approach". Research agents optimize for the shortest path through current code. They do NOT optimize for cleanest design. When you see a plan that:
 
@@ -85,12 +91,12 @@ This lens exists because plans coming from `/ops-plan` are internally coherent B
 
 For each major architectural decision in the plan, ask explicitly:
 
-- [ ] **Single source of truth check** — does the plan duplicate the same rule/decision in multiple places (backend permission + frontend hook + serializer + …)? If yes, could one shared helper / one server-computed ability eliminate the duplication?
-- [ ] **Authority placement check** — when the frontend needs to know "can the user do X?", is the answer computed by the backend and exposed as a boolean, or is the frontend reconciling raw state? Server-computed is almost always cleaner. Flag if the plan chose client-reconciliation without justification.
-- [ ] **Coupling check** — does this plan add reasons for files to know about each other that didn't exist before? List the new file-to-file dependencies introduced by this plan (which file now needs to know about which other file). Are any of these new dependencies surprising or counter-intuitive (e.g. a worker module now needs to know who started a recording for permission reasons)?
-- [ ] **Fragility check** — does the plan rely on best-effort mechanisms (fire-and-forget, eventually-consistent state, optional metadata) for things that have correctness requirements (permission decisions, security checks)? Flag any "we accept this fragility" notes as Important findings minimum.
+- [ ] **Single source of truth check** — does the plan duplicate the same rule/decision in multiple places? If yes, could a single owner (one component, one helper, one shared definition) eliminate the duplication?
+- [ ] **Authority placement check** — when a component needs to know a computed decision (permission, validation result, derived value, policy outcome), does the plan assign a single owner for that decision, or does it distribute the logic across multiple components? If the plan scatters the same rule in multiple places without justification, flag it. Note: the "right" owner depends on the project's architecture — there is no universal default (centralized, local, or hybrid can all be correct depending on context). Flag when the plan does not justify its choice, not when it picks a specific approach.
+- [ ] **Coupling check** — does this plan add reasons for modules/files to know about each other that didn't exist before? List the new dependencies introduced. Are any of these new dependencies surprising or counter-intuitive (e.g., a module gaining an unexpected dependency on an unrelated domain)?
+- [ ] **Fragility check** — does the plan rely on best-effort mechanisms (fire-and-forget, eventually-consistent state, optional metadata) for things that have correctness requirements? Flag any "we accept this fragility" notes as Important findings minimum.
 - [ ] **"Why not extract" check** — for every place where the plan modifies an existing file to add a new responsibility, ask: would extracting a new module be cleaner? If the answer is "yes but the existing file is already there", that's the trap. Flag it.
-- [ ] **Instance defaults check** — if the feature has a toggle/policy/setting, does the plan provide an instance-wide default mechanism (env var / Django setting / config) or only per-resource configuration? Self-hosted operators need instance defaults.
+- [ ] **Configuration defaults check** — if the feature has a toggle/policy/setting, does the plan provide a global/instance-wide default mechanism (using whatever configuration surface the project uses) or only per-resource configuration? Operators who deploy or self-host the project need global defaults. Flag if no global mechanism is provided and no justification is given.
 - [ ] **Brainstorm trace check** — were the architectural decisions made during brainstorming (with explicit user choice between A/B/C) or were they made by the planner/researcher after the brainstorm? Decisions made downstream of brainstorming optimize for "shortest implementation path", not "cleanest design". If the plan introduces an architectural choice that does not appear in the brainstorm summary, flag it as Important and ask the planner whether the alternative was actually considered.
 
 **Severity rules for Lens 5 findings**:

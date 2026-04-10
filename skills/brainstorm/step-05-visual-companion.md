@@ -1,6 +1,4 @@
-# Step 4 — Visual companion offer
-
-Mark the task "Brainstorm: visual companion offer" as `in_progress` now via `TaskUpdate`.
+# Step 5 — Visual companion offer
 
 If upcoming questions will involve visual content (mockups, layouts, diagrams, architecture), offer the visual companion once for consent:
 
@@ -10,19 +8,17 @@ If upcoming questions will involve visual content (mockups, layouts, diagrams, a
 
 If the user declines, proceed with text-only brainstorming. If they agree, read `skills/plan/visual-companion.md` before proceeding.
 
-If the topic has no visual component, mark the task as completed with note "not applicable" and move on.
+If the topic has no visual component, note "not applicable" and move on.
 
 ---
 
-## ✅ End of Step 4
+## ✅ End of Step 5
 
 Before proceeding, verify ONE of the following is true:
-- [ ] The topic has no visual component → task marked completed with "not applicable".
+- [ ] The topic has no visual component → noted "not applicable".
 - [ ] You offered the visual companion in its own message and the user declined → proceeding text-only.
 - [ ] You offered the visual companion in its own message, the user accepted, and you have read `skills/plan/visual-companion.md`.
 
-Mark the task "Brainstorm: visual companion offer" as `completed` via `TaskUpdate`.
-
-**→ Next: read `skills/brainstorm/step-05-assess-scope.md` now and execute Step 5.**
+**→ Next: read `skills/brainstorm/step-06-clarifying-questions.md` now and execute Step 6.**
 
 Do NOT continue without reading that file first.

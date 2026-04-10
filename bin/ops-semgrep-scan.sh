@@ -117,7 +117,17 @@ if [[ ${#files[@]} -eq 0 ]]; then
     } | sort -u)
 fi
 
-if [[ ${#files[@]} -eq 0 ]]; then
+# Filter to files semgrep can actually scan (source code, config, etc.)
+# Exclude purely document-like extensions that cause "Invalid scanning root" errors.
+scannable_files=()
+for f in "${files[@]}"; do
+    case "$f" in
+        *.md|*.txt|*.rst|*.adoc|*.pdf|*.png|*.jpg|*.jpeg|*.gif|*.svg|*.ico|*.woff|*.woff2|*.ttf|*.eot|*.mp3|*.mp4|*.webm|*.zip|*.tar|*.gz) continue ;;
+        *) scannable_files+=("$f") ;;
+    esac
+done
+
+if [[ ${#scannable_files[@]} -eq 0 ]]; then
     echo "status=no_files"
     echo "config=$config_used"
     echo "baseline=$baseline_used"
@@ -131,7 +141,7 @@ cmd=(semgrep scan --config "$config_arg" --json)
 if [[ -n "$baseline_flag" ]]; then
     cmd+=("$baseline_flag")
 fi
-cmd+=("${files[@]}")
+cmd+=("${scannable_files[@]}")
 
 # Execute and capture output. Stderr goes to a temp file for diagnostics.
 stderr_file=$(mktemp)

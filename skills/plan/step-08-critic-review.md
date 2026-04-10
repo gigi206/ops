@@ -8,10 +8,9 @@ Spawn the **critic** agent to review the plan.
 
 The critic dispatch prompt MUST include ALL of the following:
 
-1. **The plan file path** (e.g. `docs/specs/YYYY-MM-DD-<topic>-plan.md`)
-2. **The companion spec file path** (e.g. `docs/specs/YYYY-MM-DD-<topic>-design.md`)
-3. **The brainstorm summary block** — copy verbatim the "Brainstorm Summary" markdown block from the conversation context (the one produced at the end of `/ops-brainstorm` Step 10, OR the recap you produced in this skill's Step 1 if brainstorm was already done). This is REQUIRED for the critic's Lens 5 brainstorm trace check (was each architectural decision in the plan validated in brainstorm, or invented post-brainstorm?).
-4. **The project instruction file path** (`CLAUDE.md` / `AGENTS.md` / `GEMINI.md`) if one exists at the project root
+1. **The plan file path** (e.g. `docs/plans/YYYY-MM-DD-<topic>.md`) — the plan now contains both the design and the task breakdown in a single document.
+2. **The brainstorm summary block** — copy verbatim the "Brainstorm Summary" markdown block from the conversation context (the one produced at the end of `/ops-brainstorm` Step 10, OR the recap you produced in this skill's Step 1 if brainstorm was already done). This is REQUIRED for the critic's Lens 5 brainstorm trace check (was each architectural decision in the plan validated in brainstorm, or invented post-brainstorm?).
+3. **The project instruction file path** (`CLAUDE.md` / `AGENTS.md` / `GEMINI.md`) if one exists at the project root
 
 If you dispatch the critic without the brainstorm summary, the Lens 5 brainstorm trace check cannot run — and architectural decisions silently invented during research will not be flagged. This is the exact failure mode that Lens 5 was designed to catch. Do NOT dispatch the critic without the brainstorm summary attached.
 
@@ -55,7 +54,7 @@ Proceed to the End block below and follow Branch A.
 ## ✅ End of Step 8
 
 Before proceeding, verify:
-- [ ] You dispatched the critic with ALL required context: plan path, spec path, brainstorm summary (verbatim), project instruction file path.
+- [ ] You dispatched the critic with ALL required context: plan path, brainstorm summary (verbatim), project instruction file path.
 - [ ] The critic returned a verdict (APPROVE or REJECT).
 
 Then choose your branch based on the verdict:

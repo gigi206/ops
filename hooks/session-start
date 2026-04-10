@@ -14,7 +14,7 @@ if [[ -z "${CLAUDE_PLUGIN_ROOT:-}" ]]; then
     CLAUDE_PLUGIN_ROOT="$(cd "$(dirname "$_source")/.." && pwd)"
     unset _source
 fi
-export PATH="${CLAUDE_PLUGIN_ROOT}/scripts:${PATH}"
+export PATH="${CLAUDE_PLUGIN_ROOT}/bin:${PATH}"
 
 escape_for_json() {
     local s="$1"

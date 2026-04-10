@@ -16,10 +16,12 @@ Present the validated plan to the user with an explicit question:
 
 > "The plan has been validated by the critic. Ready to implement? Options:
 > 1. I launch `/ops-implement` now
-> 2. You want to review the spec or plan first
+> 2. You want to review the plan first
 > 3. You'll implement later"
 
 Do NOT proceed to `/ops-implement` until the user explicitly approves. The user invoking `/ops-implement` counts as approval, but you should still ask before they need to invoke it.
+
+Once the user approves, update the plan file's status to `**Status**: Approved`.
 
 The plan remains in conversation context for `/ops-implement` to consume.
 

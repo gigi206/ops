@@ -24,11 +24,29 @@ Run the `ops-code-quality` process on all modified/created files. Fix any issues
 
 Do NOT brute-force tool execution (e.g., retrying a missing linter multiple times). If no tools are detected, produce the "no tools detected" report variant.
 
+<HARD-GATE-SECURITY>
+
 ## Step 3: Security Gate + Code Review
 
-### Security Gate
+### Security Gate (MANDATORY — do NOT skip)
 
-Read the `ops-security-gate` skill file, then follow its process on the complete diff. Use `ops-semgrep-scan.sh` (NOT raw `semgrep`) and parse its key=value output format. If triggers match, dispatch the security-reviewer in the **same message** as the code-reviewer (see `ops-subagent-rules`).
+You MUST read the `ops-security-gate` skill file and follow its process on the complete diff BEFORE dispatching the code-reviewer. If you dispatch the code-reviewer without having run the security gate, you have FAILED this pipeline.
+
+Run `ops-semgrep-scan.sh` (NOT raw `semgrep`) and parse its key=value output format. If the script is not on PATH, run `semgrep` directly as a fallback.
+
+You MUST output the structured triage block:
+
+```
+## Security Triage
+- Security-sensitive areas in diff: YES / NO
+- Triggers matched: <list which triggers and which files>
+- SAST (semgrep): <N new findings> / clean / not found / error
+- Security-reviewer dispatch: YES / NOT NEEDED
+```
+
+If triggers match, dispatch the security-reviewer in the **same message** as the code-reviewer (see `ops-subagent-rules`). If your diff touches authentication, authorization, permissions, secrets, encryption, or CI/CD — security-reviewer dispatch is mandatory regardless of diff size.
+
+</HARD-GATE-SECURITY>
 
 ### Code Review
 

@@ -5,6 +5,8 @@ description: "Clone and analyze an external repository. Use when you need to und
 
 # /ops-clone-analyze — Repository analysis
 
+**Read `data/common_instructions.md` before executing this skill.**
+
 ## Instruction Priority
 
 Follow the `ops-instruction-priority` rules when instructions conflict.

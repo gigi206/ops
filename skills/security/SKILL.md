@@ -5,6 +5,8 @@ description: "On-demand security review of code, infrastructure, or pipeline cha
 
 # /ops-security — On-demand security review
 
+**Read `data/common_instructions.md` before executing this skill.**
+
 ## Instruction Priority
 
 Follow the `ops-instruction-priority` rules when instructions conflict.

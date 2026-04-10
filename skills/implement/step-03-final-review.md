@@ -1,6 +1,6 @@
 # Step 3 — Final Review
 
-This is the **second** review layer. The per-task quality reviews (Step 2d) caught drift task-by-task while context was hot. This step now validates the **complete diff** for issues that only become visible at full-implementation scale: cross-task coherence (inconsistent naming, broken references between files), spec-vs-whole-implementation match, security gaps that span multiple components, and project-instruction compliance against the entire change set.
+This is the **second** review layer. The per-task quality reviews (Step 2d) caught drift task-by-task while context was hot. This step now validates the **complete diff** for issues that only become visible at full-implementation scale: cross-task coherence (inconsistent naming, broken references between files), plan-vs-whole-implementation match, security gaps that span multiple components, and project-instruction compliance against the entire change set.
 
 If the per-task reviews were thorough, the final review should mostly find cross-task issues, not single-task issues. If the final review finds many single-task issues, the per-task reviews were too lenient — that's a process signal worth surfacing.
 
@@ -53,7 +53,7 @@ This block must appear in your output BEFORE dispatching the security-reviewer (
 ## Dispatch Reviews
 
 Dispatch the **code-reviewer** agent with:
-- The full spec document
+- The full plan document
 - The complete diff (all changes across all tasks)
 - The project instruction rules — `CLAUDE.md`, `AGENTS.md`, or `GEMINI.md` (if the project has one)
 - Instruction to evaluate the implementation as a whole, not task by task
@@ -64,7 +64,7 @@ If security triage is YES, dispatch the **security-reviewer** agent **in paralle
 - The project instruction rules — `CLAUDE.md`, `AGENTS.md`, or `GEMINI.md`
 
 The code-reviewer checks (FINAL review — full diff):
-- Does the full implementation match the spec?
+- Does the full implementation match the plan?
 - Do the pieces fit together coherently?
 - Are there cross-task issues (inconsistent naming, duplicated logic, missing integration points)?
 - LSP diagnostics on all modified files
@@ -95,7 +95,7 @@ Before proceeding, verify:
 - [ ] You output the `## Implementation Audit` block and confirmed implementers dispatched ≥ tasks in plan.
 - [ ] You ran the `ops-code-quality` process on all modified files BEFORE dispatching reviewers (HARD-GATE-CODE-QUALITY).
 - [ ] You output the `## Security Triage` block explicitly, going through the 14 triggers.
-- [ ] You dispatched the code-reviewer with spec + complete diff + project instructions.
+- [ ] You dispatched the code-reviewer with plan + complete diff + project instructions.
 - [ ] If security triage was YES: you dispatched security-reviewer in parallel (same message as code-reviewer).
 - [ ] All Critical issues (from either reviewer) have been fixed.
 - [ ] Important issues are either fixed or noted for the user.

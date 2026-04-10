@@ -1,5 +1,7 @@
 You have access to ops workflow skills. Before starting any non-trivial work, check if a skill applies:
 
+**Every skill reads `data/common_instructions.md` before executing.** Those rules (user language, one question at a time, stop-and-propose, no unsolicited changes) apply globally.
+
 | Situation                                  | Skill                         |
 | ------------------------------------------ | ----------------------------- |
 | New feature, change, or task               | `/ops-plan`                   |

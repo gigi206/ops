@@ -12,7 +12,7 @@ Create a task for each step of the planning process (all at once, in a single `T
 4. "Plan: parallel research"
 5. "Plan: research adequacy check"
 6. "Plan: design approaches"
-7. "Plan: write & review spec"
+7. "Plan: validate design"
 8. "Plan: write plan"
 9. "Plan: critic review"
 10. "Plan: user approval"

@@ -1,6 +1,6 @@
 # Step 2 — Clarity check
 
-Mark the task "Brainstorm: clarity check" as `in_progress` now via `TaskUpdate`.
+Mark the task "Brainstorm: clarify & explore" as `in_progress` now via `TaskUpdate`.
 
 Before exploring code or asking detailed questions, verify you understand the user's intent:
 
@@ -8,9 +8,16 @@ Before exploring code or asking detailed questions, verify you understand the us
 2. **Why** does the user want this? (What problem does it solve?)
 3. **What does success look like?** (How will the user know it works?)
 
-If you can't answer all 3 confidently, ask the user to clarify **before** exploring. One short question, not three.
+If you can't answer all 3 confidently, ask the user to clarify **before** exploring.
 
-> Example: "Before I dive in — I want to make sure I understand. You want [restatement]. The goal is [why]. Is that right, or am I missing something?"
+**This step produces exactly ONE message**: your restatement + a confirmation question. Nothing else. Do NOT add follow-up questions, clarifications, or "if yes, then..." in the same message. If you need a second clarification, it comes AFTER the user confirms.
+
+Present the confirmation using the question tool (per common_instructions rule 2) with options:
+
+> A. Yes, that's correct
+> B. Not quite — [user corrects]
+
+Example restatement before the question: "Before I dive in — I want to make sure I understand. You want [restatement]. The goal is [why]."
 
 ---
 
@@ -23,7 +30,7 @@ Before proceeding, verify:
 
 If any of the above is unclear, ask the user ONE short clarifying question and wait for their answer before proceeding.
 
-Mark the task "Brainstorm: clarity check" as `completed` via `TaskUpdate`.
+Do NOT mark the milestone task completed yet — it spans through Step 6.
 
 **→ Next: read `skills/brainstorm/step-03-explore-context.md` now and execute Step 3.**
 

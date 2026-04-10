@@ -42,7 +42,7 @@ use skill tool to load ops-plan
 - Slash commands dynamically registered from skills (one per user-invocable skill)
 - 26 skills (18 user-invocable + 8 internal phases) automatically registered
 - Bootstrap context injected into every session (skill routing suggestions)
-- `scripts/` added to PATH (security analysis tools)
+- `bin/` added to PATH (security analysis tools)
 
 ## Updating
 

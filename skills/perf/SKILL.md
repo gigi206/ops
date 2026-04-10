@@ -5,6 +5,8 @@ description: "Performance investigation and optimization. Profile, benchmark, id
 
 # /ops-perf — Performance investigation
 
+**Read `data/common_instructions.md` before executing this skill.**
+
 ## Instruction Priority
 
 Follow the `ops-instruction-priority` rules when instructions conflict.

@@ -4,27 +4,20 @@ This is the first step of `/ops-brainstorm`. Your job here is to create the task
 
 Create a task for each step of the brainstorming process. This makes progress visible and prevents skipping steps.
 
-Create these tasks (all at once, in a single `TaskCreate` call):
+Create these milestone tasks (all at once, in a single `TaskCreate` call):
 
-1. "Brainstorm: clarity check"
-2. "Brainstorm: explore project context"
-3. "Brainstorm: visual companion offer"
-4. "Brainstorm: assess scope"
-5. "Brainstorm: clarifying questions"
-6. "Brainstorm: propose 2-3 approaches"
-7. "Brainstorm: present design by sections"
-8. "Brainstorm: YAGNI filter"
-9. "Brainstorm: summary"
-10. "Brainstorm: transition"
+1. "Brainstorm: clarify & explore" (covers Steps 2-6: clarity check, context exploration, scope assessment, visual companion, clarifying questions)
+2. "Brainstorm: architectural decisions" (covers Steps 7-8: macro-approaches, dimensions, design sections)
+3. "Brainstorm: finalize" (covers Steps 9-11: YAGNI filter, summary, transition)
 
-Each task will be marked as `in_progress` at the start of the corresponding step file, and as `completed` at its end.
+Each milestone is marked `in_progress` at the start of its first step and `completed` at the end of its last step. Individual steps do not have their own tasks.
 
 ---
 
 ## ✅ End of Step 1
 
 Before proceeding, verify:
-- [ ] All 10 tasks above exist in the task list (created via a single `TaskCreate` call).
+- [ ] All 3 milestone tasks above exist in the task list (created via a single `TaskCreate` call).
 
 **→ Next: read `skills/brainstorm/step-02-clarity-check.md` now and execute Step 2.**
 

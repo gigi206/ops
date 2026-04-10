@@ -8,7 +8,7 @@ Mark the task "Brainstorm: clarifying questions" as `in_progress` now via `TaskU
 - If you catch yourself writing "Question 4:", "Question 5:" in the same message — STOP. Pick the most important one, send it alone, wait.
 - The user's answer to question 1 may change what question 2 should be.
 
-**Scope of this step**: Step 6 is for intent and context clarification only (purpose, constraints, success criteria, scoping). Architectural decisions — storage, permissions, instance defaults, failure mode, UI placement, backward compatibility, test boundaries — are **not** asked here. They are handled in Step 7 with a mandatory checklist and inline templates. Do not anticipate Step 7's questions in Step 6.
+**Scope of this step**: Step 6 is for intent and context clarification only (purpose, constraints, success criteria, scoping). Architectural decisions — state location, decision ownership / authority, configuration & defaults, failure mode, interface surface placement, backward compatibility, test boundaries — are **not** asked here. They are handled in Step 7 with a mandatory checklist and structural templates. Do not anticipate Step 7's questions in Step 6.
 
 ---
 

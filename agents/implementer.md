@@ -46,6 +46,7 @@ Before implementing, check if the project has a test framework:
 
 **If tests exist and are relevant to this task** → Follow Step 5 (TDD).
 **If no test infrastructure, or the task is pure config/data** → Skip to Step 6 (Direct Implement).
+**If the dispatch prompt includes a `[low-risk]` tag** → This is a mechanical task. Skip to Step 6 (Direct Implement) unless the validation command explicitly includes test execution.
 
 ### Step 5: TDD — Red/Green/Refactor (when tests apply)
 
@@ -92,7 +93,7 @@ Do NOT skip TDD for any of these reasons:
 | "I'll keep the code as reference and write tests first" | No. You'll adapt it. Delete means delete.                                                                                                   |
 | "Mocking is too hard for this"                          | Use real code. Mocks only if unavoidable (external APIs, databases).                                                                        |
 | "The test would just duplicate the implementation"      | Then your test is wrong. Test behavior, not implementation.                                                                                 |
-| "This is just config/data, not logic"                   | If it can be wrong, it can be tested. Write a validation test.                                                                              |
+| "This is just config/data, not logic"                   | If it's tagged `[low-risk]`, Step 4 already routes you to direct implement. If it's `[high-risk]` config that can break things, test it.    |
 
 #### Deletion rule
 

@@ -5,6 +5,8 @@ description: "Evidence before claims. Always."
 
 # /ops-verify — Verification before completion
 
+**Read `data/common_instructions.md` before executing this skill.**
+
 ## Instruction Priority
 
 Follow the `ops-instruction-priority` rules when instructions conflict.

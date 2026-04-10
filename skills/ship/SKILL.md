@@ -5,6 +5,8 @@ description: "Use when work is done and ready to commit or create a PR."
 
 # /ops-ship — Ship the work
 
+**Read `data/common_instructions.md` before executing this skill.**
+
 ## Instruction Priority
 
 Follow the `ops-instruction-priority` rules when instructions conflict.

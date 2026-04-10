@@ -1,6 +1,6 @@
 # Step 9 — YAGNI filter
 
-Mark the task "Brainstorm: YAGNI filter" as `in_progress` now via `TaskUpdate`.
+Mark the task "Brainstorm: finalize" as `in_progress` now via `TaskUpdate`.
 
 Challenge the scope:
 
@@ -26,7 +26,7 @@ Before proceeding, verify:
 - [ ] You named what you are excluding AND why.
 - [ ] The user had an opportunity to push back on the exclusions before you moved on.
 
-Mark the task "Brainstorm: YAGNI filter" as `completed` via `TaskUpdate`.
+Do NOT mark the milestone task completed yet — it spans through Step 11.
 
 **→ Next: read `skills/brainstorm/step-10-summary.md` now and execute Step 10.**
 

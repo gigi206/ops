@@ -5,6 +5,8 @@ description: "Diagnose environment: ops recap, qlty/semgrep, project linters, li
 
 # /ops-init — Environment Diagnostic & Tool Setup
 
+**Read `data/common_instructions.md` before executing this skill.**
+
 <HARD-GATE-LANGUAGE>
 Your **very first action** — before reading any step file, before any diagnostic, before any tool call other than this one — must be to run `echo $LANG` via Bash. Parse the result (e.g., `fr_FR.UTF-8` → French, `en_US.UTF-8` → English). **All subsequent output — diagnostics, tables, proposals, summaries — must be in that language.** Technical terms and tool names stay in English.
 

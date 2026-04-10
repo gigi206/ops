@@ -1,6 +1,4 @@
-# Step 5 — Assess scope
-
-Mark the task "Brainstorm: assess scope" as `in_progress` now via `TaskUpdate`.
+# Step 4 — Assess scope
 
 - If the request describes multiple independent subsystems, flag this immediately
 - Do NOT spend questions refining details of something that needs decomposition first
@@ -8,15 +6,13 @@ Mark the task "Brainstorm: assess scope" as `in_progress` now via `TaskUpdate`.
 
 ---
 
-## ✅ End of Step 5
+## ✅ End of Step 4
 
 Before proceeding, verify:
 - [ ] You assessed whether the request is one coherent subject or multiple independent subsystems.
 - [ ] If multiple subsystems: you flagged it, discussed decomposition with the user, and agreed which sub-project this brainstorm targets.
 - [ ] If one coherent subject: the scope is clear and the user has confirmed it.
 
-Mark the task "Brainstorm: assess scope" as `completed` via `TaskUpdate`.
-
-**→ Next: read `skills/brainstorm/step-06-clarifying-questions.md` now and execute Step 6.**
+**→ Next: read `skills/brainstorm/step-05-visual-companion.md` now and execute Step 5.**
 
 Do NOT continue without reading that file first.

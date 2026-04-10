@@ -4,6 +4,8 @@ Mark the task "Plan: research adequacy check" as `in_progress` now via `TaskUpda
 
 Before designing approaches, verify the research produced concrete evidence — not just "we understand".
 
+**Evidence sources:** If `/ops-brainstorm` was already run, brainstorm findings (Step 3 context exploration, Step 7 architectural decisions, Step 8 validated design sections) count as evidence alongside delta research findings. Cite the source: `(brainstorm)` or `(delta research)`.
+
 **You MUST present this table to the user** with the evidence filled in:
 
 | Dimension             | Status   | Evidence                                                       |

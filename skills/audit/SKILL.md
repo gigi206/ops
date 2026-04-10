@@ -5,6 +5,8 @@ description: "Full codebase audit — code quality (qlty) + security (semgrep). 
 
 # /ops-audit — Full Codebase Audit
 
+**Read `data/common_instructions.md` before executing this skill.**
+
 ## Instruction Priority
 
 Follow the `ops-instruction-priority` rules when instructions conflict.

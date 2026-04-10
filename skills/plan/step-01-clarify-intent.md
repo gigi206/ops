@@ -5,10 +5,11 @@ Mark the task "Plan: clarify intent" as `in_progress` now via `TaskUpdate`.
 ## If `/ops-brainstorm` was already run
 
 If the user ran `/ops-brainstorm` before invoking `/ops-plan`, the brainstorming is already done. In this case:
-1. Read the brainstorm summary from the conversation
-2. Output a short recap: chosen approach, scope, key decisions
-3. Skip the clarity/scope checks below — the user already validated the approach
-4. Jump to the Gate section at the bottom of this step (you still must output the `## Intent Confirmed` block)
+1. Look for the **full** `## Brainstorm Summary` block in conversation context (produced in brainstorm Step 10 — including the per-dimension architectural decisions). **Preserve this block verbatim in your context** — it will be needed in Step 8 for the critic's Lens 5 brainstorm trace check.
+2. **If no `## Brainstorm Summary` block is found** (brainstorm was incomplete or in a previous session): treat this as a fresh plan — follow "The Process" below instead.
+3. Output a short recap to the user: chosen approach, scope, key decisions
+4. Skip the clarity/scope checks below — the user already validated the approach
+5. Jump to the Gate section at the bottom of this step (you still must output the `## Intent Confirmed` block)
 
 ## The Process (when brainstorm was NOT already run)
 
@@ -19,7 +20,7 @@ Verify you can restate what is asked, why, and what success looks like. If you c
 
 **Scope check:**
 - If the request describes multiple independent subsystems, flag this and help the user decompose into sub-projects.
-- Each sub-project gets its own spec → plan → implementation cycle.
+- Each sub-project gets its own plan → implementation cycle.
 
 **Offer deeper brainstorming:**
 If the problem space is ambiguous, has multiple viable approaches, or would benefit from deeper exploration, suggest the user invoke `/ops-brainstorm` before continuing. Do NOT run a full brainstorming process yourself — that is the role of `/ops-brainstorm`.

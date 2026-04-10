@@ -5,6 +5,8 @@ description: "Add tests to existing untested code. Analyzes behavior, identifies
 
 # /ops-test — Add tests to existing code
 
+**Read `data/common_instructions.md` before executing this skill.**
+
 ## Instruction Priority
 
 Follow the `ops-instruction-priority` rules when instructions conflict.
@@ -96,4 +98,4 @@ If coverage tools are available, show the before/after delta.
 
 Run the `ops-review-pipeline` process with the following code-reviewer context:
 - Explicit instruction: **focus on test quality** — are tests meaningful, do they test behavior not implementation, do they follow conventions?
-- Skip spec compliance (no spec exists)
+- Skip plan compliance (no plan exists)

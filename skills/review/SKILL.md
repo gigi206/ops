@@ -5,6 +5,8 @@ description: "Receive and evaluate code review feedback."
 
 # /ops-review — Receiving code review feedback
 
+**Read `data/common_instructions.md` before executing this skill.**
+
 ## Instruction Priority
 
 Follow the `ops-instruction-priority` rules when instructions conflict.
@@ -64,7 +66,7 @@ The test: does your response contain technical content, or just social noise? "F
 
 | Behavior                                     | Why it's bad                                                  |
 |----------------------------------------------|---------------------------------------------------------------|
-| Accepting all suggestions without evaluation | Some suggestions may conflict with the spec or introduce bugs |
+| Accepting all suggestions without evaluation | Some suggestions may conflict with the plan or introduce bugs |
 | Silently ignoring feedback you disagree with | If you disagree, say so with evidence                         |
 | Changing code the reviewer didn't mention    | Scope creep — only address the specific feedback              |
 | Implementing before verifying                | The suggestion may be wrong for this codebase                 |
@@ -82,7 +84,7 @@ The test: does your response contain technical content, or just social noise? "F
 Before implementing any suggestion:
 1. Is this technically correct for THIS codebase?
 2. Does it break existing functionality?
-3. Is there a reason the current implementation exists (compatibility, spec requirement)?
+3. Is there a reason the current implementation exists (compatibility, plan requirement)?
 4. Does the reviewer have the full context?
 
 If the suggestion seems wrong → push back with technical reasoning.
@@ -114,7 +116,7 @@ Do not gold-plate unused code because a reviewer asked for it.
 4. If you disagree → explain your reasoning, let the reviewer decide
 
 ### Architectural feedback ("This component should be restructured")
-1. Evaluate against the spec — does the spec support this change?
+1. Evaluate against the plan — does the plan support this change?
 2. If within scope → discuss with the user before restructuring
 3. If out of scope → acknowledge, suggest as future improvement
 

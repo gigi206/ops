@@ -5,6 +5,8 @@ description: "Use when a task needs design, research, or decomposition before co
 
 # /ops-plan — Clarify intent, research, and plan
 
+**Read `data/common_instructions.md` before executing this skill.**
+
 <HARD-GATE-0>
 STOP. Your VERY FIRST action must be Step 0: Discover project test/build commands. Do NOT ask design questions yet.
 </HARD-GATE-0>
@@ -55,7 +57,7 @@ Step 2 — Context Detection                                     →  skills/pla
 Step 3 — Parallel Research [HARD-GATE-RESEARCH]                →  skills/plan/step-03-parallel-research.md
 Step 4 — Research Adequacy Check                               →  skills/plan/step-04-research-adequacy.md
 Step 5 — Design Approaches                                     →  skills/plan/step-05-design-approaches.md
-Step 6 — Write & Review Spec                                   →  skills/plan/step-06-write-review-spec.md
+Step 6 — Validate Design                                       →  skills/plan/step-06-validate-design.md
 Step 7 — Write Plan                                            →  skills/plan/step-07-write-plan.md
 Step 8 — Critic Review                                         →  skills/plan/step-08-critic-review.md
 Step 9 — User Approval [HARD-GATE-HANDOFF]                     →  skills/plan/step-09-user-approval.md
@@ -71,7 +73,7 @@ Step 9 — User Approval [HARD-GATE-HANDOFF]                     →  skills/pla
 4. **Do NOT read all 10 files at once.** Read them one at a time, in order, as instructed by each file's hand-off.
 5. **Do NOT skip any step.** The chain-of-custody between step files is what makes this skill work reliably across models with varying instruction-following strength.
 6. **Do NOT improvise the order.** If you somehow land in a step file without having executed the previous one, STOP and go back to `step-00-discover-commands.md`.
-7. Some steps (4, 8) have **branching hand-offs** — their End block explicitly describes the APPROVE vs REJECT / OK vs GAP branches. Follow the branch that matches your current state. Step 6 has an inner spec-review loop handled inside the step itself, not at the hand-off level.
+7. Some steps (4, 8) have **branching hand-offs** — their End block explicitly describes the APPROVE vs REJECT / OK vs GAP branches. Follow the branch that matches your current state.
 
 ---
 
@@ -82,11 +84,11 @@ If any of these thoughts cross your mind, STOP — you are about to bypass a gat
 | Thought | Reality |
 |---------|---------|
 | "The intent is clear, no need to clarify with the user" | Step 1 is mandatory. Clarify. |
-| "I already know this codebase, research is unnecessary" | The 3 agents find what you don't know to look for. |
-| "One research agent is enough for this simple case" | 3 agents, one message. No substitutions. |
+| "I already know this codebase, research is unnecessary" | The research agents find what you don't know to look for. |
+| "One research agent is enough for this simple case" | At least 2 agents (researcher-code + researcher-doc), one message. No substitutions. |
 | "The critic approved, but I improved the plan after" | Re-dispatch the critic. It must validate the changes. |
 | "The user said 'go ahead', that means implement now" | That means approve the plan. Invoke /ops-implement. |
-| "The spec is obvious, no need for spec-reviewer" | The reviewer finds what you forgot. Dispatch it. |
+| "The design is obvious, no need to validate section by section" | Section-by-section validation catches misunderstandings early. Do it. |
 | "I'll skip the research adequacy table, it's clearly fine" | The table must appear in your output. It's not a mental check. |
 
 ---

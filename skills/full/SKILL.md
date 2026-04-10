@@ -5,6 +5,8 @@ description: "Use when you want to plan, build, and ship a feature in one go."
 
 # /ops-full — Full pipeline
 
+**Read `data/common_instructions.md` before executing this skill.**
+
 ## Instruction Priority
 
 Follow the `ops-instruction-priority` rules when instructions conflict.
@@ -29,7 +31,7 @@ Execute `/ops-plan` (Steps 0-9) in full. This includes:
 - Environment setup (language detection + LSP diagnostic)
 - Brainstorming with the user
 - Context detection and parallel research
-- Design approaches and spec writing
+- Design validation and plan writing
 - Plan writing and critic review
 - User approval of the plan
 
@@ -47,7 +49,7 @@ After `/ops-plan` completes, the user must explicitly approve the plan before pr
 
 ## Step 3: Implement
 
-Execute `/ops-implement` (Steps 1-5) in full. This includes:
+Execute `/ops-implement` (Steps 1-4) in full. This includes:
 - Loading the plan and verifying task decomposition
 - Executing tasks with the per-task pipeline (implementer → validation → conformity → per-task quality review → discovery → completion record)
 - Failure handling and circuit breaker

@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, symlinkSync, unlinkSync, readlinkSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -7,7 +7,7 @@ const __dirname = dirname(__filename);
 const opsRoot = resolve(__dirname, '..', '..');
 const opsSkillsDir = join(opsRoot, 'skills');
 const opsAgentsDir = join(opsRoot, 'agents');
-const opsScriptsDir = join(opsRoot, 'scripts');
+const opsScriptsDir = join(opsRoot, 'bin');
 
 function loadCommands() {
   const commands = {};
@@ -107,12 +107,36 @@ export const OpsPlugin = async () => {
       }
     },
 
-    // Add scripts/ to PATH + set OPENCODE env var
+    // Add bin/ to PATH + set OPENCODE env var
     'shell.env': async (_input, output) => {
       const currentPath = output.env?.PATH || process.env.PATH || '';
       output.env = output.env || {};
-      if (!currentPath.includes(opsScriptsDir)) {
-        output.env.PATH = `${opsScriptsDir}:${currentPath}`;
+
+      // The package path may contain ":" (e.g., "https:") which breaks PATH
+      // parsing. If so, create a symlink at a clean path.
+      let scriptsPath = opsScriptsDir;
+      if (opsScriptsDir.includes(':')) {
+        const safeDir = join(process.env.HOME || '/tmp', '.cache', 'opencode', 'ops-scripts');
+        try {
+          // Re-create symlink if target changed (plugin updated)
+          if (existsSync(safeDir)) {
+            const current = readlinkSync(safeDir);
+            if (current !== opsScriptsDir) {
+              unlinkSync(safeDir);
+              symlinkSync(opsScriptsDir, safeDir);
+            }
+          } else {
+            mkdirSync(dirname(safeDir), { recursive: true });
+            symlinkSync(opsScriptsDir, safeDir);
+          }
+          scriptsPath = safeDir;
+        } catch {
+          // Fall back to original path if symlink fails
+        }
+      }
+
+      if (!currentPath.includes(scriptsPath)) {
+        output.env.PATH = `${scriptsPath}:${currentPath}`;
       }
       output.env.OPENCODE = '1';
     },

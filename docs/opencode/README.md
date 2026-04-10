@@ -79,12 +79,12 @@ To pin a specific version:
 
 ## How it works
 
-The plugin (`.opencode/plugins/ops.js`) does three things:
+The plugin (`.opencode/plugins/ops.js`) does four things:
 
 1. **Registers the skills directory** via the `config` hook, so OpenCode discovers all 26 ops skills without symlinks or manual config.
-2. **Registers the 11 ops agents** via `config.agent`, making them available as subagent types in the Task tool.
+2. **Registers the 10 ops agents** via `config.agent`, making them available as subagent types in the Task tool.
 3. **Injects bootstrap context** via the `experimental.chat.system.transform` hook, adding skill routing awareness to every conversation.
-4. **Adds `scripts/` to PATH** via the `shell.env` hook, making security analysis tools available.
+4. **Adds `bin/` to PATH** via the `shell.env` hook, making security analysis tools available.
 
 ### Tool mapping
 
