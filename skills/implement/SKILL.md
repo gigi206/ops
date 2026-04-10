@@ -16,15 +16,13 @@ Do NOT combine multiple plan tasks into a single implementer dispatch. One task 
 
 Post-hoc verification: after all tasks complete, check that count(implementer agents dispatched) >= count(tasks in plan). If fewer implementers were dispatched than tasks exist, you bundled tasks — this is a FAILURE. Fix it by re-running the bundled tasks individually.
 
-**Two distinct review layers** — both are mandatory and serve different purposes:
+**Two review layers** — ceremony depends on mode:
 
-1. **Per-task quality review** (Step 2d, NEW) — Lightweight, fast-iteration. Reviews the cumulative working tree diff (`git diff HEAD` + untracked new files) right after each task's implementer returns, with the dispatch prompt scoping findings to that task's contributions. Catches duplication, naming inconsistencies, and missing extraction opportunities task by task.
+1. **Per-task quality review** (Step 2d) — **Complex mode only**, `[high-risk]` tasks only. Lightweight, fast-iteration. Reviews the cumulative working tree diff right after each task's implementer returns. Catches duplication, naming inconsistencies, and missing extraction opportunities task by task. **Skipped in Normal mode** — the final review handles everything.
 
-2. **Final review** (Step 3) — Heavy, full-diff. Reviews cross-task coherence, security, project-instruction compliance, and architecture as a whole. Dispatched ONCE after all tasks complete.
+2. **Final review** (Step 3) — **Always runs**. Full-diff review: cross-task coherence, security, project-instruction compliance, and architecture. Dispatched ONCE after all tasks complete.
 
-Skipping the per-task review means quality issues compound across tasks and only get caught in the final review, when the context is colder and fixes are more expensive. Skipping the final review means cross-task issues (inconsistent naming, broken integration, security gaps) slip through. Both are needed.
-
-The per-task review uses a **focused** code-reviewer dispatch (cumulative working tree diff via `git diff HEAD` + untracked files, with the dispatch prompt scoping findings to the task being reviewed). The final review uses a **full-context** code-reviewer dispatch (complete diff + plan, no scoping). Different prompts — the difference is what the reviewer is told to focus on.
+Check the plan header for `**Mode**: Normal` or `**Mode**: Complex` to determine which review layers apply. If no mode is specified, default to Complex (full ceremony).
 
 Do NOT dispatch security-reviewer per task — security-reviewer is for the final pass only (it needs cross-task context to be useful).
 </HARD-GATE>
@@ -83,8 +81,8 @@ If any of these thoughts cross your mind, STOP — you are about to compromise t
 | "The security-gate says NOT NEEDED but I have a doubt" | Dispatch the security-reviewer. False positives are cheap. |
 | "Final validation is redundant, I validated each task" | Tasks interact. Re-validate ALL. Not some — ALL. |
 | "The implementer reported DONE, no need to check" | Run the validation command yourself. Trust but verify. |
-| "This [high-risk] task doesn't need per-task review" | Per-task review catches drift while context is hot. It is mandatory for [high-risk] tasks. |
-| "I'll run per-task review on this [low-risk] config task" | [low-risk] tasks skip per-task review by design. Save the tokens for [high-risk] tasks. |
+| "This Complex [high-risk] task doesn't need per-task review" | Per-task review catches drift while context is hot. It is mandatory for [high-risk] tasks in Complex mode. |
+| "I'll run per-task review in Normal mode" | Normal mode skips per-task review by design. The final review handles everything. |
 
 ---
 

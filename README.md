@@ -651,13 +651,26 @@ Agents used: **researcher-repo**
 
 ### `/ops-brainstorm`
 
-Interactive brainstorming to clarify needs before planning.
+Interactive brainstorming to clarify needs before planning. Adapts ceremony to feature complexity.
 
 ```
 /ops-brainstorm <what you want to explore>
 ```
 
-Socratic-style dialogue: clarity check, context exploration, scope assessment, YAGNI filter. Discussion-only — no agents dispatched, no changes made.
+Step 3 classifies the feature into one of three modes that control the entire downstream pipeline:
+
+| | Simple | Normal | Complex |
+|---|---|---|---|
+| **Brainstorm steps 4-5** (scope, visual) | Skip | Skip | Full |
+| **Clarifying questions** | 1-2 max | As many as needed | As many as needed |
+| **Architectural dimensions** | All batched in 1 block | Opt-in, one per message | Full + extra dimensions |
+| **Design presentation** | Single block | Section by section | Section by section + alternatives |
+| **YAGNI filter** | Merged into summary | Dedicated step | Dedicated step |
+| **Transitions to** | `/ops-do` | `/ops-plan` | `/ops-plan` |
+| **Plan + critic** | No | Yes | Yes |
+| **Per-task code review** | No | No | Yes (high-risk tasks) |
+| **Final review** | Yes | Yes | Yes |
+| **Estimated duration** | ~10 min | ~20-25 min | 1h+ |
 
 ---
 

@@ -5,6 +5,8 @@ description: "Interactive brainstorming to clarify needs and explore intent befo
 
 # /ops-brainstorm — Interactive brainstorming
 
+**Read `data/common_instructions.md` before executing this skill.**
+
 ## Instruction Priority
 
 Follow the `ops-instruction-priority` rules when instructions conflict.
@@ -23,8 +25,8 @@ This skill is split into 11 step files you execute one at a time. Each step file
 Step 1  — Create task checklist           →  skills/brainstorm/step-01-task-checklist.md
 Step 2  — Clarity check                   →  skills/brainstorm/step-02-clarity-check.md
 Step 3  — Explore project context         →  skills/brainstorm/step-03-explore-context.md
-Step 4  — Visual companion offer          →  skills/brainstorm/step-04-visual-companion.md
-Step 5  — Assess scope                    →  skills/brainstorm/step-05-assess-scope.md
+Step 4  — Assess scope                    →  skills/brainstorm/step-04-assess-scope.md
+Step 5  — Visual companion offer          →  skills/brainstorm/step-05-visual-companion.md
 Step 6  — Clarifying questions            →  skills/brainstorm/step-06-clarifying-questions.md
 Step 7  — Propose approaches [HARD GATE]  →  skills/brainstorm/step-07-architectural-decisions.md
 Step 8  — Present design by sections      →  skills/brainstorm/step-08-design-sections.md
@@ -51,8 +53,9 @@ Step 11 — Transition                      →  skills/brainstorm/step-11-trans
 - **Do NOT make changes.** This skill is discussion-only — no edits, no commits, no file writes other than progress tracking via `TaskUpdate`.
 - **Do NOT write specs or plans.** If the user wants to plan, transition to `/ops-plan` (handled in Step 11).
 - **Do NOT dispatch agents.** This is a direct conversation with the user. If research is needed, suggest `/ops-research`.
-- **Every project goes through this.** "Simple" projects are where unexamined assumptions cause the most wasted work.
+- **Three modes.** Step 3 classifies the feature as Simple, Normal, or Complex. Simple: skips steps 4-5, 1-2 questions, all dimensions batched, design as single block, YAGNI in summary, → `/ops-do`. Normal: skips steps 4-5, full questions, dimensions one by one, design section by section, → `/ops-plan`. Complex: full flow including scope decomposition and visual companion, extra dimensions, design with documented alternatives, → `/ops-plan`.
 - **Track progress visibly.** Every step marks its task `in_progress` at the start and `completed` at the end via `TaskUpdate`. The user should always be able to see where you are in the process.
+- **ONE question at a time.** Do NOT overwhelm with multiple questions. Wait for the user's answer before asking the next. If you catch yourself writing multiple question marks (?) or "Question 1:", "Question 2:" in the same message — STOP. Send ONE question alone, wait.
 
 ---
 

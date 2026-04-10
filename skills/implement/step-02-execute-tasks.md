@@ -73,12 +73,14 @@ After validation passes, verify by checking the actual diff — not as a mental 
 
 If conformity fails, have the implementer correct the issue before proceeding.
 
-## 2d. Per-task Quality Review (MANDATORY for `[high-risk]` tasks)
+## 2d. Per-task Quality Review (Complex mode only, `[high-risk]` tasks)
 
-**If the task is tagged `[low-risk]` in the plan**: skip this step entirely and proceed to Step 2e. Low-risk tasks (config, i18n, type definitions) do not benefit from per-task review — the final review (Step 3) catches any issues across all tasks.
+**If the plan header says `Mode: Normal`** (or mode is not specified): skip this step entirely for ALL tasks and proceed to Step 2e. In Normal mode, the final review (Step 3) catches issues across all tasks at once. Per-task review is reserved for Complex mode where architectural drift between tasks is a real risk.
+
+**If the task is tagged `[low-risk]`**: skip this step entirely and proceed to Step 2e, regardless of mode.
 
 <HARD-GATE-PER-TASK-REVIEW>
-For `[high-risk]` tasks: after conformity passes and BEFORE the discovery check, you MUST dispatch a **focused** code-reviewer agent. This is the per-task quality gate. Skipping it means architectural drift compounds across tasks and only gets caught in Step 3, when the context is cold and fixes are expensive.
+**Complex mode, `[high-risk]` tasks only**: after conformity passes and BEFORE the discovery check, you MUST dispatch a **focused** code-reviewer agent. This is the per-task quality gate. Skipping it means architectural drift compounds across tasks and only gets caught in Step 3, when the context is cold and fixes are expensive.
 
 This review is intentionally lightweight and scoped to ONE task. It is NOT the final review (which happens in Step 3 on the full diff with security-reviewer).
 </HARD-GATE-PER-TASK-REVIEW>

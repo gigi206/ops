@@ -1,6 +1,6 @@
 # Step 7 — Propose 2-3 approaches (HARD GATE — architectural decisions are LOCKED here)
 
-Mark the task "Brainstorm: propose 2-3 approaches" as `in_progress` now via `TaskUpdate`.
+Mark the task "Brainstorm: architectural decisions" as `in_progress` now via `TaskUpdate`.
 
 <HARD-GATE-FORK>
 This step is the architectural fork. Decisions taken here CANNOT be deferred to `/ops-plan` or research. The plan and the research phase optimize for "the shortest path given current code", not for "the cleanest design" — if you let architecture be decided downstream, you will end up extending whatever already exists, even when extracting a new abstraction would be cleaner.
@@ -42,11 +42,27 @@ Once you understand the problem space, propose **2-3 different approaches** with
 
 **Wait for the user to choose** before proceeding. Do NOT skip this step even if one approach seems obviously better — "obviously better" is usually a stack assumption in disguise.
 
-## Architectural Dimensions Checklist (MANDATORY)
+## Architectural Dimensions Checklist (OPT-IN)
 
-Before moving to Step 8, you MUST have presented an explicit choice for EACH of the seven dimensions below that applies to the current feature. For each applicable dimension, present a multi-choice question (A/B/C format) and wait for the user's answer. Skipping an applicable dimension is a FAILURE of this skill.
+**If Simple mode** (from Step 3): list ALL dimensions in a single batch block with your recommended answer for each. No A/B/C questions — the user confirms or challenges the batch. This is the express path: one message, one confirmation.
 
-If a dimension is not applicable, state it explicitly in your output: "Dimension X: not applicable because [reason]". This makes the YAGNI filter visible.
+**If Normal mode**: identify which dimensions have a **genuine choice** — more than one viable option given what you learned in Steps 1-6. Present a multi-choice question (A/B/C format) ONLY for those dimensions.
+
+**If Complex mode**: same as Normal, but also **actively look for dimensions beyond the 7 defaults** that apply to this feature (e.g., concurrency model, cache invalidation, observability boundaries, wire format, migration strategy). Present each extra dimension as an A/B/C question with the same forced-choice discipline.
+
+**ONE dimension per message (Normal and Complex mode).** Each dimension with a genuine choice is its own question (text analysis + tool call per common_instructions rule 2). Do NOT batch multiple dimensions into a single message. Ask dimension N, wait for the answer, then ask dimension N+1.
+
+**Dimensions with no real choice** (the answer is obvious from context, or the dimension does not apply) should be listed in a single batch block — no individual A/B/C question needed:
+
+```
+**Dimensions — no choice needed:**
+- Dimension N: [N/A — reason] or [obvious answer — reason]
+- Dimension M: [N/A — reason] or [obvious answer — reason]
+```
+
+The user can challenge any dimension in this block ("actually, I think Dimension N has a real choice"). If they do, present the A/B/C question for that dimension.
+
+Skipping an applicable dimension that HAS a real choice is still a FAILURE of this skill. The opt-in gate is about reducing ceremony for obvious/N/A dimensions, not about skipping hard decisions.
 
 ### Note on scope
 
@@ -181,14 +197,14 @@ Before proceeding, verify:
 - [ ] You presented at least 2 (ideally 3) named macro-approaches with name / how it works / pros / cons / context-fit.
 - [ ] You did NOT frame any option as a universal default. Any recommendation you made was explicitly conditioned on something the user told you in Steps 1-6.
 - [ ] The user explicitly picked one macro-approach.
-- [ ] For EACH of the 7 architectural dimensions, you either (a) asked a multi-choice question and got the user's answer, or (b) marked it explicitly `N/A — [reason]`.
-- [ ] Dimensions 2, 3, and 4 — if applicable — were asked using their structural templates: question + lettered options + context-fit framing + context-conditioned recommendation rule. Wording adapted to the feature, structure preserved.
-- [ ] No dimension was deferred with phrases like "TBD", "we'll figure this out later", "during the plan", "during research". If you wrote any such phrase, this step has FAILED and you must restart Step 7.
-- [ ] No stack-specific wording leaked into the questions (no "Django setting", "env var" as the only mechanism named, "server-driven", "the backend should…", etc.) unless the user already told you the project's stack.
+- [ ] For each of the 7 architectural dimensions, you either (a) asked a multi-choice question and got the user's answer (for dimensions with a genuine choice), or (b) listed it in the batch "no choice needed" block with a reason.
+- [ ] Dimensions with a genuine choice that used structural templates (2, 3, 4) preserved the template structure: question + lettered options + context-fit framing + context-conditioned recommendation rule.
+- [ ] No dimension with a real choice was deferred with phrases like "TBD", "we'll figure this out later", "during the plan", "during research". If you wrote any such phrase, this step has FAILED and you must restart Step 7.
+- [ ] No stack-specific wording leaked into the questions unless the user already told you the project's stack.
 - [ ] If the feature genuinely needs an architectural decision that does not fit any of the 7 dimensions, you asked it as an extra A/B/C question.
 - [ ] The user's answers are stored in your working memory so you can transcribe them into the Step 10 Brainstorm Summary.
 
-Mark the task "Brainstorm: propose 2-3 approaches" as `completed` via `TaskUpdate`.
+Do NOT mark the milestone task completed yet — it spans through Step 8.
 
 **→ Next: read `skills/brainstorm/step-08-design-sections.md` now and execute Step 8.**
 

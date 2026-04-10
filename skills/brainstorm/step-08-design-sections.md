@@ -1,8 +1,10 @@
 # Step 8 — Present design by sections
 
-Mark the task "Brainstorm: present design by sections" as `in_progress` now via `TaskUpdate`.
+**If Simple mode** (from Step 3): present the design as a **single concise block** (not section by section). Cover the key points: what changes, where, and how. Ask for confirmation once. Then proceed to Step 10 (skip Step 9 — YAGNI is merged into the summary).
 
-Present the chosen approach's design **section by section**, not as a single wall of text. Each section should be validated by the user before moving to the next.
+**If Normal mode**: present the chosen approach's design **section by section**, not as a single wall of text. Each section should be validated by the user before moving to the next.
+
+**If Complex mode**: same as Normal (section by section), but also **document the rejected alternatives** for each major design decision: "We chose X because [reason]. Alternative Y was considered but rejected because [reason]." This feeds the critic's Lens 5 brainstorm trace check and helps future maintainers understand why the design looks the way it does.
 
 ## How to section the design
 
@@ -42,8 +44,10 @@ Before proceeding, verify:
 - [ ] The design follows existing codebase patterns and respects isolation/clarity principles.
 - [ ] You did NOT propose unrelated refactoring beyond what the current goal requires.
 
-Mark the task "Brainstorm: present design by sections" as `completed` via `TaskUpdate`.
+Mark the task "Brainstorm: architectural decisions" as `completed` via `TaskUpdate`.
 
-**→ Next: read `skills/brainstorm/step-09-yagni-filter.md` now and execute Step 9.**
+**→ If Simple: read `skills/brainstorm/step-10-summary.md` now and execute Step 10** (skip Step 9 — include a brief YAGNI note in the summary instead).
 
-Do NOT continue without reading that file first.
+**→ If Normal or Complex: read `skills/brainstorm/step-09-yagni-filter.md` now and execute Step 9.**
+
+Do NOT continue without reading the correct file first.

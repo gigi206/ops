@@ -1,5 +1,19 @@
 # Changelog
 
+## 3.9.0 (2026-04-11)
+
+### Brainstorm adaptive ceremony — Simple / Normal / Complex modes
+
+Complexity gate rewritten from 3 labels with no real flow differences to 3 modes with genuinely different pipelines. The mode propagates from brainstorm through plan into implement.
+
+- refactor(brainstorm): Step 3 — **Simple** mode (~10 min): skips steps 4-5, 1-2 clarifying questions max, all architectural dimensions batched (no A/B/C), design as single block, YAGNI merged into summary, transitions to `/ops-do`.
+- refactor(brainstorm): Step 3 — **Normal** mode (~20-25 min): skips steps 4-5, full clarifying questions, dimensions opt-in one by one, design section by section, transitions to `/ops-plan`. Per-task review skipped during implementation — final review only.
+- refactor(brainstorm): Step 3 — **Complex** mode (1h+): full flow (steps 4-5 included: scope decomposition + visual companion), extra dimensions beyond the 7 defaults, design section by section with documented alternatives, transitions to `/ops-plan`. Full per-task review during implementation.
+- refactor(brainstorm): SKILL.md — global constraints updated to document the three modes.
+- feat(plan): Step 7 — plan header includes `**Mode**: Normal` or `**Mode**: Complex` to propagate ceremony level to `/ops-implement`.
+- refactor(implement): Step 2d per-task review — now conditional on Complex mode (was conditional on `[high-risk]` only). Normal mode skips per-task review entirely.
+- refactor(implement): SKILL.md — review layers documentation and red flags table updated for mode-based ceremony.
+
 ## 3.8.0 (2026-04-10)
 
 ### Stack-agnostic rewrite + adaptive ceremony + spec/plan merger
@@ -9,7 +23,6 @@ Stack-agnostic rewrite of brainstorm dimensions and critic Lens 5. Adaptive cere
 **Brainstorm skill (14 files):**
 - refactor(brainstorm): Step 1 — reduce 10 per-step tasks to 3 milestone tasks ("clarify & explore", "architectural decisions", "finalize"). Individual steps no longer create/complete their own tasks.
 - refactor(brainstorm): Steps 4/5 swapped — assess scope now runs before visual companion offer (scope may change what visuals are relevant). Files renamed: `step-04-assess-scope.md`, `step-05-visual-companion.md`. All hand-offs and SKILL.md step list updated.
-- refactor(brainstorm): Step 3 — new complexity gate after context exploration. Classifies feature as Simple/Medium/Complex. Simple features get reduced dimensions in Step 7 and may combine YAGNI into summary.
 - refactor(brainstorm): Step 7 — architectural dimensions changed from opt-out to opt-in. Dimensions with no real choice (obvious answer or N/A) are listed in a batch block — no individual A/B/C question needed. Dimensions with genuine choices still require forced A/B/C. End-of-step checklist updated.
 
 **Plan skill — spec/plan merger:**

@@ -17,6 +17,8 @@ Write the plan to `docs/plans/YYYY-MM-DD-<topic>.md`. Do NOT commit — the user
 
 Set `**Status**: Draft` in the plan header. This status is updated to `**Status**: Approved` after the critic review (Step 8) and user approval (Step 9).
 
+**If brainstorm was run**: include `**Mode**: Normal` or `**Mode**: Complex` in the plan header (from the brainstorm Step 3 classification). This tells `/ops-implement` which ceremony level to apply. If no brainstorm was run, default to `**Mode**: Complex` (full ceremony).
+
 ## Task Decomposition (MANDATORY)
 
 The plan MUST be decomposed into discrete, ordered tasks. A plan without tasks is NOT a plan — it's a wish.
