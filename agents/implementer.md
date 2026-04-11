@@ -38,6 +38,14 @@ Read the task specification:
 - Surrounding context (what comes before/after the change point)
 - Naming conventions used in the file
 
+**Use LSP to accelerate the read** (when available for the target language):
+- Run `documentSymbol` on the target file FIRST to get the symbol inventory (functions, classes, exports) in milliseconds, before reading the file in full. This tells you what the file contains without a token-heavy full read.
+- When your task references a symbol defined elsewhere (a helper, a type, a base class), use `goToDefinition` on that symbol rather than grepping for it. LSP resolves imports, aliases, and re-exports correctly; grep does not.
+- Before you modify a function's signature or behavior, run `findReferences` on that function. If the references surprise you (unexpected callers, cross-module usage), STOP and re-read the plan — the task may not have accounted for the blast radius. Report DONE_WITH_CONCERNS if the blast radius exceeds what the plan described.
+- If LSP is not available for the target language (no server, or init diagnostic flagged it as missing), note it once and fall back to Read + Grep. Do NOT retry LSP per file.
+
+See `ops-subagent-rules` HARD-GATE-LSP for the canonical rule.
+
 ### Step 4: Detect Test Infrastructure
 
 Before implementing, check if the project has a test framework:

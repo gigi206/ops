@@ -100,9 +100,15 @@ The scan is mode-gated, mirroring the brainstorm Step 11 pattern:
 
 The mode comes from the brainstorm Step 3 classification, propagated via the `**Mode**: …` line in the plan header (set in the "Persist the plan" section above). If no brainstorm was run and the plan defaulted to `**Mode**: Complex`, run the full pass.
 
-### Tool-assisted scan (if `ast-grep` is available)
+### Tool-assisted scan (LSP `documentSymbol` + `ast-grep`)
 
-The scan above describes the **manual canonical path** — read each task's logic, compare pairwise mentally, flag duplications. This works but is cognitively heavy on long task lists and unreliable on weaker models. If `ast-grep` is on PATH (check with `command -v ast-grep` — `/ops-init` Step 2c detects it as an optional ops tool), you SHOULD use it to make the scan concrete and deterministic **before** the manual pass, then feed the results into the manual comparison.
+The scan above describes the **manual canonical path** — read each task's logic, compare pairwise mentally, flag duplications. This works but is cognitively heavy on long task lists and unreliable on weaker models. Two deterministic tools complement the manual path, in this order:
+
+**Tier 1 — LSP `documentSymbol` for cheap symbol inventory (always try first when LSP is available).** For each file your tasks create or significantly modify, run LSP `documentSymbol` to get a structured list of the file's existing top-level symbols (functions, classes, exports) in milliseconds, no tokens spent. This gives you "what's already in the file" before you reason about what the tasks would add. Compare the planned task content against the documentSymbol inventory — if a task plans to add a symbol whose name or role already exists in the file, that's a duplication flag even before bodies are written. LSP is the first probe because it is free, fast, and symbol-precise. See `ops-subagent-rules` HARD-GATE-LSP.
+
+**Tier 2 — `ast-grep` for body-shape matching (when LSP is insufficient).** LSP gives you the symbol list but NOT the body shapes. To detect "two functions share a body shape", LSP is useless — you need AST pattern matching. This is where ast-grep earns its place in the scan: symbol inventory from LSP tells you *what* is in each file; ast-grep tells you *whether two bodies look the same*. The two tools compose: LSP narrows the candidate set to "symbols that plausibly overlap by name or role", ast-grep confirms with a structural body comparison. Neither replaces the other.
+
+If `ast-grep` is on PATH (check with `command -v ast-grep` — `/ops-init` Step 2c detects it as an optional ops tool), you SHOULD use it to make the body-shape scan concrete and deterministic **after** the LSP symbol pass, then feed both results into the manual comparison.
 
 **When to use it**: Normal mode (light pass) and Complex mode (full pass) only. Skip in Simple mode — consistent with the mode-aware ceremony above.
 
@@ -149,8 +155,12 @@ Concrete duplication patterns the scan should catch (presented as illustrative �
 ### Output of the scan
 
 Either:
-- **No duplication detected** — note "Duplication scan: clean (N tasks compared)" in the plan's Risks section as evidence the scan was actually run (auditable for the critic).
-- **Duplication detected** — the new extraction task(s) are in the task list, the consuming tasks are updated, and the plan's Design / Approach section mentions the extraction with a one-line rationale.
+- **No duplication detected** — note the scan result in the plan's Risks section as evidence the scan was actually run (auditable for the critic). Use the form that matches which tool-assisted tiers ran — see the end-of-step checklist below for the four accepted forms:
+  - `"Duplication scan: clean (N tasks compared, LSP symbol inventory + ast-grep assisted)"` — both Tier 1 and Tier 2 ran
+  - `"Duplication scan: clean (N tasks compared, LSP symbol inventory only — ast-grep not installed)"` — Tier 1 only
+  - `"Duplication scan: clean (N tasks compared, ast-grep assisted — LSP not available for language X)"` — Tier 2 only
+  - `"Duplication scan: clean (N tasks compared, manual only — LSP and ast-grep both unavailable)"` — neither
+- **Duplication detected** — the new extraction task(s) are in the task list, the consuming tasks are updated, and the plan's Design / Approach section mentions the extraction with a one-line rationale. The Risks note still records which tool-assisted tiers ran (same four forms as above), replacing "clean" with "extraction task(s) added".
 
 A plan with no scan note in Risks is a plan where the scan was skipped (or forgotten). The end-of-step checklist below catches this.
 
@@ -198,7 +208,13 @@ Before proceeding, verify:
 - [ ] Every task has Description + Files + Change + Validation.
 - [ ] Tasks are ordered by dependency (prerequisites before dependents).
 - [ ] No placeholders ("TBD", "TODO", "add appropriate X", "similar to Task N", etc.) appear in the plan.
-- [ ] **Duplication Scan executed** (mode-aware): for each task, you compared its new logic to that of every other task in the plan. The plan's Risks section contains either "Duplication scan: clean (N tasks compared)" OR an extraction task ordered before its consumers with a one-line rationale in Design/Approach. If Simple mode, this checkbox is satisfied automatically (scan skipped — Lens 5 of the plan-stage critic remains the safety net). If `ast-grep` was used to assist the scan, the Risks note SHOULD mention it (e.g., `"Duplication scan: clean (N tasks compared, ast-grep assisted)"`); if ast-grep was not available, the Risks note SHOULD mention that too so the critic can calibrate its own Lens 5 scrutiny accordingly.
+- [ ] **Duplication Scan executed** (mode-aware): for each task, you compared its new logic to that of every other task in the plan. The plan's Risks section contains either "Duplication scan: clean (N tasks compared)" OR an extraction task ordered before its consumers with a one-line rationale in Design/Approach. If Simple mode, this checkbox is satisfied automatically (scan skipped — Lens 5 of the plan-stage critic remains the safety net). The Risks note SHOULD record which tool-assisted tiers ran, so the critic can calibrate its Lens 5 scrutiny. Accepted forms (pick the one that matches what you actually ran):
+  - `"Duplication scan: clean (N tasks compared, LSP symbol inventory + ast-grep assisted)"` — both Tier 1 (LSP `documentSymbol`) and Tier 2 (ast-grep body-shape) ran.
+  - `"Duplication scan: clean (N tasks compared, LSP symbol inventory only — ast-grep not installed)"` — Tier 1 ran, Tier 2 not available.
+  - `"Duplication scan: clean (N tasks compared, ast-grep assisted — LSP not available for language X)"` — Tier 2 ran, Tier 1 not available.
+  - `"Duplication scan: clean (N tasks compared, manual only — LSP and ast-grep both unavailable)"` — neither tier, manual pass only.
+
+  Silently skipping Tier 1 when LSP was available is a failure — the gate expects the LSP `documentSymbol` pass as the first and cheapest probe before the body-shape comparison.
 - [ ] If project instructions exist: every applicable rule has a dedicated task in the plan.
 - [ ] You presented the plan in digestible sections, not a single wall of text.
 

@@ -70,6 +70,12 @@ After validation passes, verify by checking the actual diff — not as a mental 
 - [ ] No unrelated changes (files touched match the plan's "Files" list)
 - [ ] No security anti-patterns: hardcoded secrets, `--insecure`, `skip_tls_verify`, disabled TLS
 - [ ] Existing code conventions preserved (indentation, naming, structure)
+- [ ] **LSP diagnostics (per-task, when available)**: run LSP diagnostics on every file the task modified. LSP is fast (milliseconds to seconds per file) — this is not the same thing as the final-review LSP diagnostics in Step 3, which runs on the cumulative diff once. Per-task diagnostics catch type errors, missing imports, and syntax-class issues **immediately** after the task, while the implementer context is still warm. If diagnostics report errors:
+  - **Errors introduced by THIS task** → have the implementer fix before proceeding. Do NOT move to Step 2d or Step 2e with new diagnostic errors on the working tree.
+  - **Pre-existing errors** (present on files before the task touched them) → note them in the task completion record but do not block the task on them. The plan is responsible for scoping pre-existing issues explicitly if they need fixing.
+  - **If LSP is not available** for the language (no server configured, or `/ops-init` Step 6 flagged LSP as missing): skip this checkbox, note "LSP not available for per-task diagnostics" once in the task record, and rely on the final review (Step 3) to catch type errors. Do NOT block the task on missing LSP.
+
+  Rationale: a type error introduced in Task 1 detected at Task N's final review means N-1 tasks were built on a broken assumption — the fix loop is expensive because context is cold. Per-task LSP diagnostics close that feedback loop to one task. See `ops-subagent-rules` HARD-GATE-LSP.
 
 If conformity fails, have the implementer correct the issue before proceeding.
 
@@ -105,7 +111,7 @@ Spawn the **code-reviewer** agent with:
 - **Explicit instruction**: "This is a per-task lightweight review during implementation, not the final review. The diff is cumulative since the start of /ops-implement — prior tasks' changes are visible by design, use them as context. **Scope your findings to Task N's contributions only** (the files listed above). Focus on:
   - **Plan compliance for this task** (did the implementer build what was asked, nothing more, nothing less)
   - **Drift catchers**: duplicated logic introduced by this task, naming inconsistencies with prior tasks, type mismatches with prior tasks
-  - **Critical-only LSP diagnostics** (errors, not warnings) on the files modified by this task
+  - **Critical-only LSP diagnostics** (errors, not warnings) on the files modified by this task. Note: per-task LSP diagnostics already ran at 2c and gated on errors introduced by this task — any remaining error here is either (a) a diagnostic that the 2c pass missed due to LSP unavailability, or (b) a new error introduced by the fix-loop between 2c and this reviewer dispatch. Treat this as the last-line reviewer pass, not the authoritative check (2c is authoritative).
   - Skip: full security audit (security-reviewer in Step 3 handles that), full architecture review and Lens 5 (final review handles that at full-diff scale), style nits (qlty handles that), findings about prior tasks' files (those were already reviewed by their own per-task review)
   NOTE: Lens 5 (architectural drift) was intentionally moved from per-task to final review for cross-task visibility. If drift is observed slipping through final reviews in practice, re-add Lens 5 here for `[high-risk]` tasks only."
 

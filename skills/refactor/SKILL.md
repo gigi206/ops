@@ -87,12 +87,31 @@ Break the refactoring into small, independently verifiable steps. Each step must
 - Leave the code in a working state after completion
 - Be verifiable by running the test suite
 
-Present the steps to the user:
+<HARD-GATE-REFACTOR-LSP>
+
+**Before planning any step that changes a function/method/class signature** (adding a parameter, removing a parameter, reordering parameters, changing a parameter type, changing a return type, renaming the symbol, removing the symbol), you MUST run LSP `findReferences` on that symbol FIRST. This is not optional. Grep-based blast-radius analysis is lossy: it misses aliases, re-exports, dynamic dispatch, and cross-module imports that LSP resolves correctly. The reference list is the concrete input to the step plan — without it, you cannot predict what else breaks.
+
+For each signature change, the step description MUST include the reference count and the callers affected as an inline annotation at the end of the step line, in this canonical compact form: `(reference scan: N callers across M files: file1:line, file2:line, …)`. The example below (line ~107) demonstrates this form. If a single step touches many callers and the inline list would be unwieldy, truncate the file list with `…` and spell out the full list in a follow-up sub-step bullet under the step line — but the count (`N callers across M files`) must always be present inline.
+
+**If LSP is not available** for the target language (no server, or `/ops-init` Step 6 flagged LSP as missing), note it explicitly in Step 4 output: *"LSP not available — falling back to grep-based reference scan. Blast radius may be incomplete."* Then run a best-effort grep for the symbol name. Do NOT proceed silently on grep-only analysis — the user needs to know the guarantee is weaker.
+
+**Non-signature refactorings** (rename-within-scope, extract-local, inline-local, move-file-only-internal) do NOT require `findReferences` when they are lexically scoped to a single file or function. Use LSP `documentSymbol` + a read of the target file instead.
+
+See `ops-subagent-rules` HARD-GATE-LSP for the canonical rule.
+
+</HARD-GATE-REFACTOR-LSP>
+
+Present the steps to the user. Every signature-change step MUST list the reference count on its line; non-signature steps do not need it:
+
 > "I'll refactor in [N] steps:
-> 1. [Step description] — verify: tests pass
-> 2. [Step description] — verify: tests pass
+> 1. [Signature-change step description, e.g. "add `ctx` parameter to `handleRequest`"] — verify: tests pass (reference scan: 12 callers across 5 files: `a.ext:L`, `b.ext:L`, …)
+> 2. [Another signature-change step] — verify: tests pass (reference scan: 3 callers in 2 files: `x.ext:L`, `y.ext:L`)
+> 3. [Non-signature step, e.g. "extract local helper `formatKey` within `handleRequest`"] — verify: tests pass
+> 4. [Non-signature step, e.g. "rename internal variable `r` to `result`"] — verify: tests pass
 > ...
 > Each step preserves behavior. Approve?"
+
+Signature-change steps without a reference count are a HARD-GATE-REFACTOR-LSP violation — the planner either forgot to run `findReferences` or is hiding the blast radius. Do NOT proceed on a signature-change step with a missing reference count.
 
 This is a soft gate — proceed if the user confirms or doesn't object.
 

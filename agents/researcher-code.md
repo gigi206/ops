@@ -35,7 +35,9 @@ The planner reads your observations and decides what to do with them. Your job i
 
 ## Protocol
 
-1. **Map the structure**: Use Glob to find relevant files and directories in the task area
+0. **LSP-first for symbol-oriented sub-questions**: you were dispatched because the caller decided the question needed LLM reasoning (semantic or structural). **Within** your exploration, however, you will encounter sub-questions that are purely symbol-oriented — "where is `processOrder` defined?", "who calls `validateToken`?", "what symbols does this file export?" (adapt the filename to whatever your target is — the question applies equally to `order_service.py`, `auth/handlers.rs`, `users.go`, or any other file in any language). For each such sub-question, attempt the appropriate LSP operation FIRST, before grep: `goToDefinition`, `findReferences`, `documentSymbol`, `workspaceSymbol`, `hover`. LSP returns in milliseconds with resolved imports and scoped symbols; grep is a text search that misses aliases and re-exports. Only fall back to grep if LSP is unavailable for the target language, returns empty, or the question is semantic (conventions, patterns, reasoning) rather than symbol-oriented. Note LSP unavailability once in your output if it applies — do not repeat per file. See `ops-subagent-rules` HARD-GATE-LSP for the canonical rule.
+
+1. **Map the structure**: Use Glob to find relevant files and directories in the task area. For each target file, run `documentSymbol` via LSP (when available) to get a structured symbol list before reading the file in full — this gives you the function/class/export inventory in milliseconds without consuming grep cycles.
 2. **Read the project instruction file** (`CLAUDE.md`, `AGENTS.md`, or `GEMINI.md` — whichever exists): Understand project conventions and rules before exploring further. If none exists, infer conventions from the code itself (naming patterns, directory structure, existing config files).
 3. **Find similar implementations**: Search for existing code that does something similar to the task
    - Use Grep with targeted patterns (resource names, config keys, template patterns)

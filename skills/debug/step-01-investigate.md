@@ -6,13 +6,18 @@ Mark the task "Debug: investigate" as `in_progress` now via `TaskUpdate`.
 
 1. **Read the error**: Full error message, stack trace, logs. Not just the last line.
 2. **Reproduce**: Run the failing command. Confirm you see the same error. For browser bugs, also reproduce in the browser using chrome-devtools-mcp (navigate to the page, read console messages, inspect network requests).
-3. **Gather context** — dispatch **git-historian** in Investigation Mode:
-   - Scope: files mentioned in the error/stack trace
+3. **LSP-first symbol resolution on the stack trace** (when LSP is available for the target language). Before dispatching git-historian or grepping for the error site, resolve the stack-trace symbols through LSP:
+   - For each frame in the stack trace, run `goToDefinition` on the symbol at that frame. LSP returns the definition location in milliseconds, follows imports/aliases/re-exports correctly, and gives you the actual file and line that will run — grep may point at a shadowed name in a different module.
+   - For the symbol where the error is thrown, run `findReferences` to see who calls it. The caller set is the hypothesis surface for the bug: the bug is typically between "what the callee expects" and "what one of the callers actually passes".
+   - For unfamiliar types in the error message, run `hover` to get the type/signature/docstring without opening the file in full.
+   - If LSP is not available for the language (no server, or `/ops-init` Step 6 flagged it as missing), note it once and fall back to Read + Grep — do NOT retry LSP repeatedly. See `ops-subagent-rules` HARD-GATE-LSP.
+4. **Gather context** — dispatch **git-historian** in Investigation Mode:
+   - Scope: files mentioned in the error/stack trace (and any additional files surfaced by LSP `goToDefinition` in step 3)
    - Window: 30 days
    - Focus: regressions — suspect commits, recent changes, blame analysis
    - While git-historian runs, also check: `git diff` for uncommitted changes, when it last worked
-4. **Trace the data flow**: Follow the error backward through the code/config. Read each file in the chain.
-5. **Combine**: Merge git-historian's findings with your own investigation. Suspect commits + data flow tracing = informed hypotheses.
+5. **Trace the data flow**: Follow the error backward through the code/config. Read each file in the chain.
+6. **Combine**: Merge git-historian's findings with your own investigation (including the LSP-resolved caller/definition graph from step 3). Suspect commits + data flow tracing + LSP reference graph = informed hypotheses.
 
 **DO NOT attempt a fix during investigation.** Understand first. This is the Iron Law from SKILL.md — no fix without a confirmed root cause.
 
@@ -43,9 +48,10 @@ This narrows the investigation from "somewhere in the stack" to "between compone
 Before proceeding, verify:
 - [ ] You read the FULL error message, stack trace, and logs (not just the last line).
 - [ ] You reproduced the bug.
-- [ ] You dispatched git-historian in Investigation Mode (scope: files in error path, window 30 days).
+- [ ] You resolved the stack-trace symbols via LSP `goToDefinition` first (or noted LSP unavailability and fell back to Read + Grep). `findReferences` ran on the error-site symbol to inventory callers.
+- [ ] You dispatched git-historian in Investigation Mode (scope: files in error path AND files surfaced by LSP resolution, window 30 days).
 - [ ] You traced the data flow backward through the code/config.
-- [ ] You merged git-historian's findings with your own investigation.
+- [ ] You merged git-historian's findings with your own investigation (including the LSP reference graph).
 - [ ] If the error path crosses component boundaries: you added instrumentation, reproduced with it active, and identified where data diverges.
 - [ ] You did NOT write any fix during investigation (Iron Law).
 

@@ -28,6 +28,8 @@ Read the target files thoroughly. For each function/method/component:
 - What are the dependencies? (external services, databases, file system)
 - What can go wrong? (error conditions, exceptions, timeouts)
 
+**Use LSP `findReferences` on each target function to understand real usage patterns** (when LSP is available for the target language). The reference sites tell you which edge cases, argument shapes, and error paths actually matter in practice — a function called with only valid inputs in a tight loop needs different tests than a function called from user-input boundaries across five modules. Run `documentSymbol` on the target file first to get the symbol inventory, then `findReferences` on each symbol you plan to test. Let the reference callers shape your edge-case list: inputs used in practice, not inputs imagined. If LSP is not available, fall back to grep; note the fallback in your report. See `ops-subagent-rules` HARD-GATE-LSP.
+
 ### Step 3: Detect Test Infrastructure
 
 Identify the existing test framework and conventions:

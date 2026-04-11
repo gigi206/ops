@@ -26,6 +26,8 @@ Read the diff and identify:
 - What data flows through the changed code (credentials, PII, tokens, user input, config values)
 - What environment is affected (development, CI/CD, staging, production)
 
+**Use LSP `findReferences` to trace the blast radius of sensitive functions** (when LSP is available for the target language). When the diff introduces, modifies, or removes a security-critical function (authentication check, authorization gate, validation routine, crypto primitive, secret loader, deserialization handler, SQL builder, path resolver), run `findReferences` on that function to find every caller. This is MANDATORY for signature changes and STRONGLY RECOMMENDED for behavior changes — a function whose semantics change silently affects every caller, and grep-based blast-radius analysis misses aliases, re-exports, and dynamic invocations that LSP resolves correctly. Note each reference location in your analysis; if the caller set is surprising (unexpected boundaries crossed, untrusted consumers, logging paths that may leak), flag it explicitly as a trust-boundary finding. If LSP is not available for the language, fall back to grep and state the fallback in your report — grep-based trace is lossy for security purposes. See `ops-subagent-rules` HARD-GATE-LSP.
+
 ### Step 2: Threat Analysis
 
 For each security-sensitive area in the diff, analyze the relevant categories below. Skip categories that do not apply to the change.
