@@ -32,7 +32,19 @@ Do NOT brute-force tool execution (e.g., retrying a missing linter multiple time
 
 You MUST read the `ops-security-gate` skill file and follow its process on the complete diff BEFORE dispatching the code-reviewer. If you dispatch the code-reviewer without having run the security gate, you have FAILED this pipeline.
 
-Run `ops-semgrep-scan.sh` (NOT raw `semgrep`) and parse its key=value output format. If the script is not on PATH, run `semgrep` directly as a fallback.
+<HARD-GATE-SEMGREP>
+
+Run SAST via `ops-semgrep-scan.sh`. This is the only sanctioned path.
+
+1. **Check the script first, not semgrep**: run `command -v ops-semgrep-scan.sh`. If it prints a path, the script is available — use it. Do NOT run `which semgrep` or any other probe before this check. Do NOT assume the script is absent without running the check.
+2. **If the script is available**: run `ops-semgrep-scan.sh [--config <path>] <modified files>` and parse its key=value output. The script already handles the "semgrep not installed", "no files", "error", and "no findings" cases — you do not need to pre-check any of these. Never re-implement diff-aware baseline selection or JSON parsing yourself.
+3. **If and only if `command -v ops-semgrep-scan.sh` fails**: then (and only then) fall back to `semgrep --config=auto <modified files>`. State in your triage: "fallback: ops-semgrep-scan.sh not on PATH".
+
+Calling raw `semgrep` while the script is available is a HARD-GATE violation: it bypasses diff-aware baseline selection and the structured output contract that downstream steps rely on. Asserting "semgrep not installed" without running either command is also a violation — the script is the source of truth for that verdict.
+
+</HARD-GATE-SEMGREP>
+
+Parse the script's key=value output format.
 
 You MUST output the structured triage block:
 

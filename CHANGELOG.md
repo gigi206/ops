@@ -1,5 +1,14 @@
 # Changelog
 
+## 3.9.1 (2026-04-11)
+
+### HARD-GATE-SEMGREP — enforce `ops-semgrep-scan.sh` over raw `semgrep`
+
+Observed drift where the security gate bypassed `ops-semgrep-scan.sh` and either asserted "semgrep not installed" without checking, or called raw `semgrep` directly. Both behaviors break the diff-aware baseline selection and the structured key=value output contract.
+
+- refactor(security-gate): Step 1b — wrap SAST instructions in `<HARD-GATE-SEMGREP>`. Mandates `command -v ops-semgrep-scan.sh` as the first (and only) probe. Fallback to raw `semgrep` is allowed only when that check fails. Writing "semgrep not installed" without running the script is explicitly called out as a violation.
+- refactor(review-pipeline): Step 3 Security Gate — same HARD-GATE-SEMGREP block added inline, replacing the softer "NOT raw semgrep" sentence. Clarifies that the script already handles the not-installed, no-files, error, and no-findings cases — do not re-implement any of them.
+
 ## 3.9.0 (2026-04-11)
 
 ### Brainstorm adaptive ceremony — Simple / Normal / Complex modes

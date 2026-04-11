@@ -34,7 +34,17 @@ Evaluate the changes against these security domain triggers:
 
 ## Step 1b: SAST Scan
 
-Run `ops-semgrep-scan.sh [--config <path>] <modified files>` (the script is on PATH via the session-start hook). If you already know the semgrep config path (e.g., `.semgrep/` or `.semgrep.yml` in project root), pass it via `--config`. Otherwise, omit `--config` and the script auto-detects. The script handles diff-aware baseline selection and error handling.
+<HARD-GATE-SEMGREP>
+
+Run SAST via `ops-semgrep-scan.sh`. This is the only sanctioned path.
+
+1. **Check the script first, not semgrep**: run `command -v ops-semgrep-scan.sh`. If it prints a path, the script is available — use it. Do NOT run `which semgrep` or any other probe before this check. Do NOT assume the script is absent without running the check. Do NOT write "semgrep not installed" in your triage without having run the script (or the `command -v` check) — the script reports `status=not_installed` itself when appropriate.
+2. **If the script is available**: run `ops-semgrep-scan.sh [--config <path>] <modified files>`. If you already know the semgrep config path (e.g., `.semgrep/` or `.semgrep.yml` in project root), pass it via `--config`. Otherwise, omit `--config` and the script auto-detects. The script handles diff-aware baseline selection, the "semgrep not installed" case, and error handling. Never re-implement any of this yourself.
+3. **If and only if `command -v ops-semgrep-scan.sh` fails**: then (and only then) fall back to `semgrep --config=auto <modified files>`. State in your triage: "fallback: ops-semgrep-scan.sh not on PATH".
+
+Calling raw `semgrep` while the script is available is a HARD-GATE violation: it bypasses diff-aware baseline selection and the structured key=value output contract that Step 1b parsing depends on. The script is on PATH via the session-start hook — trust the hook, run the check, do not pre-guess.
+
+</HARD-GATE-SEMGREP>
 
 The script outputs key=value metadata lines, followed by raw semgrep JSON (separated by a blank line) when findings are present. Parse the metadata lines first:
 
