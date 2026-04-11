@@ -100,6 +100,40 @@ The scan is mode-gated, mirroring the brainstorm Step 11 pattern:
 
 The mode comes from the brainstorm Step 3 classification, propagated via the `**Mode**: …` line in the plan header (set in the "Persist the plan" section above). If no brainstorm was run and the plan defaulted to `**Mode**: Complex`, run the full pass.
 
+### Tool-assisted scan (if `ast-grep` is available)
+
+The scan above describes the **manual canonical path** — read each task's logic, compare pairwise mentally, flag duplications. This works but is cognitively heavy on long task lists and unreliable on weaker models. If `ast-grep` is on PATH (check with `command -v ast-grep` — `/ops-init` Step 2c detects it as an optional ops tool), you SHOULD use it to make the scan concrete and deterministic **before** the manual pass, then feed the results into the manual comparison.
+
+**When to use it**: Normal mode (light pass) and Complex mode (full pass) only. Skip in Simple mode — consistent with the mode-aware ceremony above.
+
+**How to use it**: for each file your tasks create or significantly modify, run 1-3 of the patterns below over the *current* state of the codebase (the tasks have not yet been implemented, so ast-grep cannot compare planned code — you are running it to inventory existing shapes in the files you are about to touch, so you can spot "my new task would add something that already exists here" or "two of my tasks would add the same shape as each other in different files"). ast-grep speaks most major languages with one invocation per language; select the language via `--lang` matching the file extension.
+
+**3 starter patterns** (adapt `--lang` to the target file):
+
+1. **Functions by body shape** — find all top-level function declarations, then compare bodies across results:
+   ```
+   ast-grep --lang <lang> --pattern 'function $NAME($$$ARGS) { $$$BODY }' <path>
+   ```
+   For arrow functions, TypeScript methods, or language-specific forms, use the equivalent pattern (e.g. `const $NAME = ($$$ARGS) => { $$$BODY }` for JS/TS arrows; `def $NAME($$$ARGS): $$$BODY` for Python). Two matches where `$$$BODY` is structurally identical (same sequence of statements, possibly with renamed identifiers) are a duplication candidate under the "same input/output AND same domain concept" criterion.
+
+2. **Handlers reacting to the same event / calling the same mutation** — find consumers wired to a specific API or event name:
+   ```
+   ast-grep --lang <lang> --pattern '$CONSUMER($$$).mutate($ARG)' <path>
+   ```
+   Adapt the pattern to how your stack expresses "consumer reacting to an event" (e.g. `on$EVENT($CB)` for pub/sub, `$HANDLER: async ($REQ) => { $$$ }` for HTTP handlers, `match $PATTERN => $$$` for message handlers). Two or more matches with structurally identical bodies are the "same reaction to the same event" criterion.
+
+3. **Calls to the same external API with the same serialization** — find network/IPC calls targeting a known endpoint:
+   ```
+   ast-grep --lang <lang> --pattern '$CLIENT.$METHOD($URL, $$$OPTS)' <path>
+   ```
+   Adapt `$URL` to a literal substring or regex for the specific endpoint you suspect is called from two places. Two matches with the same `$URL` and the same `$$$OPTS` shape (same keys, same serialization) are the "same external call with the same serialization" criterion.
+
+**Reading the results**: `ast-grep` reports `file:line` matches with the captured meta-variables. You (the planner) still decide whether a set of matches is a **real** duplication or one of the anti-anti-patterns (coincidental shape, framework boilerplate, cross-domain similarity). ast-grep gives you the concrete location list; the domain judgement stays manual.
+
+**If ast-grep is not installed**: fall back to the manual scan algorithm above. Do NOT block the plan on ast-grep — it is a force multiplier, not a gate. Note in the plan's Risks section: `"Duplication scan: manual only (ast-grep not installed — install via `/ops-init` Step 2c for tool-assisted scan)"` so the critic can flag if the manual scan was superficial.
+
+**Why this matters more for some users than others**: on strong reasoning models (Claude, GPT-4 class), the manual pairwise comparison is usually reliable. On weaker models (smaller open-weight models reachable via OpenCode providers), the comparison breaks down on plans with > 5 tasks — ast-grep transforms a cognitively heavy operation into a concrete command with deterministic output, which is exactly where weaker models benefit most.
+
 ### Examples
 
 Concrete duplication patterns the scan should catch (presented as illustrative — adapt to the specific tech stack of the project, do not assume any particular framework):
@@ -164,7 +198,7 @@ Before proceeding, verify:
 - [ ] Every task has Description + Files + Change + Validation.
 - [ ] Tasks are ordered by dependency (prerequisites before dependents).
 - [ ] No placeholders ("TBD", "TODO", "add appropriate X", "similar to Task N", etc.) appear in the plan.
-- [ ] **Duplication Scan executed** (mode-aware): for each task, you compared its new logic to that of every other task in the plan. The plan's Risks section contains either "Duplication scan: clean (N tasks compared)" OR an extraction task ordered before its consumers with a one-line rationale in Design/Approach. If Simple mode, this checkbox is satisfied automatically (scan skipped — Lens 5 of the plan-stage critic remains the safety net).
+- [ ] **Duplication Scan executed** (mode-aware): for each task, you compared its new logic to that of every other task in the plan. The plan's Risks section contains either "Duplication scan: clean (N tasks compared)" OR an extraction task ordered before its consumers with a one-line rationale in Design/Approach. If Simple mode, this checkbox is satisfied automatically (scan skipped — Lens 5 of the plan-stage critic remains the safety net). If `ast-grep` was used to assist the scan, the Risks note SHOULD mention it (e.g., `"Duplication scan: clean (N tasks compared, ast-grep assisted)"`); if ast-grep was not available, the Risks note SHOULD mention that too so the critic can calibrate its own Lens 5 scrutiny accordingly.
 - [ ] If project instructions exist: every applicable rule has a dedicated task in the plan.
 - [ ] You presented the plan in digestible sections, not a single wall of text.
 

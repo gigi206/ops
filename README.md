@@ -262,6 +262,7 @@ This detects the CLI (Claude Code / OpenCode), languages, LSP availability, code
 - **chrome-devtools-mcp** — needed by ops-debug for browser debugging, accessibility audits, LCP optimization (optional). Install: `/plugin install chrome-devtools-mcp@chrome-devtools-plugins`
 - **qlty** — optional, used by code-quality for unified formatting, linting, and structural analysis (smells, metrics, security plugins) (install: `curl https://qlty.sh | bash`)
 - **semgrep** — optional, used by security-gate for SAST scanning (install: `pip install semgrep`). Invocation is always routed through `bin/ops-semgrep-scan.sh` (HARD-GATE-SEMGREP) which handles diff-aware baseline selection, the "not installed" case, and structured key=value output. Raw `semgrep` is a fallback only.
+- **ast-grep** — optional, used by `/ops-plan` Step 7 Duplication Scan to turn the pairwise comparison across plan tasks from a manual cognitive exercise into a deterministic structural query (install: `brew install ast-grep`, also available via `cargo install ast-grep --locked`, `npm install --global @ast-grep/cli`, or `pip install ast-grep-cli`). The scan falls back to manual comparison when ast-grep is absent, so it is not a blocker — but the tool-assisted path is particularly valuable on weaker models reached via OpenCode providers, where manual structural comparison breaks down past ~5 tasks.
 
 No npm dependencies. No database. No compiled binaries.
 
@@ -309,7 +310,7 @@ Brainstorm, research, and plan before writing code.
 | Design approaches  | 2-3 options with pros/cons, recommendation first                     |
 | Validate design    | Design presented section by section, validated by user               |
 | Write plan         | Unified plan (design + tasks) written to `docs/plans/`               |
-| Duplication Scan   | Mode-aware planner self-check (mandatory section in Step 7). Pairwise compares the new logic across all tasks to catch inter-task duplication that the per-task critic Lens 5 cannot see. Simple mode: skipped. Normal mode: light pass (exact-shape only). Complex mode: full pass (5 criteria). Result auditable via `"Duplication scan: clean (N tasks compared)"` note in the plan's Risks section, or via an extraction task ordered before its consumers. Anti-anti-pattern guards prevent over-extraction (single call sites stay inline, framework boilerplate not extracted, cross-domain similarity ignored). |
+| Duplication Scan   | Mode-aware planner self-check (mandatory section in Step 7). Pairwise compares the new logic across all tasks to catch inter-task duplication that the per-task critic Lens 5 cannot see. Simple mode: skipped. Normal mode: light pass (exact-shape only). Complex mode: full pass (5 criteria). **Tool-assisted when `ast-grep` is available**: the planner runs 3 starter structural patterns (functions by body shape, handlers reacting to the same event, calls to the same external API) to get a concrete inventory of existing shapes before the manual pairwise pass — the manual path remains canonical when ast-grep is missing. Result auditable via `"Duplication scan: clean (N tasks compared, ast-grep assisted)"` (or manual-only variant) note in the plan's Risks section, or via an extraction task ordered before its consumers. Anti-anti-pattern guards prevent over-extraction (single call sites stay inline, framework boilerplate not extracted, cross-domain similarity ignored). |
 | Critic review      | Adversarial review in PLAN mode (5 lenses incl. architectural alternatives, 4 perspectives incl. Architect, self-audit). If the plan comes from a brainstorm that ran the Step 11 critic, the Brainstorm critic verdict line is attached as evidence — the plan critic still runs, focused on plan-vs-summary trace. The plan critic's Lens 5 "Why not extract" check stays as a per-task safety net **complementing** (not replacing) the inter-task Duplication Scan. |
 | User approval      | Plan presented for final approval before implementation              |
 
@@ -742,7 +743,7 @@ Diagnose environment in 7 steps with stop-and-propose at each step if issues are
 | ----- | ----------------------------------------------------------------------------- | --------------- |
 | 0     | Discovery — detect CLI, languages, package managers                           | CLI unknown     |
 | 1     | Recap — skills loaded, agents registered, MCP servers                         | MCP missing     |
-| 2     | Ops tools — qlty + semgrep (strongly recommended for review pipeline)         | Yes             |
+| 2     | Ops tools — qlty + semgrep (strongly recommended for review pipeline), ast-grep (optional — enables tool-assisted `/ops-plan` Duplication Scan) | qlty/semgrep only |
 | 3     | Project linters — detect from configs (eslint, ruff, etc.), verify installed  | Yes             |
 | 4     | Linter prerequisites — node_modules, venv, type stubs, plugins                | Yes             |
 | 5     | Build tools — compilers, transpilers, build systems                           | Yes             |
@@ -751,7 +752,7 @@ Diagnose environment in 7 steps with stop-and-propose at each step if issues are
 ```mermaid
 graph TD
     D["Phase 0: Discovery"] --> R["Phase 1: Recap"]
-    R --> OT["Phase 2: Ops tools (qlty, semgrep)"]
+    R --> OT["Phase 2: Ops tools (qlty, semgrep, ast-grep)"]
     OT --> PL["Phase 3: Project linters"]
     PL --> PR["Phase 4: Linter prerequisites"]
     PR --> BT["Phase 5: Build tools"]
