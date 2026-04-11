@@ -24,6 +24,37 @@ FORBIDDEN in this step:
 If the user's context from Steps 1-6 genuinely points to one option, say so explicitly: "Given that you told me [X] in Step 3, option [Y] fits best because [reason]." Otherwise, present the options and let the user decide.
 </HARD-GATE-NEUTRALITY>
 
+<HARD-GATE-ANTIPATTERNS>
+Three concrete violation shapes observed in weaker-model runs. If your output matches any of these, you have FAILED the gates above — revise before asking the user to choose.
+
+The examples below use "permission rule" as a stand-in domain noun — adapt to your project's own vocabulary (permission class in OOP codebases, policy function in a functional stack, access guard in a middleware-driven stack, authorization check in a procedural one, etc.). The failure mode is the same regardless of which vocabulary the project uses.
+
+**Antipattern 1 — "(Recommended)" tag with no context conditioning**
+
+FORBIDDEN shape:
+> **Approach A — Extend existing permission rule (Recommended)**
+> - Pros: Minimal, uses existing pattern
+> - Cons: The existing rule becomes more complex
+
+> **Approach B — New dedicated permission rule**
+
+The `(Recommended)` tag is pre-picking an answer. It is only allowed when immediately followed by a sentence of the form *"Given that you told me in Step N [specific prior answer], A fits because [reason]."* If you cannot write that sentence with a real Step 1-6 citation, drop the tag and present approaches with matched depth.
+
+**Antipattern 2 — fabricated cons on the non-preferred approach**
+
+FORBIDDEN shape:
+> **Approach B — New dedicated permission rule**
+> - Cons: More code, potential duplication
+
+"Potential duplication" is a **strawman** when the duplication actually lives in approach A (extending an existing rule consumed by N callers). Writing plausible-sounding-but-false cons to steer the user toward your preferred option is a neutrality violation even when the cons read as reasonable. If you cannot name a real con for an alternative from its own honest tradeoff surface, the forced choice is fake — go find a real alternative, do not pad cons.
+
+Note: the strawman here is specifically "potential duplication", not "more code". "More code" alone can be a legitimate honest con for a new-from-scratch approach — new code has a real maintenance surface. A real con drawn from B's own tradeoff surface is fine; the forbidden move is inventing a con that does not describe B.
+
+**Antipattern 3 — batching the macro-approach question with dimension questions**
+
+FORBIDDEN shape: one message that contains BOTH the A/B macro-approach forced choice AND the Dimensions 1/6 "no choice needed" block AND the final "Which approach do you prefer?" question AND the next dimension question. The user anchors on whichever block is visually longest and skims the rest. Send the macro-approach question **alone**, wait for the answer, then send Dimension 2 alone, wait, then Dimension 3 alone. See the `ONE question at a time` rule in `data/common_instructions.md` (HARD-GATE-ONE-QUESTION) and the `ONE dimension per message` rule in the "Architectural Dimensions Checklist (OPT-IN)" section of this file.
+</HARD-GATE-ANTIPATTERNS>
+
 Once you understand the problem space, propose **2-3 different approaches** with trade-offs.
 
 ## For each approach

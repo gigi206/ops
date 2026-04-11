@@ -1,5 +1,20 @@
 # Changelog
 
+## 3.12.1 (2026-04-12)
+
+### HARD-GATE-ANTIPATTERNS — tighten HARD-GATE-NEUTRALITY with concrete observed violation shapes
+
+The existing `HARD-GATE-NEUTRALITY` in brainstorm Step 7 forbids pre-picking answers "under the guise of my recommendation" but a weaker-model agent can still game the abstract rule by emitting shapes that technically violate it without tripping a pattern match. Three such shapes were observed in actual brainstorm runs on non-Claude models reached via OpenCode providers, each presenting plausible-sounding-but-neutrality-violating output that passed the existing gate. This release adds a sibling `<HARD-GATE-ANTIPATTERNS>` block that renders these shapes as FORBIDDEN examples so the agent can pattern-match its own draft against a visual template instead of reasoning abstractly about neutrality.
+
+- refactor(brainstorm): Step 7 — new `<HARD-GATE-ANTIPATTERNS>` block added after the existing `HARD-GATE-NEUTRALITY` block. Three rendered FORBIDDEN shapes with inline commentary:
+  - **Antipattern 1 — "(Recommended)" tag with no context conditioning**: the `(Recommended)` tag is only allowed when immediately followed by a sentence of the form *"Given that you told me in Step N [specific prior answer], A fits because [reason]."* Without a real Step 1-6 citation the tag must be dropped.
+  - **Antipattern 2 — fabricated cons on the non-preferred approach**: writing plausible-sounding-but-false cons on the alternative (e.g., "potential duplication" on approach B when the duplication actually lives in approach A) is a neutrality violation even when the cons read as reasonable. Rule: if you cannot name a real con from the alternative's own honest tradeoff surface, the forced choice is fake — go find a real alternative, do not pad cons.
+  - **Antipattern 3 — batching the macro-approach question with dimension questions**: one message containing both the A/B macro-approach forced choice AND dimension blocks AND the final question violates the `ONE question at a time` rule because the user anchors on whichever block is visually longest. Send the macro-approach question alone, wait, then send each dimension alone. Cross-references the canonical rules by name (not by line number — line refs drift silently).
+- refactor(brainstorm): Step 7 — examples in antipatterns 1 and 2 use "permission rule" as a stand-in domain noun with an explicit preamble listing stack-agnostic alternatives (permission class / policy function / access guard / authorization check). The failure mode description is paradigm-neutral.
+- docs(readme): Design Principles section — the "Adversarial review" bullet is extended to mention both HARD-GATE-NEUTRALITY (with its invariant-class exception) and the new HARD-GATE-ANTIPATTERNS, summarizing the three violation shapes so a README-only reader gets the picture.
+
+Scope: 6 files (1 skill, 1 CHANGELOG, 1 README, 3 version manifests). Version: 3.12.0 → 3.12.1 (patch — tightening of an existing gate with concrete examples, no new capability). This is the same semver pattern as v3.9.1 (HARD-GATE-SEMGREP tightening), which also bumped patch rather than minor because it strengthened an existing enforcement contract without adding new surface area.
+
 ## 3.12.0 (2026-04-11)
 
 ### HARD-GATE-LSP — promote LSP from soft hint to enforced workflow tool
