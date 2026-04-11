@@ -48,10 +48,10 @@ Before proceeding, verify:
 - [ ] You produced a `## Brainstorm Summary` block containing ALL of: Objective, Chosen approach, Scope, Out of scope, Architectural decisions (per dimension), Other key decisions, Design sections validated, Open questions.
 - [ ] The Architectural decisions block lists ALL 7 dimensions (with `N/A — [reason]` for dimensions that do not apply).
 - [ ] Dimensions 2, 3, 4 — if applicable — are listed with the user's exact wording (not a summary or paraphrase).
-- [ ] The summary block is visible in your current conversation context and will remain so when Step 11 references it.
+- [ ] The summary block is visible in your current conversation context and will remain so when Steps 11 and 12 reference it.
 
-Do NOT mark the milestone task completed yet — Step 11 remains.
+Do NOT mark the milestone task completed yet — Steps 11 and 12 remain.
 
-**→ Next: read `skills/brainstorm/step-11-transition.md` now and execute Step 11.**
+**→ Next: read `skills/brainstorm/step-11-critic-review.md` now and execute Step 11.**
 
 Do NOT continue without reading that file first.

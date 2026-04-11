@@ -19,6 +19,16 @@ Set `**Status**: Draft` in the plan header. This status is updated to `**Status*
 
 **If brainstorm was run**: include `**Mode**: Normal` or `**Mode**: Complex` in the plan header (from the brainstorm Step 3 classification). This tells `/ops-implement` which ceremony level to apply. If no brainstorm was run, default to `**Mode**: Complex` (full ceremony).
 
+**Simple-mode edge case**: a brainstorm classified as Simple mode transitions to `/ops-do`, not `/ops-plan` — step-07 should normally never see a Simple-mode context. If you arrived here anyway (user manually invoked `/ops-plan` from a Simple-mode brainstorm, or escalated mid-conversation because the feature turned out more complex than Simple allows), **upgrade the mode to `Normal`** when writing the plan header and state the upgrade in the plan's Approach section with a one-line rationale (e.g., "Brainstorm classified Simple but user escalated to `/ops-plan` — upgraded to Normal ceremony for the plan + implement pipeline"). Do NOT write `**Mode**: Simple` in a plan header — `/ops-implement` only recognizes Normal and Complex, so a Simple header would be treated as "no mode" and fall through to the Complex default, which is the wrong ceremony for what was originally a Simple feature.
+
+**Brainstorm critic verdict propagation (if brainstorm Step 11 ran)**: read the Brainstorm Summary block that was handed off from `/ops-brainstorm` Step 12. If it contains a line matching `**Brainstorm critic verdict**: …` under "Other key decisions", copy that line verbatim into the plan header immediately below `**Mode**: …`. The line may be one of:
+
+- `**Brainstorm critic verdict**: APPROVE (invariant-class check passed)`
+- `**Brainstorm critic verdict**: SUGGESTIONS resolved (N accepted, M declined with reason)`
+- `**Brainstorm critic verdict**: REJECT — OVERRIDDEN by user` (followed by `**Override reason**: …`)
+
+This line is load-bearing evidence for the plan-stage critic (Step 8 consumes it — see `skills/plan/step-08-critic-review.md` "Required dispatch context"). If the line is missing but the brainstorm Step 11 ran per the Summary context, STOP and re-append it from the conversation history before writing the plan. If Step 11 was skipped (signal-gated skip in Simple/Normal mode), write `**Brainstorm critic verdict**: skipped — no invariant-class signal` instead. If no brainstorm was run at all, omit the line entirely.
+
 ## Task Decomposition (MANDATORY)
 
 The plan MUST be decomposed into discrete, ordered tasks. A plan without tasks is NOT a plan — it's a wish.
@@ -40,6 +50,75 @@ Each task MUST have ALL of:
 - Tasks MUST be ordered by dependency (prerequisites before dependents, config before consumers, schemas before data).
 - A task that touches more than 3 files is probably too big. Consider splitting it.
 - **TDD granularity**: When the project has a test framework, each task should follow the TDD micro-cycle: write failing test → run to verify failure → implement minimal code → run to verify pass → commit. The plan should make this explicit in each task's steps when applicable.
+
+## Duplication Scan (MANDATORY)
+
+**When to run**: after the Task Decomposition section above is complete (every task has Description + Files + Change + Validation + risk tag) but BEFORE the End-of-Step checklist. Running earlier is pointless — there are no tasks to compare yet. Running later is too late — the checklist verifies the scan actually ran, and the plan is about to ship to the critic.
+
+Run a self-check pass to detect duplicated logic **across the tasks you just wrote**. This is the forcing function that catches the "two interface surfaces with the same handler" pattern at plan-time, instead of letting the critic catch it post-hoc when refactoring is more expensive.
+
+### Why this scan is necessary
+
+The plan-stage critic (`step-08-critic-review.md`) has a "Why not extract" check in Lens 5 that flags single-task duplication ("would extracting a new module be cleaner?"). It does NOT compare two tasks to each other to detect that they add the **same** logic shape in two different files. That comparison is the planner's responsibility — and without an explicit forcing function in this step, planners write each task in isolation and miss inter-task duplication entirely.
+
+### Scan algorithm
+
+For each file your tasks modify or create, list the **new logic** the task adds (function, handler, class, configuration block, validation rule, transformation pipeline). Then compare these new-logic items pairwise across the task list. Mark a duplication when **at least one** of these criteria holds:
+
+- **Same input/output AND same domain concept** — two functions taking the same shape of arguments and returning the same shape of result, modeling the same domain idea (not coincidental shape similarity).
+- **Same decision rule applied at two boundaries** — the same authorization check, the same validation rule, the same transformation, applied at two different points in the system (controller + serializer, two interface surfaces, two service entry points).
+- **Same reaction to the same event with the same payload shape** — two consumers wiring up the same event with structurally identical handler bodies (e.g., two UI controls, two CLI subcommands, or two service handlers that all update the same resource with a request payload of the same shape).
+- **Same external call with the same serialization** — two services calling the same external API with the same request/response handling.
+- **Same boilerplate across 3+ tasks** — three or more tasks repeating the same setup/teardown structure.
+
+### What to do for each duplication detected
+
+1. **Create a new task** typed `[high-risk]`: `"Extract <helper-name> to <file path>"`. The helper name should describe the **domain concept**, not the shape (e.g., `useRecordingDelegationManager`, not `useDoublePatchHook`).
+2. **Order the extraction task BEFORE its consumers** in the task dependency order (existing rule from "Task Decomposition").
+3. **Update each consuming task** so it imports/calls the extracted helper instead of inlining the logic. The Files/Change/Validation fields of the consuming tasks must be rewritten to reflect the new dependency.
+4. **Document the extraction** in the plan's Design section (or add a one-liner in the Approach section if the design was minimal): "Helper `<name>` extracted to avoid duplication between `<consumer 1>` and `<consumer 2>`."
+
+### Anti-anti-pattern (avoid over-extraction)
+
+The scan exists to catch **real** duplication, not to manufacture abstractions. Do NOT extract when:
+
+- **Single call site only.** One occurrence of a logic shape is fine. Pre-emptive abstraction "for future use" is YAGNI — leave it inline.
+- **Coincidental shape similarity.** Two functions both taking a string and returning a boolean but modeling unrelated concepts (e.g., "is this email valid?" vs "is this user authenticated?") are NOT duplication. Domain matters.
+- **Framework-mandated boilerplate.** Boilerplate that the framework requires to be in a specific file (route registration, model declaration, dependency injection wiring) cannot be extracted without fighting the framework.
+- **Test fixtures that intentionally repeat.** Test setup that mirrors the production structure on purpose is not duplication.
+- **Cross-domain similarity.** If two files share visual shape but model different concepts in different bounded contexts, leave them alone.
+
+A useful sanity check: if you extract a helper and the resulting helper has **zero domain meaning** (you can't give it a name that says what it represents in the problem domain — only a name describing its mechanical shape), you are over-extracting. Revert the extraction and accept the duplication.
+
+### Mode-aware ceremony
+
+The scan is mode-gated, mirroring the brainstorm Step 11 pattern:
+
+- **Simple mode** — **SKIP**. Express path. Plans in Simple mode are short (typically 1-3 tasks), and the duplication risk across so few tasks is low. The plan-stage critic's Lens 5 still runs and serves as the safety net.
+- **Normal mode** — **RUN light pass**. Check for **exact-shape duplication only** (two handlers structurally identical, two services with the same wrapping). Skip the deeper "same decision rule at two boundaries" check unless one is obvious from the task descriptions.
+- **Complex mode** — **RUN full pass**. All five criteria above. Cross-task comparison is mandatory.
+
+The mode comes from the brainstorm Step 3 classification, propagated via the `**Mode**: …` line in the plan header (set in the "Persist the plan" section above). If no brainstorm was run and the plan defaulted to `**Mode**: Complex`, run the full pass.
+
+### Examples
+
+Concrete duplication patterns the scan should catch (presented as illustrative — adapt to the specific tech stack of the project, do not assume any particular framework):
+
+| Pattern | Symptom in the planned tasks | Resolution |
+|---|---|---|
+| Two interface-surface handlers with the same mutation | Two UI components / two CLI subcommands / two API endpoints that all PATCH the same resource with payloads of the same shape | Single helper / hook / service consumed by both consumers |
+| One authorization rule applied at two boundaries | Permission check in a controller AND in a serializer / authz logic in middleware AND in a view function | Single domain helper consumed by both |
+| Two services calling the same external API | Serialization and error handling duplicated across two service classes | Single client wrapper |
+| 3+ tasks writing the same setup boilerplate | Three tasks repeating the same init/wiring structure | Shared base module / mixin / factory |
+| Two validation rules with the same domain meaning | Two validators checking "is this room name valid" with structurally identical logic | Single validation function consumed by both |
+
+### Output of the scan
+
+Either:
+- **No duplication detected** — note "Duplication scan: clean (N tasks compared)" in the plan's Risks section as evidence the scan was actually run (auditable for the critic).
+- **Duplication detected** — the new extraction task(s) are in the task list, the consuming tasks are updated, and the plan's Design / Approach section mentions the extraction with a one-line rationale.
+
+A plan with no scan note in Risks is a plan where the scan was skipped (or forgotten). The end-of-step checklist below catches this.
 
 ## No Placeholders (MANDATORY)
 
@@ -85,6 +164,7 @@ Before proceeding, verify:
 - [ ] Every task has Description + Files + Change + Validation.
 - [ ] Tasks are ordered by dependency (prerequisites before dependents).
 - [ ] No placeholders ("TBD", "TODO", "add appropriate X", "similar to Task N", etc.) appear in the plan.
+- [ ] **Duplication Scan executed** (mode-aware): for each task, you compared its new logic to that of every other task in the plan. The plan's Risks section contains either "Duplication scan: clean (N tasks compared)" OR an extraction task ordered before its consumers with a one-line rationale in Design/Approach. If Simple mode, this checkbox is satisfied automatically (scan skipped — Lens 5 of the plan-stage critic remains the safety net).
 - [ ] If project instructions exist: every applicable rule has a dedicated task in the plan.
 - [ ] You presented the plan in digestible sections, not a single wall of text.
 

@@ -75,7 +75,9 @@ If conformity fails, have the implementer correct the issue before proceeding.
 
 ## 2d. Per-task Quality Review (Complex mode only, `[high-risk]` tasks)
 
-**If the plan header says `Mode: Normal`** (or mode is not specified): skip this step entirely for ALL tasks and proceed to Step 2e. In Normal mode, the final review (Step 3) catches issues across all tasks at once. Per-task review is reserved for Complex mode where architectural drift between tasks is a real risk.
+**If the plan header says `Mode: Normal`**: skip this step entirely for ALL tasks and proceed to Step 2e. In Normal mode, the final review (Step 3) catches issues across all tasks at once. Per-task review is reserved for Complex mode where architectural drift between tasks is a real risk.
+
+**If the plan header has no `Mode: …` line at all**: default to **Complex** (full ceremony — matches `skills/implement/SKILL.md:25` and `skills/plan/step-07-write-plan.md:20`). Do NOT default to Normal. A plan written by hand or by an unknown source is treated with the stricter ceremony by default — opting into Normal requires an explicit `**Mode**: Normal` header written by the planner.
 
 **If the task is tagged `[low-risk]`**: skip this step entirely and proceed to Step 2e, regardless of mode.
 

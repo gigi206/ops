@@ -36,3 +36,20 @@ Every change must update the version in:
 
 When adding or removing a skill, also update:
 5. `data/bootstrap-context.md` (skill routing table)
+
+## README synchronization
+
+`README.md` is the public documentation and must stay in sync with the code. Whenever a change modifies user-visible behavior, skill structure, agent roster, pipeline flow, internal gates, dispatch rules, or project requirements, the corresponding section of `README.md` must be updated in the same change.
+
+Scope of what must be reflected in the README:
+- Skills list (user-facing and internal phases), their roles, inputs, outputs, and dispatched agents
+- Agent roster, their review modes, and which skills dispatch them
+- Workflow diagrams (top-level pipeline flow, agent dispatch diagram, per-skill mermaid diagrams) — diagrams must match the actual control flow, no silent drift
+- Hard gates (HARD-GATE-*, invariant-class exceptions, signal-gating logic) — the public doc must say that the gate exists and summarize its contract
+- Mode-aware ceremony (Simple/Normal/Complex) when a new step becomes conditional on the mode
+- Requirements section when a tool is added, removed, or gains a wrapper script
+- Structure tree (`bin/`, `agents/`, `skills/`, `hooks/`) when files are added, removed, or renamed
+
+A change that touches any of the above but leaves the README stale is incomplete. Do not defer README updates to a follow-up commit unless the README rewrite is itself substantial enough to warrant its own separate change — in that case, open a tracking note and ship both within the same release.
+
+When in doubt: if a user reading only the README would get a misleading picture of what the skill now does, the README update is mandatory.

@@ -1,6 +1,6 @@
 {
   "name": "ops",
-  "version": "3.9.1",
+  "version": "3.10.0",
   "description": "Structured dev workflow plugin — plan, implement, do, debug, test, refactor, perf, audit, review, ship.",
   "type": "module",
   "main": ".opencode/plugins/ops.js",

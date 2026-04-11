@@ -19,6 +19,8 @@ FORBIDDEN in this step:
 - Stack-specific wording in the question itself ("Django setting", "env var", "serializer", "React hook", etc.). If you need to illustrate, list at least two alternatives from different stacks.
 - Pre-picking an answer under the guise of "my recommendation". A recommendation is allowed ONLY when it is explicitly conditioned on what the user already told you about their context in Steps 1-6 — never as a default.
 
+**Exception — invariant-class decisions.** When a decision governs **authorization, trust, validation, access control, or safety** in a system with multiple actors competing for a shared resource, the **centralized-owner pattern (Dimension 2 option A)** and **fail-closed mode (Dimension 4 option A)** are domain invariants, not stack assumptions. Drift between actors computing the same authz rule is a class of bug, not a tradeoff. The agent MAY recommend these as defaults without prior user context, citing the invariant class explicitly. The exception does NOT apply when: the system is single-actor, peer-to-peer with no central authority, offline-first / local-first by design, or the decision is intentionally advisory (telemetry, hints, non-load-bearing UX). In those cases the neutrality rule still holds in full.
+
 If the user's context from Steps 1-6 genuinely points to one option, say so explicitly: "Given that you told me [X] in Step 3, option [Y] fits best because [reason]." Otherwise, present the options and let the user decide.
 </HARD-GATE-NEUTRALITY>
 
@@ -113,7 +115,9 @@ Question: "Where does this state live: reuse existing location X / add a new fie
 > - B fits well when: the feature must work offline/disconnected, latency matters, or the "owner" would be an artificial remote indirection.
 > - C fits well when: the decision inherently depends on inputs from multiple independent sources that cannot be consolidated into one.
 >
-> My recommendation: state "no default — depends on your context" UNLESS the user has already told you in Steps 1-6 something that makes one option clearly unsuitable (e.g., "must work offline" → A is unsuitable; "strict audit requirement" → B is unsuitable). In that case, cite the specific prior answer and explain the fit.
+> My recommendation:
+> - **Invariant-class trigger (positive):** If the rule being decided is an **authorization, trust, validation, access-control, or ownership** decision governing a shared resource accessed by multiple actors, **A (centralized owner) is the safe default**. Cite the invariant explicitly: *"Authz decisions require a single owner — drift between actors recomputing the same rule is a recurring bug class, not a tradeoff."* The user can still override with a context reason that makes the invariant inapplicable (offline-first, peer-to-peer, single-actor, intentionally advisory).
+> - **Otherwise:** state "no default — depends on your context" UNLESS the user has already told you in Steps 1-6 something that makes one option clearly unsuitable (e.g., "must work offline" → A is unsuitable; "strict audit requirement" → B is unsuitable). In that case, cite the specific prior answer and explain the fit.
 
 Skipping this dimension tends to push the design toward "extend whatever channel is already there" (often C) instead of picking a clean owner. Asking the question explicitly forces the choice.
 
@@ -163,7 +167,9 @@ Skipping this dimension leads to features that work for the dev environment but 
 > - B fits when: availability is non-negotiable and the decision is reversible/monitored (analytics, telemetry, feature hints, non-critical UX polish).
 > - C fits when: the dependency is usually reliable but transient failures are expected, AND the caller can tolerate bounded latency for retries.
 >
-> My recommendation: state "no default — depends on whether a wrong 'allow' or a wrong 'deny' is the worse outcome in your specific context". If the user already told you which matters more in Steps 1-6, cite it.
+> My recommendation:
+> - **Invariant-class trigger (positive):** If the decision is an **authorization, trust, validation, payment, or safety** check, **A (fail-closed) is the safe default**. A wrong "allow" is worse than a wrong "deny" by definition for these classes. Cite the invariant explicitly. The user can still override with a context reason (e.g., the decision is intentionally advisory and a wrong "deny" would degrade UX without safety impact).
+> - **Otherwise:** state "no default — depends on whether a wrong 'allow' or a wrong 'deny' is the worse outcome in your specific context". If the user already told you which matters more in Steps 1-6, cite it.
 
 ---
 

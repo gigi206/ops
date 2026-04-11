@@ -98,6 +98,7 @@ flowchart LR
     security["/ops-security"]
     audit["/ops-audit"]
     clone-analyze["/ops-clone-analyze"]
+    brainstorm["/ops-brainstorm"]
 
     %% ─── Research agents ───
     subgraph research_agents["Research"]
@@ -125,6 +126,7 @@ flowchart LR
     research --> rc & rd & gh
     research -.->|conditional| rr
     plan --> cr
+    brainstorm -.->|Step 11, signal-gated<br/>REVIEW MODE: BRAINSTORM| cr
     implement --> imp & codrev
     implement -.->|if triggers| secrev
     do --> rc & rd & codrev
@@ -140,14 +142,14 @@ flowchart LR
     clone-analyze --> rr
 ```
 
-**Legend:** solid arrow = always dispatched, dashed arrow = conditional (`if triggers` = security-gate, `conditional` = insufficient confidence). Agents grouped by role: Research (read-only exploration), Review (adversarial analysis), Build (code generation).
+**Legend:** solid arrow = always dispatched, dashed arrow = conditional (`if triggers` = security-gate, `conditional` = insufficient confidence, `signal-gated` = brainstorm Step 11 gate on D1/D2/D4 signals). Agents grouped by role: Research (read-only exploration), Review (adversarial analysis), Build (code generation).
 
 ### Pipeline skills
 
 | Skill            | Role                                                     | Input                              | Output                                            | Agents dispatched                                                               |
 | ---------------- | -------------------------------------------------------- | ---------------------------------- | ------------------------------------------------- | ------------------------------------------------------------------------------- |
 | `/ops-plan`      | Design and plan before coding                            | Clarified need                     | Plan (unified design + tasks) + user approval     | via research, critic                                                            |
-| `/ops-implement` | Execute the plan task by task with per-task quality review | Validated plan                     | Implemented, reviewed, and validated code         | implementer (xN), code-reviewer (per-task lightweight + final), security-reviewer (if triggers) |
+| `/ops-implement` | Execute the plan task by task with adaptive per-task review (Complex mode only) | Validated plan (with optional `**Mode**: Normal/Complex` header propagated from brainstorm) | Implemented, reviewed, and validated code | implementer (xN), code-reviewer (per-task lightweight — Complex mode only — plus final full-diff review), security-reviewer (if triggers) |
 | `/ops-ship`      | Commit, PR, capture learnings                            | Completed code                     | Commit, PR (optional), learnings                  | None                                                                            |
 | `/ops-do`        | Lightweight pipeline: research, execute, verify, review  | Well-understood task               | Implemented and reviewed code                     | researcher-code, researcher-doc, code-reviewer, security-reviewer (if triggers) |
 | `/ops-debug`     | Systematic investigation: hypothesize, test, fix, verify | Bug, error, or unexpected behavior | Diagnosed and fixed code                          | git-historian, code-reviewer, security-reviewer (if triggers)                   |
@@ -181,7 +183,7 @@ Shared logic extracted from skills. Not callable by the user — invoked program
 | `ops-code-quality`            | Format, lint, and structural analysis (smells, metrics) on modified files (qlty or project tools) before code review                        | implement, do, debug, test, refactor, perf                                            |
 | `ops-discovery-checks`        | Categorize unexpected discoveries (Minor / Significant / Major)                                                                             | implement, debug                                                                      |
 | `ops-circuit-breaker`         | Diagnose repeated failures (researcher-code + git-historian)                                                                                | implement (3+ failures), debug (5+ failures)                                          |
-| `ops-security-gate`           | Triage (14 triggers) + SAST scan (semgrep, diff-aware) + qlty security findings + dispatch security-reviewer + re-verification loop (cap 3) | implement, do, debug, security, review-pr                                             |
+| `ops-security-gate`           | Triage (14 triggers) + SAST scan via `ops-semgrep-scan.sh` (HARD-GATE-SEMGREP — script is first and only probe, raw `semgrep` fallback only if `command -v` fails; diff-aware baseline) + qlty security findings + dispatch security-reviewer + re-verification loop (cap 3) | implement, do, debug, security, review-pr                                             |
 | `ops-review-pipeline`         | Build verification → code quality → security gate → code review → project instruction check                                                 | do, perf, refactor, test                                                              |
 | `ops-redispatch-optimization` | Generic re-dispatch prompt optimization for review agents                                                                                   | plan (critic), implement (code-reviewer), security (security-reviewer)                |
 
@@ -193,7 +195,7 @@ Shared logic extracted from skills. Not callable by the user — invoked program
 | **researcher-doc**    | sonnet (medium) | Search official docs for libs/tools/APIs (Context7 MCP, fallback WebSearch)                | research, do, test, refactor, perf                                                       |
 | **git-historian**     | sonnet (medium) | Mine git history: timelines, regressions, ownership, hotspots, architectural decisions     | research, debug, implement (circuit-breaker)                                             |
 | **researcher-repo**   |   opus (high)   | Clone and analyze external repositories: version-aware analysis, structured findings       | research (conditional), clone-analyze                                                    |
-| **critic**            |   opus (high)   | Adversarial plan review: 5 lenses (incl. architectural alternatives), 4 perspectives incl. Architect — see [`agents/critic.md`](agents/critic.md) | plan                                                                                     |
+| **critic**            |   opus (high)   | Adversarial review in **two modes** selected by literal first-line marker `REVIEW MODE:` — **PLAN** (full: 5 lenses incl. architectural alternatives, 4 perspectives incl. Architect) and **BRAINSTORM** (reduced: Lens 5-B invariant-class check on Dimensions 1/2/4 only, 2 perspectives — Architect + Skeptic, no adversarial escalation). See [`agents/critic.md`](agents/critic.md) | plan, brainstorm (Step 11, signal-gated)                                                 |
 | **implementer**       |   opus (high)   | Execute one plan task (TDD, code generation, validation)                                   | implement                                                                                |
 | **code-reviewer**     |   opus (high)   | Code review: plan compliance, quality, TDD adherence, anti-patterns                        | implement (per-task lightweight + final review), do, test, refactor, perf                |
 | **security-reviewer** |   opus (high)   | Deep security analysis: code, infra, CI/CD, containers, supply chain                       | security-gate: implement, do, debug, security, review-pr                                 |
@@ -259,7 +261,7 @@ This detects the CLI (Claude Code / OpenCode), languages, LSP availability, code
 - **Context7 MCP** — needed by researcher-doc (optional, falls back to web search). Install: `/plugin install context7@claude-plugins-official`
 - **chrome-devtools-mcp** — needed by ops-debug for browser debugging, accessibility audits, LCP optimization (optional). Install: `/plugin install chrome-devtools-mcp@chrome-devtools-plugins`
 - **qlty** — optional, used by code-quality for unified formatting, linting, and structural analysis (smells, metrics, security plugins) (install: `curl https://qlty.sh | bash`)
-- **semgrep** — optional, used by security-gate for SAST scanning (install: `pip install semgrep`)
+- **semgrep** — optional, used by security-gate for SAST scanning (install: `pip install semgrep`). Invocation is always routed through `bin/ops-semgrep-scan.sh` (HARD-GATE-SEMGREP) which handles diff-aware baseline selection, the "not installed" case, and structured key=value output. Raw `semgrep` is a fallback only.
 
 No npm dependencies. No database. No compiled binaries.
 
@@ -307,7 +309,8 @@ Brainstorm, research, and plan before writing code.
 | Design approaches  | 2-3 options with pros/cons, recommendation first                     |
 | Validate design    | Design presented section by section, validated by user               |
 | Write plan         | Unified plan (design + tasks) written to `docs/plans/`               |
-| Critic review      | Adversarial review (5 lenses incl. architectural alternatives, 4 perspectives incl. Architect, self-audit) |
+| Duplication Scan   | Mode-aware planner self-check (mandatory section in Step 7). Pairwise compares the new logic across all tasks to catch inter-task duplication that the per-task critic Lens 5 cannot see. Simple mode: skipped. Normal mode: light pass (exact-shape only). Complex mode: full pass (5 criteria). Result auditable via `"Duplication scan: clean (N tasks compared)"` note in the plan's Risks section, or via an extraction task ordered before its consumers. Anti-anti-pattern guards prevent over-extraction (single call sites stay inline, framework boilerplate not extracted, cross-domain similarity ignored). |
+| Critic review      | Adversarial review in PLAN mode (5 lenses incl. architectural alternatives, 4 perspectives incl. Architect, self-audit). If the plan comes from a brainstorm that ran the Step 11 critic, the Brainstorm critic verdict line is attached as evidence — the plan critic still runs, focused on plan-vs-summary trace. The plan critic's Lens 5 "Why not extract" check stays as a per-task safety net **complementing** (not replacing) the inter-task Duplication Scan. |
 | User approval      | Plan presented for final approval before implementation              |
 
 ```mermaid
@@ -320,7 +323,8 @@ flowchart TD
     RA --> D["Design approaches"]
     D --> V["Validate design"]
     V --> P["Write plan"]
-    P --> CR{{"critic"}}
+    P --> DS["Duplication Scan<br/>(mode-gated: skip Simple, light Normal, full Complex)"]
+    DS --> CR{{"critic"}}
     CR --> A["User approval"]
 ```
 
@@ -399,7 +403,9 @@ Each task goes through the full pipeline:
 | Conformity check | Diff vs. plan — no drift, no secrets, conventions preserved |
 | Discovery check  | Pause on significant findings, stop on major discoveries    |
 
-After all tasks: code quality (`ops-code-quality`: format, lint, smells, metrics) → security triage (semgrep + qlty findings) → final review (code-reviewer + security-reviewer if applicable).
+**Per-task review is adaptive**: the plan header produced by `/ops-plan` may include a `**Mode**: Normal` or `**Mode**: Complex` line propagated from `/ops-brainstorm`. In **Complex** mode, `code-reviewer` runs per task (lightweight review + fix loop, max 3 iterations). In **Normal** mode, per-task review is **skipped** — only the final full-diff review runs. If the plan header has **no mode line at all** (plan written by hand or by an unknown source), the default is **Complex** (full ceremony): the stricter gate runs unless the planner explicitly opts into Normal. This adaptive ceremony cuts review overhead on well-understood features while keeping strict gates as the safe default.
+
+After all tasks: code quality (`ops-code-quality`: format, lint, smells, metrics) → security triage (semgrep via `ops-semgrep-scan.sh` HARD-GATE + qlty findings) → final review (code-reviewer + security-reviewer if applicable).
 
 **Security escalation triggers** — the security-reviewer is dispatched when the task touches:
 
@@ -425,13 +431,15 @@ flowchart TD
     subgraph task_loop["Per task (×N)"]
         IMP{{"implementer"}} --> V["Validation gate"]
         V --> CC["Conformity check"]
-        CC --> PTR{{"code-reviewer<br/>(per-task lightweight)"}}
+        CC --> MODE{"Mode header"}
+        MODE -->|Complex<br/>or no header<br/>(default)| PTR{{"code-reviewer<br/>(per-task lightweight)"}}
+        MODE -->|Normal| DC["Discovery check"]
         PTR -->|Critical/Important| FIX["Fix loop<br/>(fresh implementer, max 3)"]
         FIX --> PTR
-        PTR -->|Approved| DC["Discovery check"]
+        PTR -->|Approved| DC
     end
     DC --> CQ["Code quality"]
-    CQ --> ST["Security triage"]
+    CQ --> ST["Security triage<br/>(ops-semgrep-scan.sh HARD-GATE)"]
     ST --> CODREV{{"code-reviewer<br/>(final, full diff)"}}
     ST -.->|if triggers| SECREV{{"security-reviewer"}}
     CODREV --> FV["Final validation"]
@@ -657,20 +665,68 @@ Interactive brainstorming to clarify needs before planning. Adapts ceremony to f
 /ops-brainstorm <what you want to explore>
 ```
 
-Step 3 classifies the feature into one of three modes that control the entire downstream pipeline:
+Brainstorm is a **12-step chain-of-custody skill** (one file per step, strict hand-offs). Step 3 classifies the feature into one of three modes that control the entire downstream pipeline:
 
 | | Simple | Normal | Complex |
 |---|---|---|---|
 | **Brainstorm steps 4-5** (scope, visual) | Skip | Skip | Full |
 | **Clarifying questions** | 1-2 max | As many as needed | As many as needed |
-| **Architectural dimensions** | All batched in 1 block | Opt-in, one per message | Full + extra dimensions |
-| **Design presentation** | Single block | Section by section | Section by section + alternatives |
-| **YAGNI filter** | Merged into summary | Dedicated step | Dedicated step |
-| **Transitions to** | `/ops-do` | `/ops-plan` | `/ops-plan` |
-| **Plan + critic** | No | Yes | Yes |
-| **Per-task code review** | No | No | Yes (high-risk tasks) |
+| **Architectural dimensions** (Step 7) | All batched in 1 block | Opt-in, one per message | Full + extra dimensions |
+| **Design presentation** (Step 8) | Single block | Section by section | Section by section + alternatives |
+| **YAGNI filter** (Step 9) | Merged into summary | Dedicated step | Dedicated step |
+| **Step 11 — Brainstorm critic review** | Skip unless invariant-class signal forces escalation | Skip unless invariant-class signal (D1/D2/D4) forces escalation | Run unconditionally |
+| **Transitions to** (Step 12) | `/ops-do` | `/ops-plan` | `/ops-plan` |
+| **Plan + plan-stage critic** | No (goes to `/ops-do`) | Yes | Yes |
+| **Per-task code review during implement** | No | No | Yes |
 | **Final review** | Yes | Yes | Yes |
 | **Estimated duration** | ~10 min | ~20-25 min | 1h+ |
+
+#### Step 7 — Architectural decisions + HARD-GATE-NEUTRALITY
+
+Step 7 presents architectural decisions as a **checklist of 7 dimensions** (state location, source of authority, configuration & defaults, failure mode, interface placement, backward compatibility, test boundaries). The `HARD-GATE-NEUTRALITY` rule forbids pre-recommending stack-specific patterns — the user's context drives the choice.
+
+**Exception — invariant-class decisions**: when a decision governs **authorization, trust, validation, access control, or safety** in a multi-actor system sharing a resource, the **centralized-owner pattern** (Dimension 2 option A) and **fail-closed mode** (Dimension 4 option A) are domain invariants, not stack preferences. The agent MAY recommend these as defaults, citing the invariant explicitly. The exception does NOT apply to single-actor, peer-to-peer, offline-first, or intentionally advisory contexts.
+
+#### Step 11 — Brainstorm critic review (signal-gated)
+
+After the Brainstorm Summary is finalized (Step 10), Step 11 can dispatch the `critic` agent in **`REVIEW MODE: BRAINSTORM`** to verify the locked decisions against the invariant-class exception **before** the transition to `/ops-plan` or `/ops-do`. This is the **only agent dispatch allowed inside `/ops-brainstorm`**.
+
+The dispatch is **signal-gated deterministically** — no LLM judgement involved in the gate itself:
+
+| Signal | Trigger |
+|---|---|
+| **D2 decentralized/hybrid** | Dimension 2 answer starts with `B` or `C` |
+| **D4 fail-open** | Dimension 4 answer starts with `B` or `C` |
+| **D1 fragile authority state** | Dimension 1 names a fragile channel (*cache, best-effort, metadata, fire-and-forget, queue, eventually-consistent, ephemeral, in-memory-only*) **AND** a correctness-critical fact (*authority, permission, identity, ownership, token, grant, authz decision, access binding*) within the same Dimension 1 answer |
+| **Simple-mode keyword escalation** | Objective line mentions *authorization, permission, access, ownership, validation, payment, safety, trust, "who can"* |
+
+**Per-mode behavior**:
+- **Simple** — skip unless any signal matches (including keyword escalation); "misclassifying authz/safety as Simple is the exact failure mode this critic catches".
+- **Normal** — skip unless a D1/D2/D4 signal matches. On a brainstorm where all invariant-class dimensions are at the safe default (A) or N/A, the critic verdict is a guaranteed APPROVE — paying a dispatch for a no-op is avoided.
+- **Complex** — run unconditionally.
+
+**Verdict handling** — three branches: **APPROVE** appends `**Brainstorm critic verdict**: APPROVE` to the summary (consumed by plan-stage critic as evidence); **SUGGESTIONS** resolves each finding one at a time (accept + revise affected dimension, or decline with documented reason); **REJECT** presents A/B/C forced choice (revise + re-critic with 3-iteration cap, override with explicit reason, or abort brainstorm).
+
+The plan-stage critic (PLAN mode) still runs afterwards — the two critics are **complementary, not duplicate**: brainstorm critic checks locked-decision sanity against invariant-class, plan critic checks plan-vs-summary trace. Both run for full coverage.
+
+```mermaid
+flowchart TD
+    S1["Step 1 — Task checklist"] --> S2["Step 2 — Clarity check"]
+    S2 --> S3["Step 3 — Mode classification<br/>(Simple / Normal / Complex)"]
+    S3 --> S4["Step 4 — Assess scope<br/>(Complex only)"]
+    S4 --> S5["Step 5 — Visual companion<br/>(Complex only)"]
+    S5 --> S6["Step 6 — Clarifying questions"]
+    S6 --> S7["Step 7 — Architectural decisions<br/>(HARD-GATE-NEUTRALITY + invariant-class exception)"]
+    S7 --> S8["Step 8 — Design sections"]
+    S8 --> S9["Step 9 — YAGNI filter"]
+    S9 --> S10["Step 10 — Summary"]
+    S10 --> S11{{"Step 11 — Brainstorm critic<br/>(signal-gated: skip if no D1/D2/D4 signal)"}}
+    S11 -->|APPROVE / SUGGESTIONS resolved / REJECT overridden| S12["Step 12 — Transition"]
+    S11 -.->|REJECT: revise| S7
+    S11 -.->|skipped by gate| S12
+    S12 -->|Simple| do["/ops-do"]
+    S12 -->|Normal / Complex| plan["/ops-plan"]
+```
 
 ---
 
@@ -734,7 +790,7 @@ If no security-sensitive areas are found, reports that and offers to run anyway.
 ```mermaid
 flowchart TD
     S["Scope"] --> T["Triage"]
-    T --> SAST["SAST scan (semgrep)"]
+    T --> SAST["SAST scan<br/>(ops-semgrep-scan.sh<br/>HARD-GATE)"]
     SAST --> SECREV{{"security-reviewer"}}
     SECREV --> R["Report"]
     R -.->|if requested| F["Fix + re-verify"]
@@ -835,7 +891,8 @@ Red flags: "should", "probably", "seems to", "I believe" — if these appear ins
 
 - **Evidence before claims** — `verify` is always active. No "it should work".
 - **Parallel research** — 3 agents run simultaneously during planning, with conditional repository cloning when confidence is insufficient.
-- **Adversarial review** — the critic agent tries to break your plan before you build it.
+- **Adversarial review** — the `critic` agent tries to break your plan before you build it. Two review modes: **PLAN** (full 5-lens review, dispatched from `/ops-plan`) and **BRAINSTORM** (reduced invariant-class check, dispatched from `/ops-brainstorm` Step 11 on a signal-gated basis).
+- **Adaptive ceremony** — brainstorm classifies features as Simple / Normal / Complex, and that mode propagates through plan to implement: Simple skips half the brainstorm and fast-paths to `/ops-do`, Normal keeps the full gates but skips per-task implementation review, Complex runs everything. Invariant-class safety checks are signal-gated deterministically — no LLM in the gate.
 - **Circuit breakers** — repeated failures escalate to diagnostics, not infinite retries.
 - **Instruction priority** — user > project instructions > ops > system defaults. Conflicts resolved explicitly.
 - **TDD enforced** — the implementer follows Red-Green-Refactor with anti-rationalization gates and a deletion rule for code written before tests.
@@ -883,7 +940,7 @@ ops/
 │   │
 │   │── # ─── STANDALONE (user-facing) ───
 │   ├── research/SKILL.md              # 3 agents in parallel (codebase, docs, git) + conditional repo clone
-│   ├── brainstorm/SKILL.md            # Socratic brainstorming
+│   ├── brainstorm/SKILL.md            # Socratic brainstorming — 12 step files, adaptive ceremony (Simple/Normal/Complex), Step 11 brainstorm critic (signal-gated, invariant-class check)
 │   ├── clone-analyze/SKILL.md         # Clone and analyze external repos
 │   ├── review/SKILL.md                # Evaluate feedback technically
 │   ├── security/SKILL.md              # On-demand security review
@@ -897,7 +954,7 @@ ops/
 │   ├── code-quality/SKILL.md          # Format, lint, structural analysis (qlty or project tools) before review
 │   ├── discovery-checks/SKILL.md      # Minor/Significant/Major
 │   ├── circuit-breaker/SKILL.md       # Repeated failure diagnostic
-│   ├── security-gate/SKILL.md         # Triage + SAST (semgrep, diff-aware) + qlty security + dispatch + re-verification loop
+│   ├── security-gate/SKILL.md         # Triage + SAST via ops-semgrep-scan.sh (HARD-GATE-SEMGREP, diff-aware) + qlty security + dispatch + re-verification loop
 │   ├── review-pipeline/SKILL.md       # Build verification → code quality → security gate → code review
 │   ├── redispatch-optimization/SKILL.md # Re-dispatch prompt optimization
 │   │
